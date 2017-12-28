@@ -3,7 +3,7 @@ ActiveLabel
 
 As you build out your application's models, you likely will want to share code between them.
 Neo4jrb's ``ActiveNode`` module supports class inheritance, allowing you to create "submodels" which 
-inherit the methods and labels of their ``ActiveNode parents`` while also adding their own submodel specific
+inherit the methods and labels of their ``ActiveNode`` parents while also adding their own submodel specific
 label & methods. This code sharing strategy should be familiar to anyone coming from the ActiveRecord world.
 
 Sometime's however, inheritance is not always appropriate. Sometimes what you want to do is conditionally add 
@@ -12,16 +12,18 @@ For an example of when this is needed, look at the Neo4j's example movie databas
 In this example, a Person node is sometimes an Actor, sometimes a Director, sometimes a User, and sometimes a 
 combination of Actor, Director, and/or User.
 
-Multiple inheritance such as this is not possible using ``ActiveNode`` inheritence (or with ActiveRecord). This
+Multiple inheritance such as this is not possible with ``ActiveNode`` (or with ActiveRecord). This
 is where ``ActiveLabel`` comes to the rescue! ``ActiveLabel`` allows you to create a Ruby module which is only
 applied to an ``ActiveNode`` model when a specific label is attached to an instance of the model. Using our
 example movie database from above, you could create an ``ActiveLabel`` module which only adds Actor methods and
-properties to an instance of Person if a Person node also has an Actor label.
+properties to an instance of Person if a Person node also has an Actor label. Or only adds InShowbusiness methods
+and properties to an instance of Person if a Person node has `either` Actor or Director labels.
 
 ``ActiveLabel`` can fully replace ``ActiveNode`` inheritence, but it involves a different way of thinking
 then what many ActiveRecord developers might be used to. If you're just starting out with Neo4jrb, you might find
-it easiest to stick with ``ActiveNode`` and inheritence. As you get more comfortable with Neo4j's flexibility and
-easy polymorphism, you'll find that ``ActiveLabel`` can be incredibly powerful and flexible.
+it easiest to stick with the "ActiveRecord" like workflow provided by ``ActiveNode`` and inheritence.
+But as you get more comfortable with Neo4j's flexibility and 
+polymorphism, you'll might find that ``ActiveLabel`` is the better option for many tasks.
 
 .. code-block:: ruby
 
@@ -106,13 +108,13 @@ include an ``ActiveLabel`` module in an ``ActiveNode`` class if you want the cla
       # When a node is retrieved from the database, it is mapped to an ``ActiveNode`` class and a new
       # instance of that class is created. We'll call this created object obj A.
       # If obj A's class includes this ``ActiveLabel``, and, additionally, obj A has the label associated
-      # with this ``ActiveLabel``, then this included block will be evaluaded
+      # with this ``ActiveLabel``, then this included block will be evaluated
       # within the context of obj A.
     end
 
     module InstanceMethods
-      # After obj A have been found and initialized, before the included block is evaluated, obj A will
-      # be extended with the InstanceMethods (e.g. obj.extend(InstanceMethods))
+      # After obj A has been found and initialized, before the included block is evaluated, obj A will
+      # be extended with these InstanceMethods (e.g. obj.extend(InstanceMethods))
 
       def act
         puts "I acted!"
@@ -155,26 +157,26 @@ If you'd like to `always` add one or more additional labels to instances of a cl
     include Director
     include User
 
-    # the ``label :Actor, optional: true`` automatically method adds the label ``:Actor`` to every instance of the Person class. The :Actor label is technically
-    # optional, even though it is always added, because a node will still be mapped to the Person class even if you manually remove the
-    # :Actor label from it.
+    # ``label :Actor, optional: true`` automatically adds the label ``:Actor``
+    # to every instance of the Person class. The :Actor label is technically
+    # optional, even though it is always added, because a node will still be mapped
+    # to the Person class even if you manually remove the :Actor label from it.
     label :Actor, optional: true
 
-    # If you call the ``label`` method without the ``optional: true`` argument, then nodes will only be mapped to the Person class if the label is
-    # also present on the node. (i.e. removing the :User label from a node will mean that that node is no longer considered a Person)
+    # If you call the ``label`` method without the ``optional: true`` argument,
+    # then nodes will only be mapped to the Person class if the label is
+    # also present on the node. (i.e. removing the :User label from a node will
+    # mean that that node is no longer considered a Person)
     label :User
   end
 
 
 Including an ``ActiveLabel`` module in a class will `automatically` add a few helper methods to the class and class instances.
-Using the ``Actor`` ``ActiveLabel`` module as an example.
+For example, using the ``Actor`` ``ActiveLabel`` module:
 
 1. You can call ``person.actor?`` which will return true if the obj has the label associated with the ``Actor`` ``ActiveLabel``.
-2. You can call ``Person.actor.new`` or ``Person.actor.create`` to inialize / create a new ``Person`` instance with the label
-associated with ``Actor``.
-3. You can call ``Person.actor.all`` or ``Person.actor.first`` to return all ``Person`` nodes with the ``Actor`` label. In fact,
-calling ``Person.actor`` simply adds a label scope, which can be combined with any custom scopes you have (e.g.
-``Person.most_popular`` -> ``Person.actor.most_popular``
+2. You can call ``Person.actor.new`` or ``Person.actor.create`` to initialize / create a new ``Person`` instance with the additional ``Actor`` label.
+3. You can call ``Person.actor.all`` or ``Person.actor.first`` to return all ``Person`` nodes with the ``Actor`` label. In fact, calling ``Person.actor`` simply adds a label scope, which can be combined with any custom scopes you have (e.g. ``Person.most_popular`` -> ``Person.actor.most_popular``)
 
 To dry up your code, you can include ``ActiveLabel B`` inside ``ActiveLabel A``. This ensures that when you include
 ``ActiveLabel A`` in a module you also always include ``Activelabel B``
@@ -203,7 +205,7 @@ To dry up your code, you can include ``ActiveLabel B`` inside ``ActiveLabel A``.
 Querying
 --------
 
-Querying for ``ActiveLabel``s is easy, and can cut accross classes.
+Querying for ``ActiveLabel``s is easy, and can allow you to query across classes.
 
 .. code-block:: ruby
 
@@ -223,7 +225,7 @@ Including an ``ActiveLabel`` module in a class will `automatically` add a few he
 
   Person.actor.first
 
-Calling ``Person.actor`` simply adds a label ``:Actor`` scope, which can be combined with any custom scopes you have (e.g.
+Calling ``Person.actor`` simply adds a label scope, which can be combined with any custom scopes you have (e.g.
 ``Person.most_popular`` -> ``Person.actor.most_popular``
 
 Associations
@@ -238,7 +240,8 @@ You can create associations with ActiveLabels:
 
     has_many :in, :actors, type: :ACTS_IN, label_module: :Actor
 
-    # `model_class` acts as a filter to the `label_module` argument.  Both `model_class` and `label_module` can be arrays
+    # `label_module` acts as a filter to the `model_class` argument.
+    # Both `model_class` and `label_module` can be arrays
     has_many :in, :human_actors, type: :ACTS_IN, label_module: :Actor, model_class: :Person
   end
 
@@ -249,9 +252,10 @@ If you want more control over your association, you can use the ``node_labels:``
   class Movie
     include Neo4j::ActiveNode
 
-    # The node_labels option accepts a two dimentional array. Each array in the node_labels array includes a set of labels
-    # that the association will match against. In the example below, the ``actors`` association only includes nodes with
-    # an ``<-[:ACTS_IN]-`` relation to the ``Movie`` which have either ``:Actor:Person`` labels or ``:Actor:Animal`` labels
+    # The node_labels option accepts a two dimentional array. Each array in the node_labels
+    # array includes a set of labels that the association will match against. In the example
+    # below, the ``actors`` association only includes nodes which have either ``:Actor:Person``
+    # OR ``:Actor:Animal`` labels and have an ``<-[:ACTS_IN]-`` relation to a ``Movie`` node
     has_many :in, :actors, type: :ACTS_IN, node_labels: [[:Actor, :Person], [:Actor, :Animal]]
 
     # Other valid params for the node_labels option are
@@ -261,8 +265,8 @@ If you want more control over your association, you can use the ``node_labels:``
     has_many :in, :actors, type: :ACTS_IN, node_labels: :Actor
   end
 
-Note, while the ``label_module`` option requires the params to resolve to ``ActiveLabel`` modules, the ``node_labels``
-option doesn't. It simply matches against the specified labels.
+Note, while the ``label_module`` option requires its params to resolve to ``ActiveLabel`` modules, the ``node_labels``
+option doesn't. The ``node_labels`` option simply matches against the specified labels.
 
 Multiple Conditions
 -------------------
@@ -286,12 +290,12 @@ array are present.
     
   end
 
-By default, ``self.associated_labels_matcher == :all``
+By default, ``self.associated_labels_matcher == :any``
 
 included_if block
 ~~~~~~~~~~~~~~~~~
 
-Sometimes conditional functionality is limited to one class, and is simple enough that a full ``ActiveLabel`` seems like
+Sometimes conditional functionality is limited to one class, and is simple enough that a full ``ActiveLabel`` module seems like
 overkill. You can make use of ``included_if_any`` and ``included_if_all`` methods to specify blocks of code that only
 run if `any` or `all` of the specified labels are present on a node.
 
