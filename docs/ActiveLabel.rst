@@ -170,14 +170,6 @@ If you'd like to `always` add one or more additional labels to instances of a cl
     label :User
   end
 
-
-Including an ``ActiveLabel`` module in a class will `automatically` add a few helper methods to the class and class instances.
-For example, using the ``Actor`` ``ActiveLabel`` module:
-
-1. You can call ``person.actor?`` which will return true if the obj has the label associated with the ``Actor`` ``ActiveLabel``.
-2. You can call ``Person.actor.new`` or ``Person.actor.create`` to initialize / create a new ``Person`` instance with the additional ``Actor`` label.
-3. You can call ``Person.actor.all`` or ``Person.actor.first`` to return all ``Person`` nodes with the ``Actor`` label. In fact, calling ``Person.actor`` simply adds a label scope, which can be combined with any custom scopes you have (e.g. ``Person.most_popular`` -> ``Person.actor.most_popular``)
-
 To dry up your code, you can include ``ActiveLabel B`` inside ``ActiveLabel A``. This ensures that when you include
 ``ActiveLabel A`` in a module you also always include ``Activelabel B``
 
@@ -201,6 +193,16 @@ To dry up your code, you can include ``ActiveLabel B`` inside ``ActiveLabel A``.
     include Neo4j::ActiveLabel
     include Hollywood
   end
+
+Helper methods
+~~~~~~~~~~~~~~
+
+Including an ``ActiveLabel`` module in a class will `automatically` add a few helper methods to the class and class instances.
+For example, using the ``Actor`` ``ActiveLabel`` module:
+
+1. You can call ``person.actor?`` which will return true if the obj has the label associated with the ``Actor`` ``ActiveLabel``.
+2. You can call ``Person.actor.new`` or ``Person.actor.create`` to initialize / create a new ``Person`` instance with the additional ``Actor`` label.
+3. You can call ``Person.actor.all`` or ``Person.actor.first`` to return all ``Person`` nodes with the ``Actor`` label. In fact, calling ``Person.actor`` simply adds a label scope, which can be combined with any custom scopes you have (e.g. ``Person.most_popular`` -> ``Person.actor.most_popular``)
 
 Querying
 --------
@@ -296,8 +298,10 @@ included_if block
 ~~~~~~~~~~~~~~~~~
 
 Sometimes conditional functionality is limited to one class, and is simple enough that a full ``ActiveLabel`` module seems like
-overkill. You can make use of ``included_if_any`` and ``included_if_all`` methods to specify blocks of code that only
-run if `any` or `all` of the specified labels are present on a node.
+overkill. You can make use of ``ActiveNode``'s ``included_if_any`` and ``included_if_all`` methods to specify blocks of code that only
+run if `any` or `all` of the specified labels are present on a node (note, these methods resolve their params to labels,
+rather than ``ActiveLabel`` modules. This means that you can match against an optional label which does not have an associated ``ActiveLabel``
+module).
 
 .. code-block:: ruby
 
