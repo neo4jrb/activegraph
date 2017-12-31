@@ -6,14 +6,14 @@ module Neo4j::ActiveNode::HasN
         private(*accessors)
       end
 
-      def self.create(start_object, other_node_or_nodes, properties, association)
+      def self.create(start_object, other_node_or_nodes, properties, association, verify=false)
         factory = new(start_object, other_node_or_nodes, properties, association)
-        factory._create_relationship
+        factory._create_relationship(verify: verify)
       end
 
-      def _create_relationship
+      def _create_relationship(verify: false)
         creator = association.relationship_class ? :rel_class : :factory
-        send(:"_create_relationship_with_#{creator}")
+        send(:"_create_relationship_with_#{creator}", verify)
       end
 
       private
@@ -25,20 +25,29 @@ module Neo4j::ActiveNode::HasN
         @association = association
       end
 
-      def _create_relationship_with_rel_class
+      def _create_relationship_with_rel_class(*)
         Array(other_node_or_nodes).each do |other_node|
           node_props = _nodes_for_create(other_node, :from_node, :to_node)
           association.relationship_class.create!(properties.merge(node_props))
         end
       end
 
-      def _create_relationship_with_factory
+      def _create_relationship_with_factory(verify=false)
         Array(other_node_or_nodes).each do |other_node|
           wrapper = _rel_wrapper(properties)
           base = _match_query(other_node, wrapper)
           factory = Neo4j::Shared::RelQueryFactory.new(wrapper, wrapper.rel_identifier)
           factory.base_query = base
-          factory.query.exec
+
+          if verify
+            if factory.query!.response.pluck(:result).first
+              true
+            else
+              raise PersistanceError, "It appears the relation failed to persist in the database"
+            end
+          else
+            factory.query.exec
+          end
         end
       end
 

@@ -174,6 +174,13 @@ module Neo4j
           self
         end
 
+        # To add a relationship for the node for the association on this QueryProxy,
+        # or raise a PersistanceError if it fails
+        def add_relation!(other_node)
+          _create_relation_or_defer(other_node, verify: true)
+          self
+        end
+
         # Executes the relation chain specified in the block, while keeping the current scope
         #
         # @example Load all people that have friends
@@ -201,7 +208,7 @@ module Neo4j
           self.to_a[index]
         end
 
-        def create(other_nodes, properties = {})
+        def create(other_nodes, properties={}, verify=false)
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
@@ -211,7 +218,7 @@ module Neo4j
 
               @start_object.association_proxy_cache.clear
 
-              _create_relationship(other_node, properties)
+              _create_relationship(other_node, properties, verify)
             end
           end
         end
@@ -228,8 +235,8 @@ module Neo4j
           other_nodes
         end
 
-        def _create_relationship(other_node_or_nodes, properties)
-          association._create_relationship(@start_object, other_node_or_nodes, properties)
+        def _create_relationship(other_node_or_nodes, properties, verify=false)
+          association._create_relationship(@start_object, other_node_or_nodes, properties, verify)
         end
 
         def read_attribute_for_serialization(*args)
@@ -271,11 +278,11 @@ module Neo4j
 
         protected
 
-        def _create_relation_or_defer(other_node)
+        def _create_relation_or_defer(other_node, verify: false)
           if @start_object._persisted_obj
-            create(other_node, {})
+            create(other_node, {}, verify)
           elsif @association
-            @start_object.defer_create(@association.name, other_node)
+            @start_object.defer_create(@association.name, other_node, {verify: verify})
           else
             fail 'Another crazy error!'
           end

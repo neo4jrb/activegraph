@@ -7,9 +7,14 @@ module Neo4j
         @deferred_create_cache ||= {}
       end
 
+      def deferred_options_cache
+        @deferred_options_cache ||= {}
+      end
+
       def defer_create(association_name, object, options = {})
         clear_deferred_nodes_for_association(association_name) if options[:clear]
 
+        deferred_options_for_association(association_name) << {verify: options[:verify]}
         deferred_nodes_for_association(association_name) << object
       end
 
@@ -17,12 +22,17 @@ module Neo4j
         deferred_create_cache[association_name.to_sym] ||= []
       end
 
+      def deferred_options_for_association(association_name)
+        deferred_options_cache[association_name.to_sym] ||= []
+      end
+
       def pending_deferred_creations?
         !deferred_create_cache.values.all?(&:empty?)
       end
 
       def clear_deferred_nodes_for_association(association_name)
-        deferred_nodes_for_association(association_name.to_sym).clear
+        deferred_options_for_association(association_name).clear
+        deferred_nodes_for_association(association_name).clear
       end
 
       private
@@ -31,13 +41,21 @@ module Neo4j
         deferred_create_cache.dup.each do |association_name, nodes|
           association_proxy = association_proxy(association_name)
 
-          nodes.each do |node|
+          options_array = deferred_options_for_association(association_name)
+
+          nodes.each_with_index do |node, index|
+            options = options_array[index]
+
             if node.respond_to?(:changed?)
               node.save if node.changed? || !node.persisted?
               fail "Unable to defer node persistence, could not save #{node.inspect}" unless node.persisted?
             end
 
-            association_proxy << node
+            if options[:verify]
+              association_proxy.add_relation! node
+            else
+              association_proxy << node
+            end
           end
         end
 

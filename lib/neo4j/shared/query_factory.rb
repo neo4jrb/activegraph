@@ -29,6 +29,10 @@ module Neo4j::Shared
       graph_object.persisted? ? match_query : create_query
     end
 
+    def query!
+      graph_object.persisted? ? match_query! : create_query!
+    end
+
     # @param [Neo4j::Core::Query] query An instance of Neo4j::Core::Query upon which methods will be chained.
     def base_query=(query)
       return if query.blank?
@@ -49,6 +53,10 @@ module Neo4j::Shared
       base_query
         .match(match_string).where("ID(#{identifier}) = {#{identifier_id}}")
         .params(identifier_id.to_sym => graph_object.neo_id)
+    end
+
+    def match_query!
+      match_query.return("exists(#{match_string}) as result")
     end
 
     def identifier_id
@@ -87,6 +95,12 @@ module Neo4j::Shared
       base_query.send(graph_object.create_method, query_string).break
                 .set(identifier => set_props)
                 .params(:"#{identifier}_create_props" => create_props)
+    end
+
+    def create_query!
+      return match_query if graph_object.persisted?
+      exists_string = "(#{graph_object.from_node_identifier})-[#{identifier}]->(#{graph_object.to_node_identifier})"
+      create_query.return("exists(#{exists_string}) as result")
     end
 
     private

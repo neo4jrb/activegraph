@@ -9,6 +9,9 @@ module Neo4j
         include Neo4j::ActiveNode::Dependent::AssociationMethods
         include Neo4j::ActiveNode::HasN::AssociationCypherMethods
 
+        # Used when a bang association method (e.g. `person.add_job!`) fails
+        class PersistanceError < Neo4j::Error; end
+
         attr_reader :type, :name, :relationship, :direction, :dependent, :model_class
 
         def initialize(type, direction, name, options = {type: nil})
@@ -139,8 +142,8 @@ module Neo4j
           unique? ? :create_unique : :create
         end
 
-        def _create_relationship(start_object, node_or_nodes, properties)
-          RelFactory.create(start_object, node_or_nodes, properties, self)
+        def _create_relationship(start_object, node_or_nodes, properties, verify=false)
+          RelFactory.create(start_object, node_or_nodes, properties, self, verify)
         end
 
         def relationship_class?
