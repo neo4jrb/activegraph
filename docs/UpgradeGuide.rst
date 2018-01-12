@@ -120,19 +120,19 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 
   Neo4j::ActiveBase.current_session
   
- Transactions
- ^^^^^^^^^^^^
+Transactions
+^^^^^^^^^^^^
 
-In version ``8.0`` of the ``neo4j`` gem, the recommended API for interacting with transactions has changed. In ``7.0``, the API looked like
+In ``neo4j-core``, you now interact with transactions through a ``session`` object like so:
 
 .. code-block:: ruby
 
-  Neo4j::Transaction.run do |tx|
+  neo4j_session.transaction do |tx|
     # do stuff
     tx.mark_failed
   end
-  
-In ``8.0``, the API for interacting with transactions looks like
+
+In ``neo4j``, you now interact with transactions through ``Neo4j::ActiveBase`` like so:
 
 .. code-block:: ruby
 
@@ -145,16 +145,6 @@ In ``8.0``, the API for interacting with transactions looks like
   .. raw:: html
 
     Check out the ActiveBase source code to learn about some other neat helper methods <a href='https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_base.rb'>ActiveBase has</a>
-    
-In ``7.0`` of the ``neo4j-core`` gem, you interact with transactions through a ``session`` object like so:
-
-.. code-block:: ruby
-
-  a_session_object.transaction do |tx|
-    # do stuff
-    tx.mark_failed
-  end
-
 
 server_db
 ^^^^^^^^^
