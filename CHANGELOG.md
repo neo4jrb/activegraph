@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.2] 2017-12-18
+
+## Fixed
+
+- Issue where the order of `ORDER BY` was from `.order` method was not being respected for chains with `with_association` (thanks @klobuczek / see #1454)
+
+## [9.1.1] 2017-12-12
+
+## Fixed
+
+- Model.find will, when raising an error about not being able to find the object, now call `inspect` on the ID value to make it clearer what the error is about (thanks @anamba / see #1314)
+
 ## [9.1.0] 2017-11-24
 
 ## Added

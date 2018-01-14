@@ -82,8 +82,17 @@ If you are using RSpec you can perform tests in a transaction as you would using
 
 .. code-block:: ruby
 
+  # For the `neo4j-core` gem
   config.around do |example|
-    Neo4j::Transaction.run do |tx|
+    session.transaction do |tx|
+      example.run
+      tx.mark_failed
+    end
+  end
+  
+  # For the `neo4j` gem
+  config.around do |example|
+    Neo4j::ActiveBase.run_transaction do |tx|
       example.run
       tx.mark_failed
     end

@@ -80,7 +80,7 @@ Or via the `Neo4j::Core::Query` class
 
   neo4j_session.query(query_obj)
 
-Making multiple queries with one request is support with the HTTP Adaptor:
+Making multiple queries with one request is supported with the HTTP Adaptor:
 
 .. code-block:: ruby
 
@@ -101,6 +101,15 @@ When doing batched queries, there is also a shortcut for getting a new `Neo4j::C
   end
 
   results[0] # result
+  
+With your session object, you can wrap multiple queries inside a transaction like so:
+
+.. code-block:: ruby
+
+  neo4j_session.transaction do |tx|
+    # do stuff
+    tx.mark_failed
+  end
 
 The ``neo4j`` gem
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -119,6 +128,32 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 .. code-block:: ruby
 
   Neo4j::ActiveBase.current_session
+  
+Transactions
+^^^^^^^^^^^^
+
+Because of the changes to the current session API in the ``neo4j`` gem, the transactions API has also changed. Previously you might have created a transaction like so:
+
+.. code-block:: ruby
+
+  Neo4j::Transaction.run do |tx|
+    # do stuff
+    tx.mark_failed
+  end
+
+Now, you now interact with transactions through ``Neo4j::ActiveBase`` like so:
+
+.. code-block:: ruby
+
+  Neo4j::ActiveBase.run_transaction do |tx|
+    # do stuff
+    tx.mark_failed
+  end
+
+.. seealso::
+  .. raw:: html
+
+    Check out the ActiveBase source code to learn about some other neat helper methods <a href='https://github.com/neo4jrb/neo4j/blob/master/lib/neo4j/active_base.rb'>ActiveBase has</a>
 
 server_db
 ^^^^^^^^^

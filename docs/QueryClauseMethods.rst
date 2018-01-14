@@ -1292,6 +1292,61 @@ node object and integer
 
 ------------
 
+#with_distinct
+~~~~~
+
+:Ruby:
+  .. code-block:: ruby
+
+    .with_distinct('n.age AS age')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WITH DISTINCT n.age AS age
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .with_distinct('n.age AS age', 'count(n) as c')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WITH DISTINCT n.age AS age, count(n) as c
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .with_distinct(['n.age AS age', 'count(n) as c'])
+
+:Cypher:
+  .. code-block:: cypher
+
+    WITH DISTINCT n.age AS age, count(n) as c
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .with_distinct(age: 'n.age')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WITH DISTINCT n.age AS age
+
+
+------------
+
 #create
 ~~~~~~~
 

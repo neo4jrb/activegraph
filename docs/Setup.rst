@@ -141,8 +141,8 @@ Neo4j requires authentication by default but if you install using the built-in :
   config.neo4j.session.url = 'http://neo4j:password@localhost:7474'
 
 
-Configuring Faraday
-^^^^^^^^^^^^^^^^^^^
+Configuring Faraday (HTTP only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Faraday <https://github.com/lostisland/faraday>`_ is used under the covers to connect to Neo4j.  You can use the ``initialize`` option to initialize the Faraday session.  Example:
 
