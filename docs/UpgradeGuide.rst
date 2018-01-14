@@ -132,7 +132,7 @@ If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, 
 Transactions
 ^^^^^^^^^^^^
 
-Because of the changes to the current session API in ``neo4j``, the transactions API has also changed. Previously you might have created a transaction like so:
+Because of the changes to the current session API in the ``neo4j`` gem, the transactions API has also changed. Previously you might have created a transaction like so:
 
 .. code-block:: ruby
 
