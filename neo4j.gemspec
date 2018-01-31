@@ -28,8 +28,8 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.rdoc_options = ['--quiet', '--title', 'Neo4j.rb', '--line-numbers', '--main', 'README.rdoc', '--inline-source']
 
   s.add_dependency('orm_adapter', '~> 0.5.0')
-  s.add_dependency('activemodel', '>= 4.0')
-  s.add_dependency('activesupport', '>= 4.0')
+  s.add_dependency('activemodel', '>= 3.2')
+  s.add_dependency('activesupport', '>= 3.2')
   s.add_dependency('neo4j-core', '>= 7.2.2')
   s.add_dependency('neo4j-community', '~> 2.0') if RUBY_PLATFORM =~ /java/
   s.add_development_dependency('railties', '>= 4.0')
