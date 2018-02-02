@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.3] 2018-02-01
+
+## Fixed
+
+- Fixed issue with Rails 5.1 where `neo4j_config.session` refers to the wrong this (thanks @RicardoTrindade / see #1471 and #1475)
+
 ## [9.1.2] 2017-12-18
 
 ## Fixed
