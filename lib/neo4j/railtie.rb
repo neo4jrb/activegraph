@@ -73,20 +73,20 @@ module Neo4j
     def final_session_config!(neo4j_config)
       support_deprecated_session_configs!(neo4j_config)
 
-      neo4j_config.session.empty? ? yaml_config_data : neo4j_config.session
+      neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]
     end
 
     def support_deprecated_session_configs!(neo4j_config)
       if neo4j_config.sessions.present?
         ActiveSupport::Deprecation.warn('neo4j.config.sessions is deprecated, please use neo4j.config.session (not an array)')
-        neo4j_config.session = neo4j_config.sessions[0] if neo4j_config.session.empty?
+        neo4j_config[:session] = neo4j_config.sessions[0] if neo4j_config[:session].empty?
       end
 
       %w(type path url options).each do |key|
         value = neo4j_config.send("session_#{key}")
         if value.present?
           ActiveSupport::Deprecation.warn("neo4j.config.session_#{key} is deprecated, please use neo4j.config.session.#{key}")
-          neo4j_config.session[key] = value
+          neo4j_config[:session][key] = value
         end
       end
     end
