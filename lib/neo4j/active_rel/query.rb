@@ -2,6 +2,8 @@ module Neo4j::ActiveRel
   module Query
     extend ActiveSupport::Concern
 
+    class RecordNotFound < Neo4j::RecordNotFound; end
+
     module ClassMethods
       # Returns the object with the specified neo4j id.
       # @param [String,Integer] id of node to find
@@ -15,7 +17,9 @@ module Neo4j::ActiveRel
       def find_by_id(key, session = nil)
         options = session ? {session: session} : {}
         query ||= Neo4j::ActiveBase.new_query(options)
-        query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first.r
+        result = query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first
+        fail RecordNotFound.new("Couldn't find #{name} with 'id'=#{key.inspect}", name, key) if result.blank?
+        result.r
       end
 
       # Performs a very basic match on the relationship.
