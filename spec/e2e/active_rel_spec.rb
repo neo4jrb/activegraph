@@ -569,6 +569,10 @@ describe 'ActiveRel' do
       it 'returns the rel' do
         expect(MyRelClass.find(rel1.neo_id)).to eq rel1
       end
+
+      it 'with no results' do
+        expect { MyRelClass.find(8_675_309) }.to raise_error(Neo4j::RecordNotFound)
+      end
     end
 
     describe 'first, last' do
