@@ -398,4 +398,25 @@ describe Neo4j::Shared::TypeConverters do
       expect(ruby_value.to_s).to eq(value.to_s)
     end
   end
+
+  describe '.create' do
+    it 'creates a converter and registers it' do
+      password_hasher = Struct.new(:password) do
+        def hashed
+          # hash this password in a super secure way
+          # like, really secure
+          password.upcase
+        end
+      end
+
+      converter = described_class.create(db: String, ruby: password_hasher) do
+        db(&:hashed)
+        ruby { |password| password_hasher.new(password) }
+      end
+
+      expect(Neo4j::Shared::TypeConverters.converter_for(password_hasher)).to be converter
+      expect(converter.to_db(password_hasher.new('password'))).to eq('PASSWORD')
+      expect(converter.to_ruby('PASSWORD')).to be_a password_hasher
+    end
+  end
 end

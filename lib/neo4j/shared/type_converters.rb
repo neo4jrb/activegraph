@@ -324,6 +324,51 @@ module Neo4j::Shared
       end
     end
 
+    # DSL method to create a simple type converter
+    #
+    # @param db [Class] The primitive type to be stored in the database
+    # @param ruby [Class] The class to deserialize into
+    # @example
+    #   require 'bcrypt'
+    #   Neo4j::Shared::TypeConverters.create db: String, ruby: BCrypt::Password do
+    #     db(&:to_s)
+    #     ruby do |value|
+    #       if value.start_with? '$2a$'
+    #         BCrypt::Password.new(value)
+    #       else
+    #         BCrypt::Password.create(value)
+    #       end
+    #     end
+    #   end
+    def self.create(**attrs, &block)
+      Conversion.new(**attrs).tap do |converter|
+        converter.instance_exec(&block)
+        Neo4j::Shared::TypeConverters.register_converter converter
+      end
+    end
+
+    class Conversion
+      attr_reader :primitive_type, :convert_type
+
+      def initialize(db:, ruby:)
+        @primitive_type = db
+        @convert_type = ruby
+      end
+
+      def db(&block)
+        define_singleton_method :to_db, &block
+      end
+
+      def ruby(&block)
+        define_singleton_method :to_ruby, &block
+      end
+
+      def to_db(_)
+        fail NotImplementedError, "Neo4j<->Ruby conversion for #{ruby.inspect} is not implemented"
+      end
+      alias to_ruby to_db
+    end
+
 
     # Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
     # @param [Neo4j::Shared::Property] obj A node or rel that mixes in the Property module
