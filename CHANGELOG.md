@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.4] 2018-02-20
+
+## Fixed
+
+- Fixed issue with `ActiveRel.find` for when the ID isn't there (thanks @lshimokawa / WARNING: Use of `ActiveRel.find` is NOT recommended, see #1482)
+
 ## [9.1.3] 2018-02-01
 
 ## Fixed
