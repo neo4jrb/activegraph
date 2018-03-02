@@ -512,6 +512,32 @@ The two orphan-destruction options are unique to Neo4j.rb. As an example of when
   and
   #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/HasN/ClassMethods#has_one-instance_method
 
+Association Options
+~~~~~~~~~~~~~~~~~~~~~~
+
+By default, when you call an association ``ActiveNode`` will add the ``model_class`` labels to the query (as a filter). For example:
+
+.. code-block:: ruby
+
+    person.friends
+    # =>
+    # MATCH (person125)
+    # WHERE (ID(person125) = {ID_person125})
+    # MATCH (person125)-[rel1:`FRIEND`]->(node3:`Person`)
+
+The exception to this is if ``model_class: false``, in which case ``MATCH (person125)-[rel1:`FRIEND`]->(node3)``.
+More advanced Neo4j users may prefer to skip adding labels to the target node, even if ``model_class != false``.
+This can be accomplished on a case-by-case basis by calling the association with a `labels: false`` options argument.
+For example: ``person.friends(labels: false)``.
+
+You can also make ``labels: false`` the default settings by
+creating the association with a ``labels: false`` option. For example:
+
+.. code-block:: ruby
+
+    class Person
+      has_many :out, :friends, type: :FRIEND, model_class: self, labels: false
+    end
 
 Creating Unique Relationships
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

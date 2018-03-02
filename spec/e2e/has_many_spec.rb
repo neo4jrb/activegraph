@@ -387,12 +387,28 @@ describe 'has_many' do
 
   describe 'association "getter" options' do
     before do
+      Person.has_many :out, :best_friend, model_class: 'Person', type: nil, labels: false
       node.knows << friend1
       friend1.knows << friend2
     end
 
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       expect(node.knows(rel_length: :any).to_a).to match_array([friend1, friend2])
+    end
+
+    it 'honors default options' do
+      expect(node.knows.instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(nil)
+      expect(node.best_friend.instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
+    end
+
+    it 'allows overriding of default options' do
+      expect(node.knows(labels: false).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
+      expect(node.best_friend(labels: true).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(true)
+    end
+
+    it 'provided options are merged into default options' do
+      expect(node.knows({}).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(nil)
+      expect(node.best_friend({}).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
     end
   end
 

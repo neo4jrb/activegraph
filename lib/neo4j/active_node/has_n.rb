@@ -364,7 +364,7 @@ module Neo4j::ActiveNode
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
-        define_has_many_methods(name)
+        define_has_many_methods(name, options)
       end
 
       # For defining an "has one" association on a model.  This defines a set of methods on
@@ -381,16 +381,20 @@ module Neo4j::ActiveNode
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
-        define_has_one_methods(name)
+        define_has_one_methods(name, options)
       end
 
       private
 
-      def define_has_many_methods(name)
+      def define_has_many_methods(name, association_options)
+        default_options = association_options.slice(:labels)
+
         define_method(name) do |node = nil, rel = nil, options = {}|
           # return [].freeze unless self._persisted_obj
 
           options, node = node, nil if node.is_a?(Hash)
+
+          options = default_options.merge(options)
 
           association_proxy(name, {node: node, rel: rel, source_object: self, labels: options[:labels]}.merge!(options))
         end
@@ -401,6 +405,8 @@ module Neo4j::ActiveNode
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           options, node = node, nil if node.is_a?(Hash)
+
+          options = default_options.merge(options)
 
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
@@ -435,8 +441,10 @@ module Neo4j::ActiveNode
         define_method(method_name, block) unless method_defined?(method_name)
       end
 
-      def define_has_one_methods(name)
-        define_has_one_getter(name)
+      def define_has_one_methods(name, association_options)
+        default_options = association_options.slice(:labels)
+
+        define_has_one_getter(name, default_options)
 
         define_has_one_setter(name)
 
@@ -444,6 +452,8 @@ module Neo4j::ActiveNode
 
         define_class_method(name) do |node = nil, rel = nil, options = {}|
           options, node = node, nil if node.is_a?(Hash)
+
+          options = default_options.merge(options)
 
           association_proxy(name, {node: node, rel: rel, labels: options[:labels]}.merge!(options))
         end
@@ -463,9 +473,11 @@ module Neo4j::ActiveNode
         end
       end
 
-      def define_has_one_getter(name)
+      def define_has_one_getter(name, default_options)
         define_method(name) do |node = nil, rel = nil, options = {}|
           options, node = node, nil if node.is_a?(Hash)
+
+          options = default_options.merge(options)
 
           association_proxy = association_proxy(name, {node: node, rel: rel}.merge!(options))
 

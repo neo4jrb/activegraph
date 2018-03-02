@@ -201,7 +201,9 @@ module Neo4j
           check_valid_type_and_dir(type, direction)
         end
 
-        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique]
+        # the ":labels" option is not used by the association per-say.
+        # Instead, if provided,it is used by the association getter as a default getter options argument
+        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique, :labels]
 
         def validate_association_options!(_association_name, options)
           ClassArguments.validate_argument!(options[:model_class], 'model_class')
