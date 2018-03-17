@@ -165,8 +165,10 @@ module Neo4j::Shared
       #
       # @return [false, String] False or the conflicting method name
       def dangerous_attribute?(name)
+        methods = instance_methods
+
         attribute_methods(name).detect do |method_name|
-          !DEPRECATED_OBJECT_METHODS.include?(method_name.to_s) && allocate.respond_to?(method_name, true)
+          !DEPRECATED_OBJECT_METHODS.include?(method_name.to_s) && methods.include?(method_name)
         end unless attribute_names.include? name.to_s
       end
 
