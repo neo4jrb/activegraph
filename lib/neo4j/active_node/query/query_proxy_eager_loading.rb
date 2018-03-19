@@ -23,6 +23,8 @@ module Neo4j
           end
 
           def add_spec(spec)
+            fail "Cannot eager load \"past\" a polymorphic association. (since the association can return multiple models, we don't how to handle the \"#{spec}\" association." unless model
+            
             if spec.is_a?(Array)
               spec.each { |s| add_spec(s) }
             elsif spec.is_a?(Hash)
