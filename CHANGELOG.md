@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.5] 2018-03-18
+
+## Fixed
+
+- Performance improvement for attributes (thanks @jgaskins / see #1487)
+
 ## [9.1.4] 2018-02-20
 
 ## Fixed
