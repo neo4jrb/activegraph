@@ -379,7 +379,7 @@ module Neo4j::Shared
 
     # Returns true if the property isn't defined in the model or if it is nil
     def skip_conversion?(obj, attr, value)
-      !obj.class.attributes[attr] || value.nil?
+      value.nil? || !obj.class.attributes.key?(attr)
     end
 
     class << self
