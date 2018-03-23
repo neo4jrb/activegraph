@@ -41,6 +41,8 @@ Contents:
 
    AdditionalResources
 
+   HelperGems
+
    api/index
 
 Neo4j.rb (the `neo4j <https://github.com/neo4jrb/neo4j>`_ and `neo4j-core <https://github.com/neo4jrb/neo4j-core>`_ gems) is a `Ruby <https://www.ruby-lang.org/en/>`_ Object-Graph-Mapper (OGM) for the `Neo4j <http://neo4j.com/>`_ graph database. It tries to follow API conventions established by `ActiveRecord <http://guides.rubyonrails.org/active_record_basics.html>`_ and familiar to most Ruby developers but with a Neo4j flavor.
