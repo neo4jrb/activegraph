@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.5] 2018-03-18
+
+## Fixed
+
+- Performance improvement for attributes (thanks @jgaskins / see #1487)
+
+## [9.1.4] 2018-02-20
+
+## Fixed
+
+- Fixed issue with `ActiveRel.find` for when the ID isn't there (thanks @lshimokawa / WARNING: Use of `ActiveRel.find` is NOT recommended, see #1482)
+
+## [9.1.3] 2018-02-01
+
+## Fixed
+
+- Fixed issue with Rails 5.1 where `neo4j_config.session` refers to the wrong this (thanks @RicardoTrindade / see #1471 and #1475)
+
 ## [9.1.2] 2017-12-18
 
 ## Fixed
