@@ -101,7 +101,7 @@ module Neo4j::Shared
     end
 
     class BooleanConverter < BaseConverter
-      FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F)
+      FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F).to_set
 
       class << self
         def converted?(value)
