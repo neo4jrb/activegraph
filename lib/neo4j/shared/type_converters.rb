@@ -362,18 +362,18 @@ module Neo4j::Shared
 
     def converted_property(type, value, direction)
       return nil if value.nil?
-      type.respond_to?(:db_type) || TypeConverters::CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
+      type.respond_to?(:db_type) || CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
     def primitive_type(attr)
       case
-      when self.serialized_properties_keys.include?(attr)
+      when serialized_properties_keys.include?(attr)
         serialized_properties[attr]
-      when self.magic_typecast_properties_keys.include?(attr)
-        self.magic_typecast_properties[attr]
+      when magic_typecast_properties_keys.include?(attr)
+        magic_typecast_properties[attr]
       else
-        self.fetch_upstream_primitive(attr)
+        fetch_upstream_primitive(attr)
       end
     end
 
