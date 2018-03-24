@@ -362,7 +362,7 @@ module Neo4j::Shared
 
     def converted_property(type, value, direction)
       return nil if value.nil?
-      type.respond_to?(:db_type) || CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
+      CONVERTERS[type] || type.respond_to?(:db_type) ? TypeConverters.to_other(direction, value, type) : value
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
