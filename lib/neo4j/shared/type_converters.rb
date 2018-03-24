@@ -368,9 +368,9 @@ module Neo4j::Shared
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
     def primitive_type(attr)
       case
-      when serialized_properties_keys.include?(attr)
+      when serialized_properties.include?(attr)
         serialized_properties[attr]
-      when magic_typecast_properties_keys.include?(attr)
+      when magic_typecast_properties.include?(attr)
         magic_typecast_properties[attr]
       else
         fetch_upstream_primitive(attr)
