@@ -22,3 +22,8 @@ neo4jrb_spatial
 ---------------
 
 The `neo4jrb_spatial <https://github.com/neo4jrb/neo4jrb_spatial>` gem add the ability to work with the Neo4j Spatial server plugin via the ``neo4j`` and ``neo4j-core`` gems
+
+neo4j-rspec
+-----------
+
+The `neo4j-rspec <https://github.com/sineed/neo4j-rspec>` gem adds RSpec matchers for easier testing of ``ActiveNode`` and ``ActiveRel`` models.
