@@ -112,6 +112,8 @@ module Neo4j
           when @origin
             origin_type
           else
+            # I think that this line is no longer readed since we require either
+            # `type`, `rel_class`, or `origin` in associations
             (create || exceptional_target_class?) && decorated_rel_type(@name)
           end
         end
