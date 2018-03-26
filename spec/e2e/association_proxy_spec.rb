@@ -181,7 +181,7 @@ describe 'Association Proxy' do
   end
 
   it 'Raises error if attempting to deep eager load "past" a polymorphic association' do
-    expect{math.students.with_associations(homework: :lessons)}.to raise_error
+    expect { math.students.with_associations(homework: :lessons) }.to raise_error
   end
 
   it 'Queries limited times in depth two loops' do
