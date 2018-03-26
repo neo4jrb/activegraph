@@ -212,37 +212,19 @@ describe 'has_one' do
     # since chainable: true is an option, this test both checks to see that default options
     # are honored, and checks to make sure the provided options are merged into the default options
     it 'honors default options' do
-      expect(
-        employee.manager(chainable: true)
-          .instance_variable_get('@query_proxy')
-          .instance_variable_get('@association_labels')
-      ).to eq(nil)
-
-      expect(
-        manager.favorite_subordinate(chainable: true)
-          .instance_variable_get('@query_proxy')
-          .instance_variable_get('@association_labels')
-      ).to eq(false)
+      expect(employee.as(:employee).manager(:manager, :r, chainable: true).to_cypher).to include('MATCH (employee)<-[r:`SUBORDINATES`]-(manager:`Person`)')
+      expect(manager.as(:manager).favorite_subordinate(:favorite, :r, chainable: true).to_cypher).to include('MATCH (manager)-[r:`FAVORITE`]->(favorite)')
     end
 
-    # This is failing with a "NameError: undefined local variable or method `node'".
-    # As far as I can tell, this exact test works fine in console testing, making me think this is
-    # just a problem with the spec. My guess is it has to do with
-    # how the class is stubbed ?
+    it 'allows overriding of default options' do
+      expect(employee.as(:employee).manager(:manager, :r, labels: false, chainable: true).to_cypher).to include('MATCH (employee)<-[r:`SUBORDINATES`]-(manager)')
 
-    # it 'allows overriding of default options' do
-    #   expect(
-    #     node.manager(labels: false, chainable: true)
-    #       .instance_variable_get('@query_proxy')
-    #       .instance_variable_get('@association_labels')
-    #   ).to eq(false)
-
-    #   expect(
-    #     node.favorite_subordinate(labels: true, chainable: true)
-    #       .instance_variable_get('@query_proxy')
-    #       .instance_variable_get('@association_labels')
-    #   ).to eq(true)
-    # end
+      expect(
+        manager.as(:manager)
+               .favorite_subordinate(:favorite, :r, labels: true, chainable: true)
+               .to_cypher
+      ).to include('MATCH (manager)-[r:`FAVORITE`]->(favorite:`Person`)')
+    end
   end
 
   describe 'id methods' do

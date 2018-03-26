@@ -397,18 +397,18 @@ describe 'has_many' do
     end
 
     it 'honors default options' do
-      expect(node.knows.instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(nil)
-      expect(node.best_friend.instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
+      expect(node.as(:person).knows(:known, :r).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known:`Person`)')
+      expect(node.as(:person).best_friend(:best, :r).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best)')
     end
 
     it 'allows overriding of default options' do
-      expect(node.knows(labels: false).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
-      expect(node.best_friend(labels: true).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(true)
+      expect(node.as(:person).knows(:known, :r, labels: false).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known)')
+      expect(node.as(:person).best_friend(:best, :r, labels: true).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best:`Person`)')
     end
 
     it 'provided options are merged into default options' do
-      expect(node.knows({}).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(nil)
-      expect(node.best_friend({}).instance_variable_get('@query_proxy').instance_variable_get('@association_labels')).to eq(false)
+      expect(node.as(:person).knows(:known, :r, {}).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known:`Person`)')
+      expect(node.as(:person).best_friend(:best, :r, {}).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best)')
     end
   end
 
