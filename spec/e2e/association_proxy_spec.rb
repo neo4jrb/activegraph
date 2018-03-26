@@ -8,6 +8,7 @@ describe 'Association Proxy' do
       has_many :out, :lessons, rel_class: :LessonEnrollment
       has_many :in, :exams, model_class: :Exam, origin: :students
       has_one :out, :favorite_lesson, type: nil, model_class: :Lesson
+      has_many :out, :homework, type: :HOMEWORK, model_class: %w[Lesson Exam]
     end
 
     stub_active_rel_class('LessonEnrollment') do
@@ -177,6 +178,10 @@ describe 'Association Proxy' do
     expect_queries(1) do
       science.students.with_associations(lessons: :exams_given).flat_map(&:lessons).flat_map(&:exams_given)
     end
+  end
+
+  it 'Raises error if attempting to deep eager load "past" a polymorphic association' do
+    expect{math.students.with_associations(homework: :lessons)}.to raise_error
   end
 
   it 'Queries limited times in depth two loops' do
