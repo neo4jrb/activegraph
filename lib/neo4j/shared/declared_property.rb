@@ -17,7 +17,7 @@ module Neo4j::Shared
       @name_string = name.to_s
       @type = options[:type]
       @typecaster = options[:typecaster]
-      @default_value = options[:default] || options[:default_value]
+      @default_value = options[:default]
       @options = options
       fail_invalid_options!
     end
@@ -80,7 +80,7 @@ module Neo4j::Shared
 
     # Tweaks properties
     def register_magic_properties
-      options[:type] ||= Neo4j::Config.timestamp_type if timestamp_prop?
+      @type ||= options[:type] = Neo4j::Config.timestamp_type if timestamp_prop?
 
       register_magic_typecaster
       register_type_converter
@@ -91,18 +91,18 @@ module Neo4j::Shared
     end
 
     def register_magic_typecaster
-      found_typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
+      found_typecaster = Neo4j::Shared::TypeConverters.typecaster_for(type)
       return unless found_typecaster && found_typecaster.respond_to?(:primitive_type)
-      options[:typecaster] = found_typecaster
-      @magic_typecaster = options[:type]
-      options[:type] = found_typecaster.primitive_type
+      @typecaster = options[:type] = found_typecaster
+      @magic_typecaster = type
+      @type = options[:type] = found_typecaster.primitive_type
     end
 
     def register_type_converter
       converter = options[:serializer]
       return unless converter
-      options[:type]        = converter.convert_type
-      options[:typecaster]  = Neo4j::Shared::TypeConverters::ObjectConverter
+      @type        = converter.convert_type
+      @typecaster  = Neo4j::Shared::TypeConverters::ObjectConverter
       Neo4j::Shared::TypeConverters.register_converter(converter)
     end
   end
