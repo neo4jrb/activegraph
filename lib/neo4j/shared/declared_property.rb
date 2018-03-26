@@ -10,14 +10,14 @@ module Neo4j::Shared
     attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster, :type, :typecaster, :default_value
     alias default default_value
 
-    def initialize(name, type: nil, typecaster: nil, default_value: nil, default: default_value, **options)
+    def initialize(name, type: nil, **options)
       fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
       fail TypeError, "can't convert #{name.class} into Symbol" unless name.respond_to?(:to_sym)
       @name = @name_sym = name.to_sym
       @name_string = name.to_s
-      @type = type
-      @typecaster = typecaster
-      @default_value = default
+      @type = options[:type]
+      @typecaster = options[:typecaster]
+      @default_value = options[:default] || options[:default_value]
       @options = options
       fail_invalid_options!
     end
