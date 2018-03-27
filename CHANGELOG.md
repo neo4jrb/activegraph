@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.1.7] 2018-03-27
+
+## Fixed
+
+- Created helpful error message to AssociationTree (thanks @thefliik / see #1488)
+
 ## [9.1.6] 2018-03-27
 
 ## Fixed
