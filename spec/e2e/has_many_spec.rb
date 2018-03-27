@@ -387,12 +387,28 @@ describe 'has_many' do
 
   describe 'association "getter" options' do
     before do
+      Person.has_many :out, :best_friend, model_class: 'Person', type: nil, labels: false
       node.knows << friend1
       friend1.knows << friend2
     end
 
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       expect(node.knows(rel_length: :any).to_a).to match_array([friend1, friend2])
+    end
+
+    it 'honors default options' do
+      expect(node.as(:person).knows(:known, :r).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known:`Person`)')
+      expect(node.as(:person).best_friend(:best, :r).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best)')
+    end
+
+    it 'allows overriding of default options' do
+      expect(node.as(:person).knows(:known, :r, labels: false).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known)')
+      expect(node.as(:person).best_friend(:best, :r, labels: true).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best:`Person`)')
+    end
+
+    it 'provided options are merged into default options' do
+      expect(node.as(:person).knows(:known, :r, {}).to_cypher).to include('MATCH (person)-[r:`KNOWS`]->(known:`Person`)')
+      expect(node.as(:person).best_friend(:best, :r, {}).to_cypher).to include('MATCH (person)-[r:`BEST_FRIEND`]->(best)')
     end
   end
 
