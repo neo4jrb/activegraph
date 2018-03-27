@@ -80,7 +80,7 @@ module Neo4j::Shared
 
     # Tweaks properties
     def register_magic_properties
-      @type ||= options[:type] = Neo4j::Config.timestamp_type if timestamp_prop?
+      @type ||= Neo4j::Config.timestamp_type if timestamp_prop?
 
       register_magic_typecaster
       register_type_converter
@@ -93,9 +93,9 @@ module Neo4j::Shared
     def register_magic_typecaster
       found_typecaster = Neo4j::Shared::TypeConverters.typecaster_for(type)
       return unless found_typecaster && found_typecaster.respond_to?(:primitive_type)
-      @typecaster = options[:type] = found_typecaster
+      @typecaster = found_typecaster
       @magic_typecaster = type
-      @type = options[:type] = found_typecaster.primitive_type
+      @type = found_typecaster.primitive_type
     end
 
     def register_type_converter
