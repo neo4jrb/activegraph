@@ -26,6 +26,12 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.has_rdoc = true
   s.extra_rdoc_files = %w( README.md )
   s.rdoc_options = ['--quiet', '--title', 'Neo4j.rb', '--line-numbers', '--main', 'README.rdoc', '--inline-source']
+  s.metadata    = {
+    "homepage_uri" => "http://neo4jrb.io/",
+    "changelog_uri" => "https://github.com/neo4jrb/neo4j/blob/master/CHANGELOG.md",
+    "source_code_uri" => "https://github.com/neo4jrb/neo4j/",
+    "bug_tracker_uri" => "https://github.com/neo4jrb/neo4j/issues",
+  }
 
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_dependency('activemodel', '>= 4.0')
