@@ -197,6 +197,8 @@ describe 'has_one' do
         has_many :out, :subordinates, type: nil, model_class: self
         has_one :in, :manager, model_class: self, origin: :subordinates
       end
+
+      Person.has_one :out, :favorite_subordinate, type: :FAVORITE, model_class: 'Person', labels: false
     end
 
     let(:manager) { Person.create }
@@ -205,6 +207,23 @@ describe 'has_one' do
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       manager.subordinates << employee
       expect(employee.manager(rel_length: 1)).to eq(manager)
+    end
+
+    # since chainable: true is an option, this test both checks to see that default options
+    # are honored, and checks to make sure the provided options are merged into the default options
+    it 'honors default options' do
+      expect(employee.as(:employee).manager(:manager, :r, chainable: true).to_cypher).to include('MATCH (employee)<-[r:`SUBORDINATES`]-(manager:`Person`)')
+      expect(manager.as(:manager).favorite_subordinate(:favorite, :r, chainable: true).to_cypher).to include('MATCH (manager)-[r:`FAVORITE`]->(favorite)')
+    end
+
+    it 'allows overriding of default options' do
+      expect(employee.as(:employee).manager(:manager, :r, labels: false, chainable: true).to_cypher).to include('MATCH (employee)<-[r:`SUBORDINATES`]-(manager)')
+
+      expect(
+        manager.as(:manager)
+               .favorite_subordinate(:favorite, :r, labels: true, chainable: true)
+               .to_cypher
+      ).to include('MATCH (manager)-[r:`FAVORITE`]->(favorite:`Person`)')
     end
   end
 
