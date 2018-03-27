@@ -101,7 +101,7 @@ module Neo4j::Shared
     end
 
     class BooleanConverter < BaseConverter
-      FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F)
+      FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F).to_set
 
       class << self
         def converted?(value)
@@ -362,24 +362,24 @@ module Neo4j::Shared
 
     def converted_property(type, value, direction)
       return nil if value.nil?
-      type.respond_to?(:db_type) || TypeConverters::CONVERTERS[type] ? TypeConverters.to_other(direction, value, type) : value
+      CONVERTERS[type] || type.respond_to?(:db_type) ? TypeConverters.to_other(direction, value, type) : value
     end
 
     # If the attribute is to be typecast using a custom converter, which converter should it use? If no, returns the type to find a native serializer.
     def primitive_type(attr)
       case
-      when self.serialized_properties_keys.include?(attr)
+      when serialized_properties.include?(attr)
         serialized_properties[attr]
-      when self.magic_typecast_properties_keys.include?(attr)
-        self.magic_typecast_properties[attr]
+      when magic_typecast_properties.include?(attr)
+        magic_typecast_properties[attr]
       else
-        self.fetch_upstream_primitive(attr)
+        fetch_upstream_primitive(attr)
       end
     end
 
     # Returns true if the property isn't defined in the model or if it is nil
     def skip_conversion?(obj, attr, value)
-      !obj.class.attributes[attr] || value.nil?
+      value.nil? || !obj.class.attributes.key?(attr)
     end
 
     class << self
