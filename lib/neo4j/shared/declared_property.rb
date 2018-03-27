@@ -7,13 +7,17 @@ module Neo4j::Shared
     include Neo4j::Shared::DeclaredProperty::Index
 
     ILLEGAL_PROPS = %w(from_node to_node start_node end_node)
-    attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster
+    attr_reader :name, :name_string, :name_sym, :options, :magic_typecaster, :type, :typecaster, :default_value
+    alias default default_value
 
     def initialize(name, options = {})
       fail IllegalPropertyError, "#{name} is an illegal property" if ILLEGAL_PROPS.include?(name.to_s)
       fail TypeError, "can't convert #{name.class} into Symbol" unless name.respond_to?(:to_sym)
       @name = @name_sym = name.to_sym
       @name_string = name.to_s
+      @type = options[:type]
+      @typecaster = options[:typecaster]
+      @default_value = options[:default]
       @options = options
       fail_invalid_options!
     end
@@ -55,19 +59,6 @@ module Neo4j::Shared
       register_magic_properties
     end
 
-    def type
-      options[:type]
-    end
-
-    def typecaster
-      options[:typecaster]
-    end
-
-    def default_value
-      options[:default]
-    end
-    alias default default_value
-
     def fail_invalid_options!
       case
       when index?(:exact) && constraint?(:unique)
@@ -89,7 +80,7 @@ module Neo4j::Shared
 
     # Tweaks properties
     def register_magic_properties
-      options[:type] ||= Neo4j::Config.timestamp_type if timestamp_prop?
+      @type ||= Neo4j::Config.timestamp_type if timestamp_prop?
 
       register_magic_typecaster
       register_type_converter
@@ -100,18 +91,18 @@ module Neo4j::Shared
     end
 
     def register_magic_typecaster
-      found_typecaster = Neo4j::Shared::TypeConverters.typecaster_for(options[:type])
+      found_typecaster = Neo4j::Shared::TypeConverters.typecaster_for(type)
       return unless found_typecaster && found_typecaster.respond_to?(:primitive_type)
-      options[:typecaster] = found_typecaster
-      @magic_typecaster = options[:type]
-      options[:type] = found_typecaster.primitive_type
+      @typecaster = found_typecaster
+      @magic_typecaster = type
+      @type = found_typecaster.primitive_type
     end
 
     def register_type_converter
       converter = options[:serializer]
       return unless converter
-      options[:type]        = converter.convert_type
-      options[:typecaster]  = Neo4j::Shared::TypeConverters::ObjectConverter
+      @type        = converter.convert_type
+      @typecaster  = Neo4j::Shared::TypeConverters::ObjectConverter
       Neo4j::Shared::TypeConverters.register_converter(converter)
     end
   end
