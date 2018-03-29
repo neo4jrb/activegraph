@@ -163,7 +163,7 @@ Configuring Faraday (HTTP only)
       # If you need to set options which would normally be the second argument of `Faraday.new`, you can do the following:
       faraday.options[:open_timeout] = 5
       faraday.options[:timeout] = 65
-      faraday.options[:ssl] = { verify: true }
+      # faraday.options[:ssl] = { verify: true }
     end
   }
 
