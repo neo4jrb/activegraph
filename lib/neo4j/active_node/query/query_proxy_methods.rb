@@ -258,6 +258,9 @@ module Neo4j
           new_query, pluck_proc = if self.query.clause?(:order)
                                     [self.query.with(identity),
                                      proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
+                                  elsif func == LAST
+                                    [self.order({order_property => :DESC}).limit(1),
+                                      proc { |var| var }]
                                   else
                                     [self.order(order_property).limit(1),
                                      proc { |var| var }]
