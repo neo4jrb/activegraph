@@ -259,7 +259,7 @@ module Neo4j
                                     [self.query.with(identity),
                                      proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
                                   elsif func == LAST
-                                    [self.order({order_property => :DESC}).limit(1),
+                                    [self.order(order_property => :DESC).limit(1),
                                       proc { |var| var }]
                                   else
                                     [self.order(order_property).limit(1),
