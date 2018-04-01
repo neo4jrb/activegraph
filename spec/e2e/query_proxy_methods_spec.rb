@@ -177,6 +177,11 @@ describe 'query_proxy_methods' do
   end
 
   describe 'first and last' do
+    it 'returns different objects' do
+      expect(Student.all.count).to be > 1
+      expect(Student.all.first).to_not eq(Student.all.last)
+    end
+
     it 'returns objects across multiple associations' do
       jimmy.lessons << science
       science.teachers << mr_adams
