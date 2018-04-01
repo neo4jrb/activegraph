@@ -255,11 +255,12 @@ module Neo4j
         end
 
         def first_and_last(func, target)
+          ord_prop = (func == LAST ? {order_property => :DESC} : order_property)
           new_query, pluck_proc = if self.query.clause?(:order)
                                     [self.query.with(identity),
                                      proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
                                   else
-                                    [self.order(order_property).limit(1),
+                                    [self.order(ord_prop).limit(1),
                                      proc { |var| var }]
                                   end
           query_with_target(target) do |var|
