@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.2.1] 2018-04-01
+
+## Fixed
+
+- Fixed .first and .last methods for QueryProxyMethods (thanks @kopylovvlad / see #1494)
+
 ## [9.2.0] 2018-03-27
 
 ## Added
