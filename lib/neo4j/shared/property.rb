@@ -4,7 +4,11 @@ module Neo4j::Shared
 
     include Neo4j::Shared::MassAssignment
     include Neo4j::Shared::TypecastedAttributes
-    include ActiveModel::Dirty
+
+    included do
+      include ActiveModel::Attributes
+      include ActiveModel::Dirty
+    end
 
     class UndefinedPropertyError < Neo4j::Error; end
     class MultiparameterAssignmentError < Neo4j::Error; end
@@ -206,7 +210,7 @@ module Neo4j::Shared
         attributes[name.to_s] = declared_properties[name]
         define_method("#{name}=") do |value|
           typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
+          attribute_will_change!(name) unless typecast_value == read_attribute(name)
           super(value)
         end
       end

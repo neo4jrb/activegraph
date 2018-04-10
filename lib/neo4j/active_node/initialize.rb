@@ -10,7 +10,12 @@ module Neo4j::ActiveNode::Initialize
   def init_on_load(persisted_node, properties)
     self.class.extract_association_attributes!(properties)
     @_persisted_obj = persisted_node
-    changed_attributes && changed_attributes.clear
+    if respond_to?(:clear_changes_information)
+      clear_changes_information
+    else
+      # Older version of ActiveModel
+      changed_attributes && changed_attributes.clear
+    end
     @attributes = convert_and_assign_attributes(properties)
   end
 

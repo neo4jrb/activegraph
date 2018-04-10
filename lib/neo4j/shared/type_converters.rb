@@ -331,7 +331,7 @@ module Neo4j::Shared
     # @param [Hash] properties A hash of symbol-keyed properties for conversion.
     def convert_properties_to(obj, medium, properties)
       direction = medium == :ruby ? :to_ruby : :to_db
-      properties.each_pair do |key, value|
+      properties.to_h.each_pair do |key, value|
         next if skip_conversion?(obj, key, value)
         properties[key] = convert_property(key, value, direction)
       end
