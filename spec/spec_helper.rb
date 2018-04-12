@@ -242,8 +242,10 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_id_property_constraint(model, with_constraint)
-    return if model.id_property_info[:type][:constraint] == false || !with_constraint
+    # return if model.id_property_info[:type][:constraint] == false || !with_constraint
 
+    puts 'model.mapped_label_name', model.mapped_label_name.inspect
+    puts 'model.id_property_name', model.id_property_name
     create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
   end
 

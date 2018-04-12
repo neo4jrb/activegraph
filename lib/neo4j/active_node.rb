@@ -29,9 +29,9 @@ module Neo4j
     include Neo4j::Shared::Identity
     include Neo4j::Shared::Marshal
     include Neo4j::ActiveNode::Initialize
-    include Neo4j::ActiveNode::IdProperty
     include Neo4j::Shared::SerializedProperties
     include Neo4j::ActiveNode::Property
+    include Neo4j::ActiveNode::IdProperty
     include Neo4j::ActiveNode::Reflection
     include Neo4j::ActiveNode::Persistence
     include Neo4j::ActiveNode::Validations
@@ -47,7 +47,7 @@ module Neo4j
     include Neo4j::Shared::PermittedAttributes
 
     def initialize(args = nil)
-      self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
+      # self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
 
       args = sanitize_input_parameters(args)
       super(args)

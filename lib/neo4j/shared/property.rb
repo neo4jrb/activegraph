@@ -6,7 +6,8 @@ module Neo4j::Shared
     include Neo4j::Shared::TypecastedAttributes
 
     included do
-      include ActiveModel::Attributes
+      # include ActiveModel::Attributes if defined?(ActiveModel::Attributes)
+      include ActiveModel::AttributeMethods # if defined?(ActiveModel::AttributeMethods)
       include ActiveModel::Dirty
     end
 

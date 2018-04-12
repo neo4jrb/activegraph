@@ -23,6 +23,8 @@ end
 
 gem 'listen', '< 3.1'
 
+# gem 'activemodel', '~> 5.1.0'
+# gem 'activesupport', '~> 5.1.0'
 if RUBY_VERSION.to_f < 2.2
   gem 'activemodel', '~> 4.2'
   gem 'activesupport', '~> 4.2'
