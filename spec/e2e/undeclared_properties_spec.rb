@@ -42,6 +42,20 @@ describe Neo4j::ActiveNode do
       expect(person[:foo]).to eq(123)
       expect(get_value_from_db(person, :foo)).to eq(123)
     end
+
+    context 'with Timestamps included' do
+      before(:each) do
+        stub_active_node_class('PersonWithTimestamps') do
+          include Neo4j::UndeclaredProperties
+          include Neo4j::Timestamps
+          property :name, type: String
+        end
+      end
+
+      subject { PersonWithTimestamps.create(name: 'Jim') }
+
+      it_should_behave_like 'timestamped model'
+    end
   end
 
   describe '#save!' do
