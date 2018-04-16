@@ -1,5 +1,7 @@
 # Welcome to Neo4j.rb
 
+**WARNING: This gem is currently incompatible with Rails 5.2.  If you would like to use this gem, I'd suggest sticking with Rails 5.1 for now while the problem is being worked on.  See [this issue](https://github.com/neo4jrb/neo4j/issues/1496) for more details**
+
 ## Code Status
 
 [![Actively Maintained](https://img.shields.io/badge/Maintenance%20Level-Actively%20Maintained-green.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
