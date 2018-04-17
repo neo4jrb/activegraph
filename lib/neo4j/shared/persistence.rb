@@ -14,7 +14,7 @@ module Neo4j::Shared
       props = props_for_update
       neo4j_query(query_as(:n).set(n: props))
       _persisted_obj.props.merge!(props)
-      changed_attributes.clear
+      changed_attributes_clear!
     end
 
     def skip_update?
@@ -164,7 +164,7 @@ module Neo4j::Shared
     def reload
       return self if new_record?
       association_proxy_cache.clear if respond_to?(:association_proxy_cache)
-      changed_attributes && changed_attributes.clear
+      changed_attributes_clear!
       unless reload_from_database
         @_deleted = true
         freeze
@@ -202,7 +202,7 @@ module Neo4j::Shared
         neo4j_query(query_as(:n).set(n: db_values))
         db_values.each_pair { |k, v| self.public_send(:"#{k}=", v) }
         _persisted_obj.props.merge!(db_values)
-        db_values.each_key { |k| changed_attributes.delete(k) }
+        changed_attributes_selective_clear!(db_values)
         true
       end
     end
@@ -242,7 +242,7 @@ module Neo4j::Shared
                                  .pluck("#{element_name}.`#{attribute}`").first
       return false unless new_attribute
       self[attribute] = new_attribute
-      changed_attributes.delete(attribute)
+      set_attribute_was(attribute, new_attribute)
       true
     end
 
