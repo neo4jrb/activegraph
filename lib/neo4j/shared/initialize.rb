@@ -25,6 +25,8 @@ module Neo4j::Shared
       end
     end
 
+    # We should be using #clear_changes_information
+    # but right now we don't use `ActiveModel` attributes correctly and so it doesn't work
     def changed_attributes_clear!
       @attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new
     end
