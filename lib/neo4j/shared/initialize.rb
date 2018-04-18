@@ -25,6 +25,10 @@ module Neo4j::Shared
       end
     end
 
+    def changed_attributes_clear!
+      @attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new
+    end
+
     def changed_attributes_selective_clear!(hash_to_clear)
       attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new(changed_attributes)
       hash_to_clear.keys.each { |k| attributes_changed_by_setter.delete(k) }
