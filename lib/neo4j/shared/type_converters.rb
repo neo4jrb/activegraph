@@ -335,6 +335,9 @@ module Neo4j::Shared
         next if skip_conversion?(obj, key, value)
         properties[key] = convert_property(key, value, direction)
       end
+    rescue => e
+      require 'pry'
+      binding.pry
     end
 
     # Converts a single property from its current format to its db- or Ruby-expected output type.

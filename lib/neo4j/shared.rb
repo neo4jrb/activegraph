@@ -35,7 +35,7 @@ module Neo4j
 
     included do
       self.include_root_in_json = Neo4j::Config.include_root_in_json
-      @_declared_properties ||= Neo4j::Shared::DeclaredProperties.new(self)
+      @declared_properties ||= Neo4j::Shared::DeclaredProperties.new(self)
 
       def self.i18n_scope
         :neo4j

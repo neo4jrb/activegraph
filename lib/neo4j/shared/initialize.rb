@@ -13,6 +13,7 @@ module Neo4j::Shared
 
     def convert_and_assign_attributes(properties)
       @attributes ||= Hash[self.class.attributes_nil_hash]
+      binding.pry
       stringify_attributes!(@attributes, properties)
       self.default_properties = properties if respond_to?(:default_properties=)
       self.class.declared_properties.convert_properties_to(self, :ruby, @attributes)

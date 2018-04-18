@@ -1,3 +1,8 @@
+# Hash#transform_values was introduced in Ruby 2.4
+# It's still in active_support until Rails 6.0, at which point it's deprecated
+# because Rails requires Ruby >= 2.4
+require 'active_support/core_ext/hash/transform_values'
+
 module Neo4j::Shared
   module Property
     extend ActiveSupport::Concern
@@ -63,7 +68,11 @@ module Neo4j::Shared
     # TODO: use declared_properties instead of self.attributes
     def validate_attributes!(attributes)
       return attributes if attributes.blank?
+      begin
       invalid_properties = attributes.keys.map(&:to_s) - self.attributes.keys
+      rescue => e
+        binding.pry
+      end
       invalid_properties.reject! { |name| self.respond_to?("#{name}=") }
       fail UndefinedPropertyError, "Undefined properties: #{invalid_properties.join(',')}" if !invalid_properties.empty?
     end
@@ -189,7 +198,7 @@ module Neo4j::Shared
       end
 
       def declared_properties
-        @_declared_properties ||= DeclaredProperties.new(self)
+        @declared_properties ||= DeclaredProperties.new(self)
       end
 
       # @return [Hash] A frozen hash of all model properties with nil values. It is used during node loading and prevents

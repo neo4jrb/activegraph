@@ -51,7 +51,7 @@ module Neo4j::Shared
     # The :default option in Neo4j::ActiveNode#property class method allows for setting a default value instead of
     # nil on declared properties. This holds those values.
     def declared_property_defaults
-      @_default_property_values ||= {}
+      @declared_property_defaults ||= {}
     end
 
     def registered_properties
@@ -193,7 +193,7 @@ module Neo4j::Shared
 
     def unregister_property_default(property)
       declared_property_defaults.delete(property)
-      @_default_property_values = nil
+      @declared_property_defaults = nil
     end
 
     def register_magic_typecaster(property)

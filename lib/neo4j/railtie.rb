@@ -73,7 +73,7 @@ module Neo4j
     def final_session_config!(neo4j_config)
       support_deprecated_session_configs!(neo4j_config)
 
-      neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]
+      yaml_config_data.merge(neo4j_config[:session].empty? ? {} : neo4j_config[:session])
     end
 
     def support_deprecated_session_configs!(neo4j_config)

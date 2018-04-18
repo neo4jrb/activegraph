@@ -32,7 +32,7 @@ module Neo4j::Shared
       inject_timestamps!
       props_with_defaults = inject_defaults!(props)
       converted_props = props_for_db(props_with_defaults)
-      return converted_props unless self.class.respond_to?(:default_property_values)
+      return converted_props unless self.class.respond_to?(:properties_with_defaults)
       inject_primary_key!(converted_props)
     end
 

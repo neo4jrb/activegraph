@@ -52,7 +52,7 @@ module Neo4j::ActiveNode::IdProperty
         @default_property = {}
       end
 
-      def default_property_values(instance)
+      def properties_with_defaults(instance)
         default_properties.each_with_object({}) do |(key, block), result|
           result[key] = block.call(instance)
         end
