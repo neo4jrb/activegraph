@@ -31,6 +31,10 @@ matrix:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
 
+    # Testing older versions of ActiveModel
+    - rvm: 2.4.2
+      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8 ACTIVE_MODEL_VERSION=5.1.0
+
     # Older versions of Neo4j with latest version of Ruby
     - rvm: 2.4.2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8
