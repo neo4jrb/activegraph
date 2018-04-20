@@ -23,6 +23,9 @@ end
 
 gem 'listen', '< 3.1'
 
+active_model_version = ENV['ACTIVE_MODEL_VERSION']
+gem 'activemodel', "~> #{active_model_version}" if active_model_version
+
 if RUBY_VERSION.to_f < 2.2
   gem 'activemodel', '~> 4.2'
   gem 'activesupport', '~> 4.2'

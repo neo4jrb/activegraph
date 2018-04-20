@@ -11,6 +11,10 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
+    def mutations_from_database
+      ActiveModel::NullMutationTracker.instance
+    end
+
     def inspect
       attribute_descriptions = inspect_attributes.map do |key, value|
         "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
