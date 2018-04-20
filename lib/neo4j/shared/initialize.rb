@@ -24,5 +24,31 @@ module Neo4j::Shared
         attr[key.freeze] = v
       end
     end
+
+    # We should be using #clear_changes_information
+    # but right now we don't use `ActiveModel` attributes correctly and so it doesn't work
+    def changed_attributes_clear!
+      return if changed_attributes.nil?
+
+      # changed_attributes is frozen starting with ActiveModel 5.2.0
+      # Not a good long term solution
+      if changed_attributes.frozen?
+        @attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new
+      else
+        changed_attributes && changed_attributes.clear
+      end
+    end
+
+    def changed_attributes_selective_clear!(hash_to_clear)
+      # changed_attributes is frozen starting with ActiveModel 5.2.0
+      # Not a good long term solution
+      if changed_attributes.frozen?
+        attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new(changed_attributes)
+        hash_to_clear.keys.each { |k| attributes_changed_by_setter.delete(k) }
+        @attributes_changed_by_setter = attributes_changed_by_setter
+      else
+        hash_to_clear.each_key { |k| changed_attributes.delete(k) }
+      end
+    end
   end
 end

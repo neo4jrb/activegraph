@@ -260,6 +260,7 @@ module Neo4j
                                     [self.query.with(identity),
                                      proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
                                   else
+                                    ord_prop = (func == LAST ? {order_property => :DESC} : order_property)
                                     [self.order(ord_prop).limit(1),
                                      proc { |var| var }]
                                   end
