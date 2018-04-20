@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.2.2] 2018-04-19
+
+## Fixed
+
+- Introduced a fix to account for the fact that `ActiveModel` now returns a frozen `Hash` for `changed_attributes` (thanks @anamba and subvertallchris / see #1496 and #1499)
+
 ## [9.2.1] 2018-04-01
 
 ## Fixed
