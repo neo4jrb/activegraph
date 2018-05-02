@@ -9,7 +9,7 @@ devise-neo4j
 cancancan-neo4j
 --------------------
 
-The `cancancan-neo4j gem <https://github.com/ProjectVegas/cancancan-neo4j>`_ is the neo4j adapter for the `CanCanCan <https://github.com/canCanCommunity/cancancan>`_ authorisation library. This gem will help you seamlessly integrate cancan gem to your Ruby/Rails app wich has Neo4j as database.
+The `cancancan-neo4j gem <https://github.com/CanCanCommunity/cancancan-neo4j>`_ is the neo4j adapter for the `CanCanCan <https://github.com/canCanCommunity/cancancan>`_ authorisation library. This gem will help you seamlessly integrate cancan gem to your Ruby/Rails app wich has Neo4j as database.
 
 neo4j-paperclip
 ---------------
