@@ -36,7 +36,7 @@ module Neo4j
 
       def constantized_label(label)
         "#{association_model_namespace}::#{label}".constantize
-      rescue NameError
+      rescue NameError, LoadError
         nil
       end
 
