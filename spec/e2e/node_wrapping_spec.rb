@@ -44,6 +44,30 @@ describe 'Node Wrapping' do
 
     let(:result) { Neo4j::ActiveBase.new_query.match("(n#{label_string})").pluck(:n).first }
 
+    context 'constantize errors' do
+      let(:labels) { %w[MissingClass] }
+      before do
+        allow(ActiveSupport::Inflector).to receive(:constantize).with('::MissingClass').and_raise(error_class)
+      end
+
+      context 'NameError' do
+        let(:error_class) { NameError }
+
+        it 'should ignore the label' do
+          expect(result).to be_kind_of(::Neo4j::Core::Node)
+        end
+      end
+
+      # See https://github.com/neo4jrb/neo4j/pull/1500
+      context 'LoadError' do
+        let(:error_class) { LoadError }
+
+        it 'should ignore the label' do
+          expect(result).to be_kind_of(::Neo4j::Core::Node)
+        end
+      end
+    end
+
     {
       %w(ExtraneousLabel) => '::Neo4j::Core::Node',
       %w(Post) => 'Post',
