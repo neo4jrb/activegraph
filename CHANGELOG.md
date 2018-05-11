@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.2.3] 2018-05-10
+
+## Fixed
+
+- Rescue when node labels cause a LoadError in addition to a NameError (thanks @Grafikart / see #1500)
+
 ## [9.2.2] 2018-04-19
 
 ## Fixed
