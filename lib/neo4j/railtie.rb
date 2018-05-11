@@ -62,6 +62,7 @@ module Neo4j
     def setup!(neo4j_config = empty_config)
       wait_for_connection = neo4j_config.wait_for_connection
       type, url, path, options = final_session_config!(neo4j_config).values_at(:type, :url, :path, :options)
+      type ||= URI(url).scheme if url
       register_neo4j_cypher_logging(type || default_session_type)
 
       Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
