@@ -36,4 +36,4 @@ test:
   url: http://localhost:7575
 YAML
 
-create_file 'config/neo4j.yml', yaml_data
+create_file 'config/neo4j.yml.example', yaml_data
