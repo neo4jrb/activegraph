@@ -2,7 +2,7 @@ FROM ruby:latest
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y locales && \
-    apt-get install -y build-essential libjson0 libjson0-dev && \
+    apt-get install -y build-essential libjson-c-dev && \
     apt-get clean -y
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
