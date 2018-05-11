@@ -143,7 +143,7 @@ Neo4j requires authentication by default but if you install using the built-in :
 Configuring Bolt + TLS
 ^^^^^^^^^^^^^^^^^^^^^^
 
-When connecting to Neo4j via Bolt a TLS / SSL is used by default.  For Neo4j instances using certificates available on many computers (like cloud providers), this should mean that you need only to specify the ``bolt://`` URL and Ruby will find the appropriate certificate.  If you are installing and host Neo4j yourself, you'll need to manually provide the certificate configured by the server (by default this is in the Neo4j server installation under ``certificates/neo4j.cert``).  This path can be configured in Rails like so:
+When connecting to Neo4j via Bolt a TLS / SSL is used by default.  For Neo4j instances using certificates from trusted certificate authorities (like cloud providers), this should mean that you need only to specify the ``bolt://`` URL and Ruby will find the appropriate certificate.  If you are installing and host Neo4j yourself, you'll need to manually provide the certificate configured by the server (by default this is in the Neo4j server installation under ``certificates/neo4j.cert``).  This path can be configured in Rails like so:
 
 .. code-block:: ruby
 
