@@ -27,7 +27,7 @@ module Neo4j
       FileUtils.mkdir_p('db/neo4j-migrate')
     end
 
-    delegate :query, to: Neo4j::Session
+    # delegate :query, to: Neo4j::Session
 
     class AddIdProperty < Neo4j::Migration
       include Neo4j::Migrations::Helpers::IdProperty
