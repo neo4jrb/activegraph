@@ -163,6 +163,8 @@ The ``config.neo4j.session.options`` is simply passed into the ``Bolt`` adaptor 
 
 Inside of the gem, the ``ssl`` option is simply passed into the ``set_params`` method called on a ``OpenSSL::SSL::SSLContext.new`` object.  If you need a more advanced configuration please refer to the documentation for the Ruby ``OpenSSL`` API.
 
+SSL / TLS is configured to be used by default, but if you need to disable it you can define ``{ssl: false}`` either in ``config.neo4j.session.options`` in Rails or in the options passed to a new ``Neo4j::Core::CypherSession::Adaptors::Bolt``
+
 Configuring Faraday (HTTP only)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
