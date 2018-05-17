@@ -335,6 +335,7 @@ module FixingRSpecHelpers
   end
 end
 
+require 'neo4j-community' if RUBY_PLATFORM == 'java'
 Neo4j::ActiveBase.current_adaptor = session_adaptor
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
