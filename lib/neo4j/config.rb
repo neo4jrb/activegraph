@@ -70,6 +70,10 @@ module Neo4j
         configuration[key.to_s]
       end
 
+      def fetch(key, default)
+        configuration.fetch(key, default)
+      end
+
       # Remove the value of a config entry.
       #
       # @param [Symbol] key the key of the configuration entry to delete

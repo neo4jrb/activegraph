@@ -38,6 +38,7 @@ module Neo4j
 
     console do
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
+      Neo4j::Config[:verbose_query_logs] = false
     end
 
     # Starting Neo after :load_config_initializers allows apps to
