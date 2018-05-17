@@ -300,7 +300,7 @@ session_adaptor = case TEST_SESSION_MODE
                     when 'http'
                       Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
                     when 'bolt'
-                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
+                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc, ssl: false) # , logger_level: Logger::DEBUG)
                     else
                       fail "Invalid scheme for NEO4J_URL: #{scheme} (expected `http` or `bolt`)"
                     end
