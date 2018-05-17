@@ -26,8 +26,6 @@ require 'tmpdir'
 require 'logger'
 
 require 'neo4j-core'
-require 'neo4j-server'
-require 'neo4j-embedded' if RUBY_PLATFORM == 'java'
 require 'neo4j'
 require 'unique_class'
 
