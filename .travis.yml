@@ -14,8 +14,8 @@ cache: bundler
 sudo: false
 jdk: oraclejdk8
 rvm:
-  - 2.4.2
-  - 2.2.10
+  - 2
+  - 2.2
   - jruby-9.1.14.0
 env:
   global:
@@ -25,39 +25,39 @@ env:
     - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.3.1
 matrix:
   include:
-    - rvm: 2.4.2
+    - rvm: 2
       jdk:
       before_script:
       script: "bundle exec rubocop"
       env: "RUBOCOP=true"
 
     # Testing older versions of ActiveModel
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8 ACTIVE_MODEL_VERSION=5.1.0
 
     # Older versions of Neo4j with latest version of Ruby
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8
 
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.8
 
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.7
 
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.7
 
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
 
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
 
     # Older versions of Neo4j with latest version of jRuby
-    - rvm: jruby-9.1.14.0
+    - rvm: jruby-9
       env: NEO4J_VERSION=community-2.3.11
 
     # Enterprise
-    - rvm: 2.4.2
+    - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=enterprise-3.3.1
