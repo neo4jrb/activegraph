@@ -16,7 +16,7 @@ jdk: oraclejdk8
 rvm:
   - 2
   - 2.2
-  - jruby-9.1.14.0
+  - jruby-9
 env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
