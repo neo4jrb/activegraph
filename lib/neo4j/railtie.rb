@@ -75,7 +75,7 @@ module Neo4j
       support_deprecated_session_configs!(neo4j_config)
 
       (neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]).dup.tap do |result|
-        result[:type] ||= URI(url).scheme if url
+        result[:type] ||= URI(result[:url]).scheme if result[:url]
       end
     end
 
