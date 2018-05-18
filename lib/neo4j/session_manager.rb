@@ -1,8 +1,5 @@
 require 'active_support/core_ext/hash'
 require 'active_support/ordered_options'
-require 'neo4j/core/cypher_session/adaptors/http'
-require 'neo4j/core/cypher_session/adaptors/bolt'
-require 'neo4j/core/cypher_session/adaptors/embedded'
 
 module Neo4j
   class SessionManager
@@ -34,17 +31,7 @@ module Neo4j
       # TODO: Deprecate embedded_db and http in favor of embedded and http
       #
       def cypher_session_adaptor(type, path_or_url, options = {})
-        case type.to_sym
-        when :embedded_db, :embedded
-          Neo4j::Core::CypherSession::Adaptors::Embedded.new(path_or_url, options)
-        when :http
-          Neo4j::Core::CypherSession::Adaptors::HTTP.new(path_or_url, options)
-        when :bolt
-          Neo4j::Core::CypherSession::Adaptors::Bolt.new(path_or_url, options)
-        else
-          extra = ' (`server_db` has been replaced by `http` or `bolt`)'
-          fail ArgumentError, "Invalid session type: #{type.inspect}#{extra if type.to_sym == :server_db}"
-        end
+        (options.delete(:adaptor_class) || adaptor_class(type.to_sym)).new(path_or_url, options)
       end
 
       def java_platform?
@@ -67,6 +54,25 @@ module Neo4j
               sleep(1)
             end
           end
+        end
+      end
+
+      private
+
+      def adaptor_class(type)
+        case type
+        when :embedded_db, :embedded
+          require 'neo4j/core/cypher_session/adaptors/embedded'
+          Neo4j::Core::CypherSession::Adaptors::Embedded
+        when :http
+          require 'neo4j/core/cypher_session/adaptors/http'
+          Neo4j::Core::CypherSession::Adaptors::HTTP
+        when :bolt
+          require 'neo4j/core/cypher_session/adaptors/bolt'
+          Neo4j::Core::CypherSession::Adaptors::Bolt
+        else
+          extra = ' (`server_db` has been replaced by `http` or `bolt`)'
+          fail ArgumentError, "Invalid session type: #{type.inspect}#{extra if type == :server_db}"
         end
       end
     end
