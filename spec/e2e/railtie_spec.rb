@@ -169,5 +169,19 @@ module Rails
         end
       end
     end
+
+    describe '#cypher_session_adaptor' do
+      it 'should return bolt http' do
+        expect(Neo4j::SessionManager.send(:cypher_session_adaptor, double, double,
+                                          adaptor_class: Neo4j::Core::CypherSession::Adaptors::HTTP))
+          .to be_a(Neo4j::Core::CypherSession::Adaptors::HTTP)
+      end
+
+      it 'should return bolt adapater' do
+        allow_any_instance_of(Neo4j::Core::CypherSession::Adaptors::Bolt).to receive(:open_socket)
+        expect(Neo4j::SessionManager.send(:cypher_session_adaptor, :bolt, ENV['NEO4J_BOLT_URL']))
+          .to be_a(Neo4j::Core::CypherSession::Adaptors::Bolt)
+      end
+    end
   end
 end
