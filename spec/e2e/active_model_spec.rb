@@ -857,12 +857,12 @@ describe 'Neo4j::ActiveNode' do
         p.friends << person_friend
       end
     end
-    let(:person_friend) {
+    let(:person_friend) do
       Person.create do |p|
         p.name = 'Bar'
         p.friends << person_friend_friend
       end
-    }
+    end
     let(:person_friend_friend) { Person.create(name: 'Baz') }
 
     before do
@@ -876,12 +876,12 @@ describe 'Neo4j::ActiveNode' do
     end
 
     it 'should raise an error on persistence' do
-      expect{
+      expect do
         Person.create do |p|
           p.name = 'Foo'
           p.acquaintances << person_friend
         end
-      }.to raise_error(Neo4j::InvalidRelationshipError)
+      end.to raise_error(Neo4j::InvalidRelationshipError)
     end
   end
 
