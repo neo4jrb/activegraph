@@ -859,7 +859,7 @@ describe 'Neo4j::ActiveNode' do
     end
     let(:person_friend) {
       Person.create do |p|
-        p.name = 'Foo'
+        p.name = 'Bar'
         p.friends << person_friend_friend
       end
     }
@@ -873,6 +873,15 @@ describe 'Neo4j::ActiveNode' do
 
     it 'should find acquaintances' do
       expect(person.acquaintances.first).to eq person_friend_friend
+    end
+
+    it 'should raise an error on persistence' do
+      expect{
+        Person.create do |p|
+          p.name = 'Foo'
+          p.acquaintances << person_friend
+        end
+      }.to raise_error(Neo4j::InvalidRelationshipError)
     end
   end
 

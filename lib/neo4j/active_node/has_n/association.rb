@@ -142,7 +142,11 @@ module Neo4j
         end
 
         def _create_relationship(start_object, node_or_nodes, properties)
-          RelFactory.create(start_object, node_or_nodes, properties, self)
+          if relationship_length.nil?
+            RelFactory.create(start_object, node_or_nodes, properties, self)
+          else
+            raise InvalidRelationshipError.new('Cannot create a relation with a rel_length')
+          end
         end
 
         def relationship_class?

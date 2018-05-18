@@ -20,6 +20,7 @@ module Neo4j
   class DeprecatedSchemaDefinitionError < Error; end
 
   class InvalidPropertyOptionsError < Error; end
+  class InvalidRelationshipError < Error; end
 
   class InvalidParameterError < Error; end
 
