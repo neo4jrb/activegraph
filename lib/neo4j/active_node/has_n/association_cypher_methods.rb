@@ -47,7 +47,8 @@ module Neo4j
         }
 
         def cypher_for_rel_length(length)
-          return nil if length.blank?
+          length = relationship_length if length.blank?
+          return nil if length.nil?
 
           validate_rel_length!(length)
 

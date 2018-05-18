@@ -850,6 +850,32 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
+  describe 'finding on complex associations' do
+    let(:person) do
+      Person.create do |p|
+        p.name = 'Foo'
+        p.friends << person_friend
+      end
+    end
+    let(:person_friend) {
+      Person.create do |p|
+        p.name = 'Foo'
+        p.friends << person_friend_friend
+      end
+    }
+    let(:person_friend_friend) { Person.create(name: 'Baz') }
+
+    before do
+      Person.has_many(:out, :friends, model_class: 'Person', type: 'FRIENDS_WITH')
+      Person.has_many(:out, :acquaintances, model_class: 'Person', type: 'FRIENDS_WITH', rel_length: 2)
+      person.reload
+    end
+
+    it 'should find acquaintances' do
+      expect(person.acquaintances.first).to eq person_friend_friend
+    end
+  end
+
   context 'with `ActionController::Parameters`' do
     let(:params) { action_controller_params('prop_with_default' => 'something else') }
     let(:create_params) { params }

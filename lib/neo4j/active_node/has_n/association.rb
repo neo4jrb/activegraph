@@ -9,7 +9,7 @@ module Neo4j
         include Neo4j::ActiveNode::Dependent::AssociationMethods
         include Neo4j::ActiveNode::HasN::AssociationCypherMethods
 
-        attr_reader :type, :name, :relationship, :direction, :dependent, :model_class
+        attr_reader :type, :name, :relationship, :direction, :dependent, :model_class, :relationship_length
 
         def initialize(type, direction, name, options = {type: nil})
           validate_init_arguments(type, direction, name, options)
@@ -182,6 +182,7 @@ module Neo4j
         def apply_vars_from_options(options)
           @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
           @relationship_type = options[:type] && options[:type].to_sym
+          @relationship_length = options[:rel_length]
 
           @model_class = options[:model_class]
           @origin = options[:origin] && options[:origin].to_sym
@@ -205,7 +206,7 @@ module Neo4j
 
         # the ":labels" option is not used by the association per-say.
         # Instead, if provided,it is used by the association getter as a default getter options argument
-        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique, :labels]
+        VALID_ASSOCIATION_OPTION_KEYS = [:type, :origin, :model_class, :rel_class, :dependent, :before, :after, :unique, :labels, :rel_length]
 
         def validate_association_options!(_association_name, options)
           ClassArguments.validate_argument!(options[:model_class], 'model_class')
