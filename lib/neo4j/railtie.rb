@@ -3,9 +3,7 @@ require 'rails/railtie'
 require 'neo4j/session_manager'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
-require 'neo4j/core/cypher_session/adaptors/http'
-require 'neo4j/core/cypher_session/adaptors/bolt'
-require 'neo4j/core/cypher_session/adaptors/embedded'
+require 'neo4j/core/cypher_session/adaptors'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
@@ -63,12 +61,14 @@ module Neo4j
       wait_for_connection = neo4j_config.wait_for_connection
       type, url, path, options = final_session_config!(neo4j_config).values_at(:type, :url, :path, :options)
       type ||= URI(url).scheme if url
-      register_neo4j_cypher_logging(type || default_session_type)
+      type ||= default_session_type
+      options ||= {}
+      register_neo4j_cypher_logging(type, options)
 
-      Neo4j::SessionManager.open_neo4j_session(type || default_session_type,
+      Neo4j::SessionManager.open_neo4j_session(type,
                                                url || path || default_session_path_or_url,
                                                wait_for_connection,
-                                               options || {})
+                                               options)
     end
 
     def final_session_config!(neo4j_config)
@@ -121,7 +121,7 @@ module Neo4j
       end.detect(&:exist?)
     end
 
-    def register_neo4j_cypher_logging(session_type)
+    def register_neo4j_cypher_logging(session_type, options)
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
@@ -130,23 +130,14 @@ module Neo4j
         (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      subscribe_to_session_type_logging!(session_type, logger_proc)
+      subscribe_to_session_type_logging!(session_type, options, logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end
 
-    TYPE_SUBSCRIBERS = {
-      http: Neo4j::Core::CypherSession::Adaptors::HTTP.method(:subscribe_to_request),
-      bolt: Neo4j::Core::CypherSession::Adaptors::Bolt.method(:subscribe_to_request),
-      embedded: Neo4j::Core::CypherSession::Adaptors::Embedded.method(:subscribe_to_transaction)
-    }
-
-    def subscribe_to_session_type_logging!(session_type, logger_proc)
-      if TYPE_SUBSCRIBERS.key?(session_type.to_sym)
-        TYPE_SUBSCRIBERS[session_type.to_sym].call(&logger_proc)
-      else
-        fail ArgumentError, "Invalid session type: #{session_type.inspect} (expected one of #{TYPE_SUBSCRIBERS.keys.inspect})"
-      end
+    def subscribe_to_session_type_logging!(session_type, options, logger_proc)
+      SessionManager.adaptor_class(session_type, options)
+        .send(session_type.to_sym == :embedded ? :subscribe_to_transaction : :subscribe_to_request, &logger_proc)
     end
   end
 end

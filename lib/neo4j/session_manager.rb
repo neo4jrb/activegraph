@@ -14,6 +14,10 @@ module Neo4j
         Neo4j::Core::CypherSession.new(adaptor)
       end
 
+      def adaptor_class(type, options)
+        options[:adaptor_class] || adaptor_class_by_type(type.to_sym)
+      end
+
       protected
 
       def session_type_is_embedded?(session_type)
@@ -31,7 +35,7 @@ module Neo4j
       # TODO: Deprecate embedded_db and http in favor of embedded and http
       #
       def cypher_session_adaptor(type, path_or_url, options = {})
-        (options.delete(:adaptor_class) || adaptor_class(type.to_sym)).new(path_or_url, options)
+        adaptor_class(type, options).new(path_or_url, options)
       end
 
       def java_platform?
@@ -59,7 +63,7 @@ module Neo4j
 
       private
 
-      def adaptor_class(type)
+      def adaptor_class_by_type(type)
         case type
         when :embedded_db, :embedded
           require 'neo4j/core/cypher_session/adaptors/embedded'
