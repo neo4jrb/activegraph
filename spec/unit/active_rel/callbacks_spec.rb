@@ -25,7 +25,6 @@ describe Neo4j::ActiveRel::Callbacks do
 
     before do
       @session = double('Mock Session')
-      allow(Neo4j::Session).to receive(:current).and_return(@session)
       allow(CallbackBar).to receive(:neo4j_session).and_return(session)
 
       allow_any_instance_of(CallbackBar).to receive(:_persisted_obj).and_return(nil)

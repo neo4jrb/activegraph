@@ -101,6 +101,11 @@ Variables
 
     This allows you to tell the gem to wait for up to 60 seconds for Neo4j to be available.  This is useful in environments such as Docker Compose.  This is currently only for Rails
 
+  **verbose_query_logs**
+    **Default:** ``false``
+
+    Specifies that queries outputted to the log also get a source file / line outputted to aid debugging.
+
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~
 

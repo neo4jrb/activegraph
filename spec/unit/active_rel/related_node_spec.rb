@@ -61,11 +61,6 @@ describe Neo4j::ActiveRel::RelatedNode do
     end
 
     describe 'when loaded' do
-      it 'does not call the server if the node is already loaded' do
-        expect(Neo4j::Node).to_not receive(:load)
-        r.loaded
-      end
-
       it 'still has @node set to the wrapped node' do
         r.loaded
         expect(r.instance_variable_get(:@node)).to eq node1

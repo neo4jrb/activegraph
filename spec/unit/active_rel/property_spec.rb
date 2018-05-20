@@ -3,7 +3,6 @@ describe Neo4j::ActiveRel::Property do
 
   before do
     @session = double('Mock Session')
-    allow(Neo4j::Session).to receive(:current).and_return(@session)
     allow(clazz).to receive(:neo4j_session).and_return(session)
   end
 
@@ -80,13 +79,6 @@ describe Neo4j::ActiveRel::Property do
       it 'returns the currently set rel type' do
         clazz.type 'myrel'
         expect(clazz._type).to eq 'myrel'
-      end
-    end
-
-    describe 'load_entity' do
-      it 'aliases Neo4j::Node.load' do
-        expect(Neo4j::Node).to receive(:load).with(1).and_return(true)
-        clazz.load_entity(1)
       end
     end
   end

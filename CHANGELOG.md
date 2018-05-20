@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+## Added
+
+- `verbose_query_logs` configuration option to allow outputting of source location of queries
+
 ## [9.2.3] 2018-05-10
 
 ## Fixed

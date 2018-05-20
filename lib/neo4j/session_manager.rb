@@ -8,7 +8,9 @@ module Neo4j
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(type)
 
         adaptor = wait_for_value(wait_for_connection, Neo4j::Core::CypherSession::ConnectionFailedError) do
-          cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc))
+          verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
+          cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc,
+                                                                  verbose_query_logs: verbose_query_logs))
         end
 
         Neo4j::Core::CypherSession.new(adaptor)

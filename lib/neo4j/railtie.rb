@@ -36,6 +36,7 @@ module Neo4j
 
     console do
       Neo4j::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
+      Neo4j::Config[:verbose_query_logs] = false
     end
 
     # Starting Neo after :load_config_initializers allows apps to
@@ -74,7 +75,9 @@ module Neo4j
     def final_session_config!(neo4j_config)
       support_deprecated_session_configs!(neo4j_config)
 
-      neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]
+      (neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]).dup.tap do |result|
+        result[:type] ||= URI(result[:url]).scheme if result[:url]
+      end
     end
 
     def support_deprecated_session_configs!(neo4j_config)

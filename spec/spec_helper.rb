@@ -28,8 +28,6 @@ require 'tmpdir'
 require 'logger'
 
 require 'neo4j-core'
-require 'neo4j-server'
-require 'neo4j-embedded' if RUBY_PLATFORM == 'java'
 require 'neo4j'
 require 'unique_class'
 
@@ -304,7 +302,7 @@ session_adaptor = case TEST_SESSION_MODE
                     when 'http'
                       Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
                     when 'bolt'
-                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
+                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc, ssl: false) # , logger_level: Logger::DEBUG)
                     else
                       fail "Invalid scheme for NEO4J_URL: #{scheme} (expected `http` or `bolt`)"
                     end
@@ -339,6 +337,7 @@ module FixingRSpecHelpers
   end
 end
 
+require 'neo4j-community' if RUBY_PLATFORM == 'java'
 Neo4j::ActiveBase.current_adaptor = session_adaptor
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
