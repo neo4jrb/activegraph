@@ -5,12 +5,14 @@ require 'active_support/core_ext/big_decimal/conversions'
 require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
-  class Boolean; end
+  class Boolean;
+  end
 
   module TypeConverters
     CONVERTERS = {}
 
-    class Boolean; end
+    class Boolean;
+    end
 
     class BaseConverter
       class << self
@@ -55,6 +57,7 @@ module Neo4j::Shared
         def to_db(value)
           value.to_f
         end
+
         alias to_ruby to_db
       end
     end
@@ -66,7 +69,7 @@ module Neo4j::Shared
         end
 
         def db_type
-          BigDecimal
+          String
         end
 
         def to_db(value)
@@ -77,9 +80,12 @@ module Neo4j::Shared
             value.to_d
           else
             BigDecimal.new(value.to_s)
-          end
+          end.to_s
         end
-        alias to_ruby to_db
+
+        def to_ruby(value)
+          value.to_d
+        end
       end
     end
 
@@ -96,6 +102,7 @@ module Neo4j::Shared
         def to_db(value)
           value.to_s
         end
+
         alias to_ruby to_db
       end
     end
