@@ -141,7 +141,7 @@ module Rails
           end
         end
 
-        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234', session_options: { basic_auth: 'neo4j', password: 'specs2' }) do
+        let_context(session_type: :http, session_path_or_url: 'http://neo4j:specs@the-host:1234', session_options: {basic_auth: 'neo4j', password: 'specs2'}) do
           it { should be_a(Neo4j::Core::CypherSession::Adaptors::HTTP) }
           its(:url) { should eq('http://neo4j:specs@the-host:1234') }
 
