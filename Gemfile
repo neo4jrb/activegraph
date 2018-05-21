@@ -6,7 +6,7 @@ gemspec
 
 puts "ENV: #{ENV.inspect}"
 branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
-slug = ENV['TRAVIS_PULL_REQUEST_SLUG'] || ENV['TRAVIS_REPO_SLUG']
+slug = ENV['TRAVIS_PULL_REQUEST_SLUG'].present? ? ENV['TRAVIS_PULL_REQUEST_SLUG'] : ENV['TRAVIS_REPO_SLUG']
 if branch
   command = "curl --head https://github.com/#{slug}-core/tree/#{branch} | head -1"
   puts command
