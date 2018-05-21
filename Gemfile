@@ -8,7 +8,6 @@ branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['T
 slug = !ENV['TRAVIS_PULL_REQUEST_SLUG'].to_s.empty? ? ENV['TRAVIS_PULL_REQUEST_SLUG'] : ENV['TRAVIS_REPO_SLUG']
 if branch
   command = "curl --head https://github.com/#{slug}-core/tree/#{branch} | head -1"
-  puts command
   result = `#{command}`
   puts result
   if result =~ /200 OK/
