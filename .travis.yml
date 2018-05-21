@@ -3,8 +3,8 @@ before_script:
   - "bin/rake neo4j:config[development,7474] --trace"
   - "if [ -f ./db/neo4j/development/conf/neo4j-wrapper.conf ]; then WRAPPER=-wrapper; fi"
   - "echo 'dbms.memory.pagecache.size=600m' >> ./db/neo4j/development/conf/neo4j.conf"
-  - "echo 'dbms.memory.heap.max_size=600' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
-  - "echo 'dbms.memory.heap.initial_size=600' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
+  - "echo 'dbms.memory.heap.max_size=600m' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
+  - "echo 'dbms.memory.heap.initial_size=600m' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
   - "bin/rake neo4j:start --trace"
   - "sleep 20"
 script:
@@ -14,50 +14,50 @@ cache: bundler
 sudo: false
 jdk: oraclejdk8
 rvm:
-  - 2.4.2
-  - 2.2.10
+  - 2
+  - 2.2
   - jruby-9.1.14.0
 env:
   global:
     - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
   matrix:
-    - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.3.1
-    - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.3.1
+    - TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.3.1
+    - TRAVIS_BRANCH=8.2.x NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.3.1
 matrix:
   include:
-    - rvm: 2.4.2
+    - rvm: 2
       jdk:
       before_script:
       script: "bundle exec rubocop"
-      env: "RUBOCOP=true"
+      env: "TRAVIS_BRANCH=8.2.x RUBOCOP=true"
 
     # Testing older versions of ActiveModel
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8 ACTIVE_MODEL_VERSION=5.1.0
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8 ACTIVE_MODEL_VERSION=5.1.0
 
     # Older versions of Neo4j with latest version of Ruby
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.2.8
 
-    - rvm: 2.4.2
-      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.8
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.2.8
 
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.7
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.1.7
 
-    - rvm: 2.4.2
-      env: NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.7
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.1.7
 
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
 
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
 
     # Older versions of Neo4j with latest version of jRuby
-    - rvm: jruby-9.1.14.0
-      env: NEO4J_VERSION=community-2.3.11
+    - rvm: jruby-9
+      env: TRAVIS_BRANCH=8.2.x NEO4J_VERSION=community-2.3.11
 
     # Enterprise
-    - rvm: 2.4.2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=enterprise-3.3.1
+    - rvm: 2
+      env: TRAVIS_BRANCH=8.2.x NEO4J_URL="http://localhost:7474" NEO4J_VERSION=enterprise-3.3.1
