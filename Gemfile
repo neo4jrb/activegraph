@@ -4,7 +4,7 @@ gemspec
 
 # gem 'neo4j-core', github: 'neo4jrb/neo4j-core', branch: 'master' if ENV['CI']
 
-branch = ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
+branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
 slug = ENV['TRAVIS_PULL_REQUEST_SLUG'] || ENV['TRAVIS_REPO_SLUG']
 if branch
   if `curl --head https://github.com/#{slug}-core/tree/#{branch} | head -1` =~ /200 OK/
