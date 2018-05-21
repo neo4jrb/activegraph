@@ -9,7 +9,6 @@ slug = !ENV['TRAVIS_PULL_REQUEST_SLUG'].to_s.empty? ? ENV['TRAVIS_PULL_REQUEST_S
 if branch
   command = "curl --head https://github.com/#{slug}-core/tree/#{branch} | head -1"
   result = `#{command}`
-  puts result
   if result =~ /200 OK/
     gem 'neo4j-core', github: "#{slug}-core", branch: branch
   else
