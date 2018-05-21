@@ -16,9 +16,9 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'neo4j'
   s.summary = 'A graph database for Ruby'
   s.license = 'MIT'
-  s.description = <<-EOF
+  s.description = <<-DESCRIPTION
 A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
-  EOF
+DESCRIPTION
 
   s.require_path = 'lib'
   s.files = Dir.glob('{bin,lib,config}/**/*') + %w(README.md CHANGELOG.md CONTRIBUTORS Gemfile neo4j.gemspec)
@@ -36,7 +36,7 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.add_dependency('activemodel', '>= 4.0')
   s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('neo4j-community', '~> 2.0') if RUBY_PLATFORM =~ /java/
-  s.add_dependency('neo4j-core', '>= 7.2.2')
+  s.add_dependency('neo4j-core', '>= 7.2.2', '< 9.0.0')
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
@@ -46,6 +46,6 @@ A Neo4j OGM (Object-Graph-Mapper) for Ruby heavily inspired by ActiveRecord.
   s.add_development_dependency('pry')
   s.add_development_dependency('railties', '>= 4.0')
   s.add_development_dependency('rake')
-  s.add_development_dependency('rubocop', '~> 0.49.1')
+  s.add_development_dependency('rubocop', '~> 0.51.0')
   s.add_development_dependency('yard')
 end
