@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.2.4] 2018-05-20
+
+## Fixed
+
+- BigDecimal handling on properties (thanks @klobuczek / see #1507)
+
 ## [9.2.3] 2018-05-10
 
 ## Fixed
