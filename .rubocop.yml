@@ -26,14 +26,11 @@ Style/SignalException:
   EnforcedStyle: semantic
 
 # I think this one is broken...
-Layout/FileName:
+Naming/FileName:
   Enabled: false
 
 Style/MultilineBlockChain:
   Enabled: false
-
-Performance/HashEachMethods:
-  AutoCorrect: true
 
 #---------------------------
 # Don't intend to fix these:
