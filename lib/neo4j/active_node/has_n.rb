@@ -578,5 +578,6 @@ module Neo4j::ActiveNode
         associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
+    # rubocop:enable Metrics/ModuleLength
   end
 end
