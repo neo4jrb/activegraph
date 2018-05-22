@@ -113,12 +113,6 @@ Lint/InterpolationCheck:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Lint/UnneededCopDisableDirective:
-  Exclude:
-    - 'spec/e2e/active_rel_spec.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Lint/UnneededCopEnableDirective:
   Exclude:
     - 'lib/neo4j/active_node/has_n.rb'
