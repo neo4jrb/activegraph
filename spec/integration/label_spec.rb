@@ -150,13 +150,13 @@ describe 'Labels' do
 
     describe 'first' do
       it 'returns the first object created... sort of, see docs' do
-        expect(FirstLastTestClass.first).to eq [@jasmine, @middle, @lauren].sort_by(&:id).first
+        expect(FirstLastTestClass.first).to eq [@jasmine, @middle, @lauren].min_by(&:id)
       end
     end
 
     describe 'last' do
       it 'returns the last object created... sort of, see docs' do
-        expect(FirstLastTestClass.last).to eq [@jasmine, @middle, @lauren].sort_by(&:id).last
+        expect(FirstLastTestClass.last).to eq [@jasmine, @middle, @lauren].max_by(&:id)
       end
 
       it 'returns nil when there are no results' do

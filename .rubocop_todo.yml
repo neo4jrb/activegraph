@@ -167,12 +167,6 @@ Naming/UncommunicativeMethodParamName:
     - 'spec/spec_helper.rb'
     - 'spec/unit/active_node/persistance_spec.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Performance/UnneededSort:
-  Exclude:
-    - 'spec/integration/label_spec.rb'
-
 # Offense count: 1
 Security/MarshalLoad:
   Exclude:
