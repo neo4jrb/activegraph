@@ -9,6 +9,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - `verbose_query_logs` configuration option to allow outputting of source location of queries
 
+## [9.2.4] 2018-05-20
+
+## Fixed
+
+- BigDecimal handling on properties (thanks @klobuczek / see #1507)
+
 ## [9.2.3] 2018-05-10
 
 ## Fixed

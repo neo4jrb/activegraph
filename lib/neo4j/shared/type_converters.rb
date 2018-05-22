@@ -66,7 +66,7 @@ module Neo4j::Shared
         end
 
         def db_type
-          BigDecimal
+          String
         end
 
         def to_db(value)
@@ -77,9 +77,12 @@ module Neo4j::Shared
             value.to_d
           else
             BigDecimal.new(value.to_s)
-          end
+          end.to_s
         end
-        alias to_ruby to_db
+
+        def to_ruby(value)
+          value.to_d
+        end
       end
     end
 
