@@ -112,18 +112,6 @@ Lint/InterpolationCheck:
     - 'spec/e2e/scope_spec.rb'
 
 # Offense count: 1
-# Cop supports --auto-correct.
-Lint/UnneededCopEnableDirective:
-  Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-Lint/UnneededSplatExpansion:
-  Exclude:
-    - 'lib/neo4j/active_node/id_property.rb'
-
-# Offense count: 1
 # Configuration parameters: ContextCreatingMethods, MethodCreatingMethods.
 Lint/UselessAccessModifier:
   Exclude:

@@ -248,7 +248,6 @@ module Neo4j::ActiveNode
 
     # rubocop:disable Metrics/ModuleLength
     module ClassMethods
-      # rubocop:enable Naming/PredicateName
       # rubocop:disable Naming/PredicateName
 
       # :nocov:
