@@ -46,6 +46,6 @@ DESCRIPTION
   s.add_development_dependency('pry')
   s.add_development_dependency('railties', '>= 4.0')
   s.add_development_dependency('rake')
-  s.add_development_dependency('rubocop', '~> 0.51.0')
+  s.add_development_dependency('rubocop', '~> 0.49.1')
   s.add_development_dependency('yard')
 end
