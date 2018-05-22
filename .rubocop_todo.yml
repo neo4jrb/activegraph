@@ -225,13 +225,6 @@ Style/EvalWithLocation:
     - 'lib/neo4j/active_node/id_property.rb'
     - 'spec/unique_class.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Style/ExpandPathArguments:
-  Exclude:
-    - 'neo4j.gemspec'
-    - 'test/lib/generators/model_generator_test.rb'
-
 # Offense count: 10
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: annotated, template, unannotated
