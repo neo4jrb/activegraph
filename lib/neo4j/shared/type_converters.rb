@@ -76,7 +76,7 @@ module Neo4j::Shared
           when respond_to?(:to_d)
             value.to_d
           else
-            BigDecimal.new(value.to_s)
+            BigDecimal(value.to_s)
           end.to_s
         end
 

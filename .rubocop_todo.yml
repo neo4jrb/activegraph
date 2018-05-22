@@ -92,13 +92,6 @@ Lint/AmbiguousBlockAssociation:
     - 'spec/unit/active_node/has_n/association_spec.rb'
     - 'spec/unit/migrations/helpers_spec.rb'
 
-# Offense count: 6
-# Cop supports --auto-correct.
-Lint/BigDecimalNew:
-  Exclude:
-    - 'lib/neo4j/shared/type_converters.rb'
-    - 'spec/integration/type_converters/type_converters_spec.rb'
-
 # Offense count: 2
 Lint/BooleanSymbol:
   Exclude:
