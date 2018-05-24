@@ -248,7 +248,6 @@ module Neo4j::ActiveNode
 
     # rubocop:disable Metrics/ModuleLength
     module ClassMethods
-      # rubocop:enable Naming/PredicateName
       # rubocop:disable Naming/PredicateName
 
       # :nocov:
@@ -578,5 +577,6 @@ module Neo4j::ActiveNode
         associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
+    # rubocop:enable Metrics/ModuleLength
   end
 end

@@ -209,7 +209,7 @@ MSG
       end
 
       def id_property_name_type_value
-        name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))
+        name, type, value = Neo4j::Config.to_hash.values_at('id_property', 'id_property_type', 'id_property_type_value')
 
         unless name == :neo_id || (name && type && value)
           name = :uuid

@@ -110,7 +110,7 @@ describe Neo4j::Shared::TypeConverters do
     end
 
     context 'from BidDecimal' do
-      let(:r) { BigDecimal.new('1.0') }
+      let(:r) { BigDecimal('1.0') }
 
       it 'is not converted' do
         expect(subject.converted?(r)).to be false
@@ -237,11 +237,11 @@ describe Neo4j::Shared::TypeConverters do
         end
 
         it 'casts a zero BigDecimal to false' do
-          expect(subject.to_db(BigDecimal.new('0.0'))).to equal false
+          expect(subject.to_db(BigDecimal('0.0'))).to equal false
         end
 
         it 'casts a non-zero BigDecimal to true' do
-          expect(subject.to_db(BigDecimal.new('0.1'))).to equal true
+          expect(subject.to_db(BigDecimal('0.1'))).to equal true
         end
 
         it 'casts -1 to true' do
@@ -257,11 +257,11 @@ describe Neo4j::Shared::TypeConverters do
         end
 
         it 'casts a negative zero BigDecimal to false' do
-          expect(subject.to_db(BigDecimal.new('-0.0'))).to equal false
+          expect(subject.to_db(BigDecimal('-0.0'))).to equal false
         end
 
         it 'casts a negative BigDecimal to true' do
-          expect(subject.to_db(BigDecimal.new('-0.1'))).to equal true
+          expect(subject.to_db(BigDecimal('-0.1'))).to equal true
         end
       end
 
