@@ -80,6 +80,11 @@ Style/Lambda:
 Style/DoubleNegation:
   Enabled: false
 
+# Reason: It's OK if the spec modules get long as long as they're well factored
+Metrics/ModuleLength:
+  Exclude:
+    - 'spec/**/*'
+
 # Reason: It's OK if the spec files get long as long as they're well factored
 Metrics/BlockLength:
   Exclude:
