@@ -1,6 +1,5 @@
 module Neo4j
   module Migrations
-    # rubocop:enable Metrics/ModuleLength
     describe 'Neo4j::Migrations' do
       before { delete_schema }
 

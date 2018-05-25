@@ -228,4 +228,3 @@ module Neo4j::Shared
     end
   end
 end
-# rubocop:enable Metrics/ModuleLength
