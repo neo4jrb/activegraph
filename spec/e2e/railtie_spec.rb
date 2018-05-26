@@ -31,7 +31,7 @@ module Rails
           end.send(*raise_expectation)
         end
 
-        let(:raise_expectation) { [:to, raise_error(ArgumentError, 'Invalid session type: :foo')] }
+        let(:raise_expectation) { [:to, raise_error(ArgumentError, 'Invalid session type: :foo (expected one of [:http, :bolt, :embedded])')] }
         let_context(session_type: :foo) do
           it { 1 }
         end
@@ -113,11 +113,11 @@ module Rails
       end
 
       let_context(session_type: :invalid_type) do
-        subject_should_raise(ArgumentError, /Invalid session type: :invalid_type$/)
+        subject_should_raise(ArgumentError, /Invalid session type: :invalid_type/)
       end
 
       let_context(session_type: :server_db) do
-        subject_should_raise(ArgumentError, /Invalid session type: :server_db \(`server_db` has been replaced/)
+        subject_should_raise(ArgumentError, /Invalid session type: :server_db .*\(`server_db` has been replaced/)
       end
 
       describe 'resulting adaptor' do

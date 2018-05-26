@@ -34,8 +34,6 @@ module Neo4j
         restricted_field.set nil, false
       end
 
-      # TODO: Deprecate embedded_db and http in favor of embedded and http
-      #
       def cypher_session_adaptor(type, path_or_url, options = {})
         adaptor_class(type, options).new(path_or_url, options)
       end
@@ -66,6 +64,7 @@ module Neo4j
       private
 
       def adaptor_class_by_type(type)
+        ActiveSupport::Deprecation.warn('`embedded_db` session type is deprecated, please use `embedded`') if type == :embedded_db
         case type
         when :embedded_db, :embedded
           require 'neo4j/core/cypher_session/adaptors/embedded'
@@ -78,7 +77,7 @@ module Neo4j
           Neo4j::Core::CypherSession::Adaptors::Bolt
         else
           extra = ' (`server_db` has been replaced by `http` or `bolt`)'
-          fail ArgumentError, "Invalid session type: #{type.inspect}#{extra if type == :server_db}"
+          fail ArgumentError, "Invalid session type: #{type.inspect} (expected one of [:http, :bolt, :embedded])#{extra if type == :server_db}"
         end
       end
     end

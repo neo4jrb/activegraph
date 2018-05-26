@@ -140,7 +140,10 @@ module Neo4j
     def subscribe_to_session_type_logging!(session_type, options, logger_proc)
       SessionManager
         .adaptor_class(session_type, options)
-        .send(session_type.to_sym == :embedded ? :subscribe_to_transaction : :subscribe_to_request, &logger_proc)
+        .send(
+          [:embedded, :embedded_db].include?(session_type.to_sym) ? :subscribe_to_transaction : :subscribe_to_request,
+          &logger_proc
+        )
     end
   end
 end
