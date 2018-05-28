@@ -183,9 +183,8 @@ module Neo4j
         end
 
         def chain
-          @order_chain, other_chain =
-            with_associations_tree.empty? ? [[], @chain] : @chain.partition { |link| link.clause == :order }
-          other_chain
+          @order_chain = @chain.select { |link| link.clause == :order } unless with_associations_tree.empty?
+          @chain
         end
       end
     end

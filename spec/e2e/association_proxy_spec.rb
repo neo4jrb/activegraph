@@ -234,6 +234,13 @@ describe 'Association Proxy' do
     end
   end
 
+  describe 'ordering with limit' do
+    it 'supports ordering with limit and with_associations' do
+      expect(Lesson.order(:subject).limit(1).with_associations(:students).map(&:subject)).to eq(%w(math))
+      expect(Lesson.order(subject: :desc).limit(1).with_associations(:students).map(&:subject)).to eq(%w(science))
+    end
+  end
+
   describe 'issue reported by @andrewhavens in #881' do
     it 'does not break' do
       l1 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!] }
