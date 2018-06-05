@@ -60,7 +60,7 @@ module Neo4j
 
         def perform_query
           @_cache = IdentityMap.new
-          query_from_association_tree
+          build_query
             .map do |record, eager_data|
             cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
@@ -125,8 +125,8 @@ module Neo4j
           path_names.map { |n| var(n, :collection, &:itself) }.join(',')
         end
 
-        def var(*parts, &block)
-          block.call(escape(parts.compact.join('_')))
+        def var(*parts)
+          yield(escape(parts.compact.join('_')))
         end
 
         # In neo4j version 2.1.8 this fails due to a bug:
@@ -156,19 +156,22 @@ module Neo4j
           with_associations_tree.paths.map { |path| path_name(path) }
         end
 
+        def build_query
+          before_pluck.pluck(identity, "[#{with_associations_return_clause}]")
+        end
+
+        def before_pluck
+          query = query_from_association_tree # has side effects and cannot be inlined
+          query_from_chain(@order_chain, query, identity)
+        end
+
         def query_from_association_tree
           previous_with_vars = []
-          base_query = with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
+          with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
             with_association_query_part(query, path, previous_with_vars).tap do
               previous_with_vars << var_fix(path_name(path), :collection)
             end
           end
-          before_pluck(query_from_chain(@order_chain, base_query, identity))
-            .pluck(identity, "[#{with_associations_return_clause}]")
-        end
-
-        def before_pluck(query)
-          query
         end
 
         def with_association_query_part(base_query, path, previous_with_vars)
