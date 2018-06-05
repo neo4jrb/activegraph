@@ -31,14 +31,18 @@ module Neo4j
             if spec.is_a?(Array)
               spec.each { |s| add_spec(s) }
             elsif spec.is_a?(Hash)
-              spec.each { |k, v| (self[k] ||= AssociationTree.new(model, k)).add_spec(v) }
+              process_hash(spec)
             else
-              self[spec] ||= AssociationTree.new(model, spec)
+              self[spec] ||= self.class.new(model, spec)
             end
           end
 
           def paths(*prefix)
             values.flat_map { |v| [[*prefix, v]] + v.paths(*prefix, v) }
+          end
+
+          def process_hash(spec)
+            spec.each { |k, v| (self[k] ||= self.class.new(model, k)).add_spec(v) }
           end
 
           private
@@ -82,7 +86,11 @@ module Neo4j
         end
 
         def with_associations_tree
-          @with_associations_tree ||= AssociationTree.new(model)
+          @with_associations_tree ||= association_tree_class.new(model)
+        end
+
+        def association_tree_class
+          AssociationTree
         end
 
         def with_associations_tree=(tree)
@@ -113,12 +121,12 @@ module Neo4j
           @_cache.add(node).tap { |n| init_associations(n, element) }
         end
 
-        def with_associations_return_clause(variables = path_names)
-          var_list(variables, &:itself)
+        def with_associations_return_clause
+          path_names.map { |n| var(n, :collection, &:itself) }.join(',')
         end
 
-        def var_list(variables)
-          variables.map { |n| yield(escape("#{n}_collection")) }.join(',')
+        def var(*parts, &block)
+          block.call(escape(parts.compact.join('_')))
         end
 
         # In neo4j version 2.1.8 this fails due to a bug:
@@ -128,8 +136,12 @@ module Neo4j
         # and this
         # MATCH (`n`) WITH `n` AS `n` RETURN `n`
         # does not
-        def var_list_fixing_neo4j_2_1_8_bug(variables)
-          var_list(variables) { |var| "#{var} AS #{var}" }
+        def var_fix(*var)
+          var(*var, &method(:as_alias))
+        end
+
+        def as_alias(var)
+          "#{var} AS #{var}"
         end
 
         def escape(s)
@@ -145,24 +157,28 @@ module Neo4j
         end
 
         def query_from_association_tree
-          previous_with_variables = []
-          no_order_query = with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
-            with_association_query_part(query, path, previous_with_variables).tap do
-              previous_with_variables << path_name(path)
+          previous_with_vars = []
+          base_query = with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
+            with_association_query_part(query, path, previous_with_vars).tap do
+              previous_with_vars << var_fix(path_name(path), :collection)
             end
           end
-          query_from_chain(@order_chain, no_order_query, identity)
+          before_pluck(query_from_chain(@order_chain, base_query, identity))
             .pluck(identity, "[#{with_associations_return_clause}]")
         end
 
-        def with_association_query_part(base_query, path, previous_with_variables)
-          optional_match_with_where(base_query, path)
-            .with(identity,
-                  "[collect(#{escape("#{path_name(path)}_rel")}), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
-                  *var_list_fixing_neo4j_2_1_8_bug(previous_with_variables))
+        def before_pluck(query)
+          query
         end
 
-        def optional_match_with_where(base_query, path)
+        def with_association_query_part(base_query, path, previous_with_vars)
+          optional_match_with_where(base_query, path, previous_with_vars)
+            .with(identity,
+                  "[collect(#{escape("#{path_name(path)}_rel")}), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
+                  *previous_with_vars)
+        end
+
+        def optional_match_with_where(base_query, path, _)
           path
             .each_with_index.map { |_, index| path[0..index] }
             .inject(optional_match(base_query, path)) do |query, path_prefix|
