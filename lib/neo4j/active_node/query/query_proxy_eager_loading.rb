@@ -157,11 +157,10 @@ module Neo4j
         end
 
         def build_query
-          before_pluck.pluck(identity, "[#{with_associations_return_clause}]")
+          before_pluck(query_from_association_tree).pluck(identity, "[#{with_associations_return_clause}]")
         end
 
-        def before_pluck
-          query = query_from_association_tree # has side effects and cannot be inlined
+        def before_pluck(query)
           query_from_chain(@order_chain, query, identity)
         end
 
