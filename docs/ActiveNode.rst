@@ -594,3 +594,8 @@ For those times when you need to load all of your data with one Cypher query, ho
 
 All that we did here was add ``.with_associations(:tags, :comments)``.  In addition to getting all of the blog posts, this will generate a Cypher query which uses the Cypher `COLLECT()` function to efficiently roll-up all of the associated objects.  `ActiveNode` then automatically structures them into a nested set of `ActiveNode` objects for you.
 
+You can also use ``with_associations`` with multiple levels like:
+
+.. code-block:: ruby
+
+  person.blog_posts.with_associations(:tags, comments: :hashtags)
