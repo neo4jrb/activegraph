@@ -47,7 +47,7 @@ module Neo4j::ActiveNode
         end
 
         define_method(name) do |*query_params|
-          as(:n).send(name, *query_params)
+          as(:n).public_send(name, *query_params)
         end
       end
 
