@@ -45,6 +45,10 @@ module Neo4j::ActiveNode
             _call_scope_context(eval_context, query_params, proc)
           end
         end
+
+        define_method(name) do |*query_params|
+          as(:n).public_send(name, *query_params)
+        end
       end
 
       # rubocop:disable Naming/PredicateName
