@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.3.0] 2018-07-12
+
+## Added
+
+- Scopes will now automatically show up on instances as well as classes / proxies
+
 ## [9.2.4] 2018-05-20
 
 ## Fixed
