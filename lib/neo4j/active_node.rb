@@ -57,6 +57,18 @@ module Neo4j
       _persisted_obj || fail('Tried to access native neo4j object on a non persisted object')
     end
 
+    def method_missing(method, *params, &block)
+      if self.class.full_scopes.keys.include? method
+        self.as(:a).public_send(method, *params, &block)
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method, *)
+      self.class.full_scopes.keys.include?(method) || super
+    end
+
     LOADED_CLASSES = []
 
     def self.loaded_classes
