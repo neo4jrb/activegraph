@@ -66,7 +66,7 @@ The ``neo4j-rake_tasks`` gem includes some rake tasks which make it easy to inst
 
   .. _rake_tasks-neo4j_start_no_wait:
 
-  **neo4j:start**
+  **neo4j:shell**
     **Arguments:** ``environment``
 
     **Example:** ``rake neo4j:shell[development]``
