@@ -1,9 +1,6 @@
 describe Neo4j::ActiveNode::Scope::ScopeEvalContext do
   describe 'method missing' do
-    let(:query_proxy) { Book.all }
-    before(:example) do
-      stub_active_node_class('Book')
-    end
+    let(:query_proxy) { double('QueryProxy', query: double) }
     subject { described_class.new(nil, query_proxy) }
 
     it 'should delegate non existant method call to query_proxy' do
