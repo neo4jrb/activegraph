@@ -45,15 +45,19 @@ module Neo4j::ActiveNode
             _call_scope_context(eval_context, query_params, proc)
           end
         end
+
+        define_method(name) do |*query_params|
+          as(:n).public_send(name, *query_params)
+        end
       end
 
-      # rubocop:disable Style/PredicateName
+      # rubocop:disable Naming/PredicateName
       def has_scope?(name)
         ActiveSupport::Deprecation.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
 
         scope?(name)
       end
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       # @return [Boolean] true if model has access to scope with this name
       def scope?(name)

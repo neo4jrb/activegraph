@@ -140,6 +140,30 @@ Neo4j requires authentication by default but if you install using the built-in :
 
   config.neo4j.session.url = 'http://neo4j:password@localhost:7474'
 
+Configuring Bolt + TLS
+^^^^^^^^^^^^^^^^^^^^^^
+
+When connecting to Neo4j via Bolt a TLS / SSL is used by default.  For Neo4j instances using certificates from trusted certificate authorities (like cloud providers), this should mean that you need only to specify the ``bolt://`` URL and Ruby will find the appropriate certificate.  If you are installing and host Neo4j yourself, you'll need to manually provide the certificate configured by the server (by default this is in the Neo4j server installation under ``certificates/neo4j.cert``).  This path can be configured in Rails like so:
+
+.. code-block:: ruby
+
+  # In your config/application.rb
+  cert_store = OpenSSL::X509::Store.new
+  cert_store.add_file('/the/path/to/your/neo4j.cert')
+  config.neo4j.session.options = {ssl: {cert_store: cert_store}}
+  config.neo4j.session.url = 'bolt://neo4j:password@host:port'
+
+The ``config.neo4j.session.options`` is simply passed into the ``Bolt`` adaptor in the ``neo4j-core`` gem.  If you are using ``neo4j-core`` directly 
+
+.. code-block:: ruby
+
+  cert_store = OpenSSL::X509::Store.new
+  cert_store.add_file('/the/path/to/your/neo4j.cert')
+  bolt_adaptor = Neo4j::Core::CypherSession::Adaptors::Bolt.new('bolt://neo4j:password@host:port', timeout: 10, ssl: {cert_store: cert_store})
+
+Inside of the gem, the ``ssl`` option is simply passed into the ``set_params`` method called on a ``OpenSSL::SSL::SSLContext.new`` object.  If you need a more advanced configuration please refer to the documentation for the Ruby ``OpenSSL`` API.
+
+SSL / TLS is configured to be used by default, but if you need to disable it you can define ``{ssl: false}`` either in ``config.neo4j.session.options`` in Rails or in the options passed to a new ``Neo4j::Core::CypherSession::Adaptors::Bolt``
 
 Configuring Faraday (HTTP only)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

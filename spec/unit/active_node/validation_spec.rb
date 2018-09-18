@@ -33,12 +33,6 @@ describe Neo4j::ActiveNode::Validations do
   end
 
   describe 'save' do
-    let(:session) { double('Session') }
-    before do
-      @session = double('Mock Session')
-      allow(Neo4j::Session).to receive(:current).and_return(session)
-    end
-
     context 'when valid' do
       it 'creates a new node if not persisted before' do
         o = clazz.new(name: 'kalle', age: '42')

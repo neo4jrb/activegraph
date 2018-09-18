@@ -44,7 +44,7 @@ module Neo4j::Shared
       # Not a good long term solution
       if changed_attributes.frozen?
         attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new(changed_attributes)
-        hash_to_clear.keys.each { |k| attributes_changed_by_setter.delete(k) }
+        hash_to_clear.each_key { |k| attributes_changed_by_setter.delete(k) }
         @attributes_changed_by_setter = attributes_changed_by_setter
       else
         hash_to_clear.each_key { |k| changed_attributes.delete(k) }

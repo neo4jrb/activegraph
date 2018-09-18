@@ -1,3 +1,4 @@
+require 'rake'
 require 'active_support/concern'
 require 'neo4j/migration'
 

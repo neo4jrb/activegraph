@@ -1,4 +1,4 @@
-lib = File.expand_path('../lib/', __FILE__)
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
 require 'neo4j/version'
@@ -36,7 +36,7 @@ DESCRIPTION
   s.add_dependency('activemodel', '>= 4.0')
   s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('neo4j-community', '~> 2.0') if RUBY_PLATFORM =~ /java/
-  s.add_dependency('neo4j-core', '>= 7.2.2', '< 9.0.0')
+  s.add_dependency('neo4j-core', '>= 9.0.0')
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
@@ -46,6 +46,6 @@ DESCRIPTION
   s.add_development_dependency('pry')
   s.add_development_dependency('railties', '>= 4.0')
   s.add_development_dependency('rake')
-  s.add_development_dependency('rubocop', '~> 0.49.1')
+  s.add_development_dependency('rubocop', '~> 0.56.0')
   s.add_development_dependency('yard')
 end

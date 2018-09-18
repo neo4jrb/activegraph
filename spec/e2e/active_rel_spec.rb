@@ -136,13 +136,11 @@ describe 'ActiveRel' do
     end
 
     shared_context 'three-argument ActiveRel create/create!' do |meth|
-      # rubocop:disable Style/PredicateName
       def is_persisted_with_nodes(rel)
         expect(rel).to be_persisted
         expect(rel.from_node).to eq from_node
         expect(rel.to_node).to eq to_node
       end
-      # rubocop:enable Style/PredicateName
 
       context 'node, node, hash' do
         it { is_persisted_with_nodes(MyRelClass.send(meth, from_node, to_node, {})) }

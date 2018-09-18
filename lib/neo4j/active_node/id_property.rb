@@ -145,13 +145,13 @@ module Neo4j::ActiveNode
         TypeMethods.define_id_methods(self, name, conf)
       end
 
-      # rubocop:disable Style/PredicateName
+      # rubocop:disable Naming/PredicateName
       def has_id_property?
         ActiveSupport::Deprecation.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
 
         id_property?
       end
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       def id_property?
         id_property_info && !id_property_info.empty?
@@ -209,7 +209,7 @@ MSG
       end
 
       def id_property_name_type_value
-        name, type, value = Neo4j::Config.to_hash.values_at(*%w(id_property id_property_type id_property_type_value))
+        name, type, value = Neo4j::Config.to_hash.values_at('id_property', 'id_property_type', 'id_property_type_value')
 
         unless name == :neo_id || (name && type && value)
           name = :uuid

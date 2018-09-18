@@ -239,7 +239,7 @@ module Neo4j::ActiveNode
       query_proxy = self.class.as(:previous).where(neo_id: result_cache.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next, optional: true)
 
-      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)].each do |_, records|
+      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)].each_value do |records|
         records.each do |record|
           record.instance_variable_set('@source_proxy_result_cache', records)
         end
@@ -248,8 +248,7 @@ module Neo4j::ActiveNode
 
     # rubocop:disable Metrics/ModuleLength
     module ClassMethods
-      # rubocop:enable Style/PredicateName
-      # rubocop:disable Style/PredicateName
+      # rubocop:disable Naming/PredicateName
 
       # :nocov:
       def has_association?(name)
@@ -259,7 +258,7 @@ module Neo4j::ActiveNode
       end
       # :nocov:
 
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       def association?(name)
         !!associations[name.to_sym]
@@ -360,7 +359,7 @@ module Neo4j::ActiveNode
       #       **Available values:** ``:delete``, ``:delete_orphans``, ``:destroy``, ``:destroy_orphans``
       #       (note that the ``:destroy_orphans`` option is known to be "very metal".  Caution advised)
       #
-      def has_many(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_many(direction, name, options = {}) # rubocop:disable Naming/PredicateName
         name = name.to_sym
         build_association(:has_many, direction, name, options)
 
@@ -377,7 +376,7 @@ module Neo4j::ActiveNode
       # See :ref:`#has_many <Neo4j/ActiveNode/HasN/ClassMethods#has_many>` for anything
       # not specified here
       #
-      def has_one(direction, name, options = {}) # rubocop:disable Style/PredicateName
+      def has_one(direction, name, options = {}) # rubocop:disable Naming/PredicateName
         name = name.to_sym
         build_association(:has_one, direction, name, options)
 
@@ -578,5 +577,6 @@ module Neo4j::ActiveNode
         associations.key?(name) && parent_associations[name] != associations[name]
       end
     end
+    # rubocop:enable Metrics/ModuleLength
   end
 end

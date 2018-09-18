@@ -18,7 +18,7 @@ Style/HashSyntax:
   EnforcedStyle: ruby19
 
 # Cop supports --auto-correct.
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
 
@@ -26,7 +26,7 @@ Style/SignalException:
   EnforcedStyle: semantic
 
 # I think this one is broken...
-Style/FileName:
+Naming/FileName:
   Enabled: false
 
 Style/MultilineBlockChain:
@@ -38,7 +38,7 @@ Style/MultilineBlockChain:
 
 # Cop supports --auto-correct.
 # Reason: Double spaces can be useful for grouping code
-Style/EmptyLines:
+Layout/EmptyLines:
   Enabled: false
 
 # Cop supports --auto-correct.
