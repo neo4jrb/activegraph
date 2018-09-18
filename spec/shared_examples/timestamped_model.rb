@@ -3,7 +3,7 @@ shared_examples_for 'timestamped model' do
     context 'with explicitly changed created_at property' do
       it 'does not overwrite created_at property' do
         subject.created_at = Time.now.utc.round
-        expect { subject.save! }.not_to change(subject, :created_at)
+        expect { subject.save! }.not_to change { subject.created_at.to_time }
       end
     end
   end
