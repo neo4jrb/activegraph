@@ -66,7 +66,7 @@ module Neo4j
         # in the QueryProxy chain.
         attr_reader :node_var
         def identity
-          @node_var || _result_string
+          @node_var || (@branch_end && default_var(_chain_level + 1)) || _result_string
         end
         alias node_identity identity
 
@@ -192,11 +192,11 @@ module Neo4j
           # traverse an association
           # branch_end required as otherwise the last variable of branch may coincide with the main result variable
           as(identity).instance_eval(&block).tap(&:branch_end).query.proxy_as(self.model, identity)
-            .tap(&method(:propagate_context))
+                      .tap(&method(:propagate_context))
         end
 
         def branch_end
-          @node_var ||= default_var(_chain_level + 1)
+          @branch_end = true
         end
 
         def [](index)

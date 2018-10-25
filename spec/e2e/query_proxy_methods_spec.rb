@@ -853,7 +853,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'returns johns lessons whose teachers not only teach history' do
-      expect(@john.lessons.branch { teachers.lessons.where_not(name: 'history')}).to include(@history)
+      expect(@john.lessons.branch { teachers.lessons.where_not(name: 'history') }).to include(@history)
     end
 
     it 'raises LocalJumpError when no block is passed' do
