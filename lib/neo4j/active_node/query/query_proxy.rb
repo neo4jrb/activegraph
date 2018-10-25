@@ -190,9 +190,13 @@ module Neo4j
           # `as(identity)` is here to make sure we get the right variable
           # There might be a deeper problem of the variable changing when we
           # traverse an association
-          as(identity).instance_eval(&block).query.proxy_as(self.model, identity).tap do |new_query_proxy|
-            propagate_context(new_query_proxy)
-          end
+          # branch_end required as otherwise the last variable of branch may coincide with the main result variable
+          as(identity).instance_eval(&block).tap(&:branch_end).query.proxy_as(self.model, identity)
+            .tap(&method(:propagate_context))
+        end
+
+        def branch_end
+          @node_var ||= default_var(_chain_level + 1)
         end
 
         def [](index)
@@ -336,7 +340,7 @@ module Neo4j
           if start_object
             :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
           else
-            @query_proxy.node_var || :"node#{_chain_level}"
+            @query_proxy.node_var || default_var
           end
         end
 
@@ -354,6 +358,10 @@ module Neo4j
         attr_writer :context
 
         private
+
+        def default_var(index = _chain_level)
+          :"node#{index}"
+        end
 
         def instance_vars_from_options!(options)
           @node_var, @session, @source_object, @starting_query, @optional,

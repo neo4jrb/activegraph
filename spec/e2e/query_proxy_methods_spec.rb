@@ -809,9 +809,11 @@ describe 'query_proxy_methods' do
       @john = Student.create(name: 'John')
       @bill = Student.create(name: 'Bill')
       @history = Lesson.create(name: 'history')
+      @math = Lesson.create(name: 'math')
       @jim = Teacher.create(name: 'Jim', age: 40)
-      3.times { @john.lessons << @history }
+      @john.lessons << @history
       @history.teachers << @jim
+      @math.teachers << @jim
     end
 
     it 'returns a QueryProxy object' do
@@ -848,6 +850,10 @@ describe 'query_proxy_methods' do
       result = jummy.lessons.branch { teachers.where(age: 28) }.students
       # We should only get Jummy.  Failure in choosing the identity would give all
       expect(result).to eq [jummy]
+    end
+
+    it 'returns johns lessons whose teachers not only teach history' do
+      expect(@john.lessons.branch { teachers.lessons.where_not(name: 'history')}).to include(@history)
     end
 
     it 'raises LocalJumpError when no block is passed' do
