@@ -310,7 +310,7 @@ module Neo4j
         end
 
         def _result_string(index = nil)
-          "result_#{(association || model)&.name}#{index}".downcase.tr(':', '').to_sym
+          "result_#{(association || model).try(:name)}#{index}".downcase.tr(':', '').to_sym
         end
 
         def _session
