@@ -221,7 +221,7 @@ module Neo4j::ActiveNode
 
             object.association_proxy_cache[hash] = proxy
 
-            (self == object ? proxy : proxy_to_return)
+            (self.neo_id == object.neo_id ? proxy : proxy_to_return)
           end
         else
           fresh_association_proxy(name, options)
