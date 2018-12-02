@@ -19,6 +19,7 @@ describe 'query_proxy_methods' do
       property :name
       property :age, type: Integer
       has_many :out, :lessons, model_class: 'Lesson', type: 'teaching_lesson'
+      scope :ident, -> { as(identity) }
     end
 
     stub_active_node_class('EmptyClass') do
@@ -580,7 +581,7 @@ describe 'query_proxy_methods' do
 
       context 'with a valid node' do
         it 'generates a match to the given node' do
-          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE (ID(result_lessons) =')
+          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE (ID(result_lessons3) =')
         end
 
         it 'matches the object' do
@@ -591,9 +592,9 @@ describe 'query_proxy_methods' do
       context 'with an id' do
         it 'generates cypher using the primary key' do
           expect(@john.lessons.match_to(@history.id).to_cypher).to include(if Lesson.primary_key == :neo_id
-                                                                             'WHERE (ID(result_lessons) ='
+                                                                             'WHERE (ID(result_lessons3) ='
                                                                            else
-                                                                             'WHERE (result_lessons.uuid ='
+                                                                             'WHERE (result_lessons3.uuid ='
                                                                            end)
         end
 
@@ -609,7 +610,7 @@ describe 'query_proxy_methods' do
           end
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('ID(result_lessons) IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('ID(result_lessons3) IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.size).to eq 2
@@ -809,9 +810,11 @@ describe 'query_proxy_methods' do
       @john = Student.create(name: 'John')
       @bill = Student.create(name: 'Bill')
       @history = Lesson.create(name: 'history')
+      @math = Lesson.create(name: 'math')
       @jim = Teacher.create(name: 'Jim', age: 40)
-      3.times { @john.lessons << @history }
+      @john.lessons << @history
       @history.teachers << @jim
+      @math.teachers << @jim
     end
 
     it 'returns a QueryProxy object' do
@@ -828,6 +831,10 @@ describe 'query_proxy_methods' do
 
     it 'applies the query in the block' do
       expect(@john.lessons.branch { teachers(:t) }.to_cypher).to include('(t:`Teacher`)')
+    end
+
+    it 'applies scope identity used within branch' do
+      expect(@john.lessons.branch { teachers.ident }.to_cypher).to include('(result_teachers4:`Teacher`)')
     end
 
     it 'returns only records matching the relation' do
@@ -848,6 +855,10 @@ describe 'query_proxy_methods' do
       result = jummy.lessons.branch { teachers.where(age: 28) }.students
       # We should only get Jummy.  Failure in choosing the identity would give all
       expect(result).to eq [jummy]
+    end
+
+    it 'returns johns lessons whose teachers not only teach history' do
+      expect(@john.lessons.branch { teachers.lessons.where_not(name: 'history') }).to include(@history)
     end
 
     it 'raises LocalJumpError when no block is passed' do

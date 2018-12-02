@@ -640,7 +640,7 @@ describe 'Query API' do
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
-      part2 = 'MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})'
+      part2 = 'MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = {result_lessons3_subject})'
       combined_strings = "#{core_query.to_cypher} #{part2}"
       combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
 
@@ -662,7 +662,7 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:part2) { 'OPTIONAL MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons:`Lesson`) WHERE (result_lessons.subject = {result_lessons_subject})' }
+      let(:part2) { 'OPTIONAL MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = {result_lessons3_subject})' }
       let(:combined_strings) { "#{core_query.to_cypher} #{part2}" }
       it 'can create an optional match' do
         expect(combined_query.to_cypher).to eq combined_strings
@@ -686,8 +686,8 @@ describe 'Query API' do
           expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
           expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
           expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
-          expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher_age=>1')
-          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
+          expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher2_age=>1')
+          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
         end
 
         context '...and values already in the destination format' do
@@ -695,8 +695,8 @@ describe 'Query API' do
             expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
             expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
             expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
-            expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher_age=>1')
-            expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student_likely_to_succeed=>false')
+            expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher2_age=>1')
+            expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
           end
         end
 

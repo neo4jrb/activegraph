@@ -22,6 +22,7 @@ b/
 *~
 .ruby-version
 .ruby-gemset
+.jrubyrc
 
 # vim
 .*.sw[a-z]

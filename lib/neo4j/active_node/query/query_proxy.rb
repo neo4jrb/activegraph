@@ -66,7 +66,7 @@ module Neo4j
         # in the QueryProxy chain.
         attr_reader :node_var
         def identity
-          @node_var || _result_string
+          @node_var || _result_string(_chain_level + 1)
         end
         alias node_identity identity
 
@@ -309,11 +309,8 @@ module Neo4j
           Neo4j::ActiveBase.new_query(context: @context)
         end
 
-        # TODO: Refactor this. Too much happening here.
-        def _result_string
-          s = (self.association && self.association.name) || (self.model && self.model.name) || ''
-
-          s ? "result_#{s}".downcase.tr(':', '').to_sym : :result
+        def _result_string(index = nil)
+          "result_#{(association || model).try(:name)}#{index}".downcase.tr(':', '').to_sym
         end
 
         def _session
