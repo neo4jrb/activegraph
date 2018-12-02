@@ -116,13 +116,12 @@ module Neo4j::ActiveNode
         end
       end
 
+      # method_missing is not delegated to super class but to aggregated class
+      # rubocop:disable Style/MethodMissingSuper
       def method_missing(name, *params, &block)
-        if query_proxy_or_target.respond_to?(name)
-          query_proxy_or_target.public_send(name, *params, &block)
-        else
-          super
-        end
+        query_proxy_or_target.public_send(name, *params, &block)
       end
+      # rubocop:enable Style/MethodMissingSuper
 
       private
 
