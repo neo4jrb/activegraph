@@ -1,8 +1,6 @@
 require 'neo4j/version'
 
 require 'neo4j-core'
-require 'neo4j/core/cypher_session'
-require 'neo4j/core/query' # From the `neo4j-core` gem
 require 'neo4j/core/query_ext' # From this gem
 
 require 'neo4j/active_base'

@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ModuleLength
 # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
 module Neo4j::Shared
   describe Attributes do
@@ -229,4 +228,3 @@ module Neo4j::Shared
     end
   end
 end
-# rubocop:enable Metrics/ModuleLength
