@@ -134,6 +134,11 @@ You can also use your Rails configuration.  The following example can be put int
   config.neo4j.session.type = :embedded
   config.neo4j.session.path = '/path/to/graph.db'
 
+  # Or, for the beta version of the bolt driver. Make sure to add `gem neo4j-ruby-driver` to your Gemfile
+
+  config.neo4j.session.type = :embedded
+  config.neo4j.session.options = { adaptor_class: Neo4j::Core::CypherSession::Adaptors::Driver }
+
 Neo4j requires authentication by default but if you install using the built-in :doc:`rake tasks </RakeTasks>`) authentication is disabled.  If you are using authentication you can configure it like this:
 
 .. code-block:: ruby

@@ -3,11 +3,19 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [9.4.0] 2018-12-20
 
 ## Added
 
 - `verbose_query_logs` configuration option to allow outputting of source location of queries
+- Adaptor classes loaded dynamically on demand
+- Optionally specify the full adaptor class name instead of session type only (supports driver adaptor)
+
+## Fixed
+
+- Wrong conflicting node aliases on same `branch` usage (see #1526)
+- Incorrect order when `order` and `with_associations` are used together
+- `ScopeEvalContext` redirects now all method missing calls to QueryProxy or Target
 
 ## [9.3.0] 2018-07-12
 
