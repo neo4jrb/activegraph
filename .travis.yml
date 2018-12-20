@@ -19,7 +19,7 @@ rvm:
   - jruby-9
 env:
   global:
-    - JRUBY_OPTS="-J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
+    - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
   matrix:
     - NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-3.3.1
     - NEO4J_URL="bolt://localhost:7472" NEO4J_VERSION=community-3.3.1
