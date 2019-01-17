@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.5.0] 2019-01-21
+
+## Added
+
+- `where_or` method for QueryProxy
+
 ## [9.4.0] 2018-12-20
 
 ## Added

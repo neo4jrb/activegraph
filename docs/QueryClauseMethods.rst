@@ -715,6 +715,51 @@ Neo4j::Core::Query
 
 ------------
 
+#where_or
+~~~~~~~~~~
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_or(q: {age: 30, name: 'Chunky'})
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.age = {q_age} OR q.name = {q_name})
+
+**Parameters:** ``{:q_age=>30, :q_name=>"Chunky"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_or(q: {age: 30, name: 'Chunky'}).where('q.age > 10')
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.age = {q_age} OR q.name = {q_name}) AND (q.age > 10)
+
+**Parameters:** ``{:q_age=>30, :q_name=>"Chunky"}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where_or(q: {age: 20, name: 'Bacon'}).where_not(q: {age: 30, name: 'Chunky'})
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.age = {q_age} OR q.name = {q_name}) AND NOT(q.age = {q_age2} AND q.name = {q_name2})
+
+**Parameters:** ``{:q_age2=>30, :q_name2=>'Chunky', :q_age=>20, :q_name=>'Bacon'}``
+
+------------
+
 #match_nodes
 ~~~~~~~~~~~~
 

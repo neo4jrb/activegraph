@@ -51,6 +51,12 @@ module Neo4j
               end
             end
 
+            def for_where_or_clause(*args)
+              for_where_clause(*args).each do |link|
+                link.instance_variable_set('@clause', :where_or)
+              end
+            end
+
             def new_for_key_and_value(model, key, value)
               key = converted_key(model, key)
 
@@ -90,6 +96,12 @@ module Neo4j
               end
             end
 
+            def for_rel_where_or_clause(*args)
+              for_rel_where_clause(*args).each do |link|
+                link.instance_variable_set('@clause', :where_or)
+              end
+            end
+
             def for_rel_order_clause(arg, _)
               [new(:order, ->(_, v) { arg.is_a?(String) ? arg : {v => arg} })]
             end
@@ -99,9 +111,9 @@ module Neo4j
             end
 
             def for_args(model, clause, args, association = nil)
-              if [:where, :where_not].include?(clause) && args[0].is_a?(String) # Better way?
+              if [:where, :where_not, :where_or].include?(clause) && args[0].is_a?(String) # Better way?
                 [for_arg(model, clause, args[0], *args[1..-1])]
-              elsif [:rel_where, :rel_where_not].include?(clause)
+              elsif [:rel_where, :rel_where_not, :rel_where_or].include?(clause)
                 args.map { |arg| for_arg(model, clause, arg, association) }
               else
                 args.map { |arg| for_arg(model, clause, arg) }
