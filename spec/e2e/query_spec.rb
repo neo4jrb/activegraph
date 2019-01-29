@@ -833,6 +833,20 @@ describe 'Query API' do
         end
       end
 
+      describe '#rel_where_or' do
+        context 'with a rel_class present' do
+          let(:math_lesson) { Student.lessons.rel_where_or(grade: '65', name: 'math').to_a }
+          let(:science_lesson) { Student.lessons.rel_where_or(grade: '99'.to_f, name: 'science').to_a }
+
+          it 'includes the nodes with relationships that match the condition' do
+            expect(math_lesson.count).to eq 1
+            expect(math_lesson.first.subject).to eq 'Math'
+            expect(science_lesson.count).to eq 1
+            expect(science_lesson.first.subject).to eq 'Science'
+          end
+        end
+      end
+
       describe '#rel_order' do
         it 'allows ordering by relationships with rel_order' do
           expect(Student.lessons(:l, :rel).rel_order(:grade).pluck('rel.grade')).to eq([65, 99])

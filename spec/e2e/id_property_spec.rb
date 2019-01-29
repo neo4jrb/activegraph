@@ -513,6 +513,14 @@ describe Neo4j::ActiveNode::IdProperty do
       end
     end
 
+    describe 'where_or' do
+      it 'should find complement' do
+        node = NeoIdTest.create
+        excluded = NeoIdTest.create
+        expect(NeoIdTest.where_or(id: node, name: 'Test')).to eq([node])
+      end
+    end
+
     describe 'order' do
       it 'should order by neo_id' do
         # ascending neo_ids during insertion cannot be guaranteed anymore in community version'
