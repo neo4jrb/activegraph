@@ -49,13 +49,25 @@ module Neo4j
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
         # Executed in the database, callbacks will not be run.
         def replace_with(node_or_nodes)
-          nodes = Array(node_or_nodes)
+          nodes = _nodeify!(node_or_nodes)
+          original_nodes = Array(self)
+          if nodes != original_nodes
+            new_nodes = add_rels(nodes, original_nodes)
+            delete_rels_for_nodes(original_nodes - nodes)
+            new_nodes | nodes
+          else
+            nodes
+          end
+        end
 
-          self.delete_all_rels
-          nodes.map do |node|
+        def add_rels(nodes, original_nodes)
+          (nodes - original_nodes).map do |node|
             node if _create_relation_or_defer(node)
           end.compact
-          # nodes.each { |node| self << node }
+        end
+
+        def delete_rels_for_nodes(nodes)
+          self.where(id: nodes.map(&:id)).delete_all_rels if nodes.present?
         end
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.

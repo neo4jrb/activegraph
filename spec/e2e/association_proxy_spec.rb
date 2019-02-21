@@ -54,6 +54,12 @@ describe 'Association Proxy' do
     expect(billy.lessons.exams_given).to respond_to(:to_ary)
   end
 
+  it 'does not recreate relatioship for existing relationships' do
+    rel_id = science.exams_given.where(id: science_exam.id).rel.id
+    science.exams_given = [science_exam]
+    expect(science.exams_given.rel.id).to eq(rel_id)
+  end
+
   it 'Should only make one query per association' do
     expect(billy.lessons.exams_given).to match_array([math_exam, science_exam, science_exam2])
 
