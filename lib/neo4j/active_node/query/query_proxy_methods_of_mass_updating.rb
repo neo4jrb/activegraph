@@ -53,7 +53,6 @@ module Neo4j
           original_nodes = Array(self)
           new_nodes = add_rels(nodes, original_nodes)
           delete_rels_for_nodes(original_nodes - nodes)
-          binding.pry
           new_nodes | nodes
         end
 
