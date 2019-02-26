@@ -50,18 +50,19 @@ module Neo4j
         # Executed in the database, callbacks will not be run.
         def replace_with(node_or_nodes)
           node_hash = idify_hash(node_or_nodes)
-          original_ids = Array(self).pluck(:id)
+          original_ids = self.pluck(:id)
           new_nodes = add_rels(node_hash, original_ids)
           delete_rels_for_nodes(original_ids - node_hash.keys)
           new_nodes | node_hash.values
         end
 
         def idify_hash(args)
-          [args].flatten.each_with_object({}) do |arg, hash|
+          [args].flatten.each_with_object({}).with_index do |(arg, hash), inx|
             if arg.is_a?(Integer) || arg.is_a?(String)
               hash[arg] = @model.find(arg)
             else
-              hash[arg.id] = arg
+               key = arg.persisted? ? arg.id : "tmp_#{inx}"
+               hash[key] = arg
             end
           end
         end
