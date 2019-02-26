@@ -61,8 +61,8 @@ module Neo4j
             if arg.is_a?(Integer) || arg.is_a?(String)
               hash[arg] = @model.find(arg)
             else
-               key = arg.persisted? ? arg.id : "tmp_#{inx}"
-               hash[key] = arg
+              key = arg.persisted? ? arg.id : "tmp_#{inx}"
+              hash[key] = arg
             end
           end
         end
