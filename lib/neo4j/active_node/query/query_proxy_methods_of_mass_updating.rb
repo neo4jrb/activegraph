@@ -49,21 +49,31 @@ module Neo4j
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
         # Executed in the database, callbacks will not be run.
         def replace_with(node_or_nodes)
-          nodes = _nodeify!(node_or_nodes)
-          original_nodes = Array(self)
-          new_nodes = add_rels(nodes, original_nodes)
-          delete_rels_for_nodes(original_nodes - nodes)
-          new_nodes | nodes
+          node_hash = idify_hash(node_or_nodes)
+          original_ids = Array(self).pluck(:id)
+          new_nodes = add_rels(node_hash, original_ids)
+          delete_rels_for_nodes(original_ids - node_hash.keys)
+          new_nodes | node_hash.values
         end
 
-        def add_rels(nodes, original_nodes)
-          (nodes - original_nodes).map do |node|
-            node if _create_relation_or_defer(node)
+        def idify_hash(args)
+          [args].flatten.each_with_object({}) do |arg, hash|
+            if arg.is_a?(Integer) || arg.is_a?(String)
+              hash[arg] = @model.find(arg)
+            else
+              hash[arg.id] = arg
+            end
+          end
+        end
+
+        def add_rels(node_hash, original_ids)
+          (node_hash.keys - original_ids).map do |id|
+            node_hash[id] if _create_relation_or_defer(node_hash[id])
           end.compact
         end
 
-        def delete_rels_for_nodes(nodes)
-          self.where(id: nodes.map(&:id)).delete_all_rels if nodes.present?
+        def delete_rels_for_nodes(ids)
+          self.where(id: ids).delete_all_rels if ids.present?
         end
 
         # Returns all relationships between a node and its last link in the QueryProxy chain, destroys them in Ruby. Callbacks will be run.
