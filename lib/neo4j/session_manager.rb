@@ -7,13 +7,15 @@ module Neo4j
       def open_neo4j_session(type, url_or_path, wait_for_connection = false, options = {})
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(type)
 
-        adaptor = wait_for_value(wait_for_connection, Neo4j::Core::CypherSession::ConnectionFailedError) do
+        wait_for_value(wait_for_connection, Neo4j::Core::CypherSession::ConnectionFailedError) do
           verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
-          cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc,
-                                                                  verbose_query_logs: verbose_query_logs))
+          adaptor = cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc,
+                                                                            verbose_query_logs: verbose_query_logs))
+          session = Neo4j::Core::CypherSession.new(adaptor)
+          # NOTE: query version to test if connection is available
+          session.version if wait_for_connection
+          session
         end
-
-        Neo4j::Core::CypherSession.new(adaptor)
       end
 
       def adaptor_class(type, options)
