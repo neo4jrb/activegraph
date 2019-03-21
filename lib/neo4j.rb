@@ -1,3 +1,4 @@
+require 'forwardable'
 require 'neo4j/version'
 
 require 'neo4j-core'
