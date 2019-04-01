@@ -91,10 +91,15 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 * [Andreas Ronge](https://github.com/andreasronge)
 
-### Current Maintainers
+### Previous Maintainers
 
 * [Brian Underwood](https://github.com/cheerfulstoic)
 * [Chris Grigg](https://github.com/subvertallchris)
+
+### Current Maintainers
+
+* [Heinrich Klobuczek](https://github.com/klobuczek)
+* [Amit Suryavanshi](https://github.com/amitsuryavanshi)
 
 ## Contributing
 
