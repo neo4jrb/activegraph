@@ -122,7 +122,7 @@ module Neo4j
         end
 
         def path_var
-          "p#{_chain_level - 1}"
+          "path#{_chain_level - 1}"
         end
 
         # param [TrueClass, FalseClass] with_labels This param is used by certain QueryProxy methods that already have the neo_id and
