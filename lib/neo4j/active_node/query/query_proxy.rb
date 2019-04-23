@@ -116,15 +116,6 @@ module Neo4j
           end
         end
 
-        def query_path(chain_var, var)
-          path = "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})"
-          @rel_length ? "#{path_var}=#{path}" : path
-        end
-
-        def path_var
-          "path#{_chain_level - 1}"
-        end
-
         # param [TrueClass, FalseClass] with_labels This param is used by certain QueryProxy methods that already have the neo_id and
         # therefore do not need labels.
         # The @association_labels instance var is set during init and used during association chaining to keep labels out of Cypher queries.
@@ -355,6 +346,15 @@ module Neo4j
 
         def _rel_chain_var
           :"rel#{_chain_level - 1}"
+        end
+
+        def query_path(chain_var, var)
+          path = "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})"
+          @rel_length ? "#{path_var}=#{path}" : path
+        end
+
+        def path_var
+          "path#{_chain_level - 1}"
         end
 
         attr_writer :context
