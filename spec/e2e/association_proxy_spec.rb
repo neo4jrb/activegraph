@@ -31,7 +31,32 @@ describe 'Association Proxy' do
       has_many :in, :lessons, model_class: :Lesson, origin: :exams_given
       has_many :out, :students, type: :has_student, model_class: :Student
     end
+
+    stub_active_node_class('Person') do
+      property :name
+
+      has_many :out, :knows, model_class: 'Person', type: nil
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
+      has_many :in, :posts, type: nil
+    end
+
+    stub_active_node_class('Post') do
+      property :name
+
+      has_one :out, :owner, origin: :posts, model_class: 'Person'
+      has_many :both, :friends, model_class: false, type: nil
+      has_many :out, :knows, model_class: 'Person', type: nil
+      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
+    end
+
   end
+
+  let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
+  let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
+  let(:friend2) { Person.create(name: 'f-2') }
+  let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
+  let(:friend4) { Person.create(name: 'f-4') }
+  let(:post) { Post.create(name: 'Post-1', owner: node) }
 
   let(:billy)     { Student.create(name: 'Billy') }
   let(:math)      { Lesson.create(subject: 'math', level: 101) }
@@ -47,6 +72,17 @@ describe 'Association Proxy' do
     science.exams_given << science_exam
     science.exams_given << science_exam2
     billy.favorite_lesson = math
+  end
+
+  it 'Should allow for string parameter with varibale length relationship notation' do
+    owner = post.owner.as(:owner)
+    expect_queries(1) do
+      owner.with_associations('knows*').each do |person|
+        person.knows.each do |known|
+          known.knows.to_a
+        end
+      end
+    end
   end
 
   it 'allows associations to respond to to_ary' do
@@ -153,6 +189,30 @@ describe 'Association Proxy' do
     Student.create.lessons << science
     expect_queries(1) do
       science.students.with_associations(lessons: :exams_given).each do |student|
+        student.lessons.rels.each do |lesson_rel|
+          lesson_rel.end_node.exams_given.to_a
+        end
+      end
+    end
+  end
+
+  it 'Should allow for string parameter' do
+    Student.create.lessons << science
+    Student.create.lessons << science
+    expect_queries(1) do
+      science.students.with_associations('lessons.exams_given').each do |student|
+        student.lessons.rels.each do |lesson_rel|
+          lesson_rel.end_node.exams_given.to_a
+        end
+      end
+    end
+  end
+
+  it 'Should allow for string parameter with varibale length relationship notation' do
+    Student.create.lessons << science
+    Student.create.lessons << science
+    expect_queries(1) do
+      science.students.with_associations('lessons.exams_given*').each do |student|
         student.lessons.rels.each do |lesson_rel|
           lesson_rel.end_node.exams_given.to_a
         end

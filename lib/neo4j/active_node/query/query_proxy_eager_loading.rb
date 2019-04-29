@@ -9,13 +9,14 @@ module Neo4j
         end
 
         class AssociationTree < Hash
-          attr_accessor :model, :name, :association, :path
+          attr_accessor :model, :name, :association, :path, :rel_length
 
-          def initialize(model, name = nil)
+          def initialize(model, name = nil, rel_length = nil)
             super()
             self.model = name ? target_class(model, name) : model
             self.name = name
             self.association = name ? model.associations[name] : nil
+            self.rel_length = rel_length
           end
 
           def clone
@@ -32,6 +33,8 @@ module Neo4j
               spec.each { |s| add_spec(s) }
             elsif spec.is_a?(Hash)
               process_hash(spec)
+            elsif spec.is_a?(String)
+              add_spec(process_string(spec))
             else
               self[spec] ||= self.class.new(model, spec)
             end
@@ -42,7 +45,24 @@ module Neo4j
           end
 
           def process_hash(spec)
-            spec.each { |k, v| (self[k] ||= self.class.new(model, k)).add_spec(v) }
+            spec.each do |k, v|
+              rel_length = v.is_a?(Hash) ? v.delete(:rel_length) : nil
+              (self[k] ||= self.class.new(model, k, rel_length)).add_spec(v)
+            end
+          end
+
+          def process_string(spec)
+            paths = spec.split(',').collect { |path| path.split('.') }
+            paths.collect do |path|
+              path.reverse.inject({}) do |hash, rel|
+                if rel.include?('*')
+                  specs = rel.split('*')
+                  { specs.first.to_sym => hash.merge(rel_length: { min: 1,  max: specs[1] }) }
+                else
+                  { rel.to_sym => hash }
+                end
+              end
+            end
           end
 
           private
@@ -65,7 +85,10 @@ module Neo4j
             cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
               eager_records.first.zip(eager_records.last).each do |eager_record|
-                add_to_cache(*eager_record, element)
+                rel = eager_record.first
+                node = eager_record.last
+                rel = rel.last if rel.is_a?(Array)
+                add_to_cache(rel, node, element)
               end
             end
 
@@ -109,8 +132,10 @@ module Neo4j
           if rel.is_a?(Neo4j::ActiveRel)
             rel.instance_variable_set(direction == :in ? '@from_node' : '@to_node', node)
           end
-          @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id]
-            .association_proxy(element.name).add_to_cache(node, rel)
+          @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id].association_proxy(element.name).tap do |proxy|
+            proxy.init_cache
+            proxy.add_to_cache(node, rel)
+          end
         end
 
         def init_associations(node, element)
@@ -191,13 +216,13 @@ module Neo4j
         def optional_match(base_query, path)
           base_query.optional_match(
             "(#{identity})#{path.each_with_index.map do |element, index|
-              relationship_part(element.association, path_name(path[0..index]))
+              relationship_part(element.association, path_name(path[0..index]), element.rel_length)
             end.join}"
           )
         end
 
-        def relationship_part(association, path_name)
-          "#{association.arrow_cypher(escape("#{path_name}_rel"))}(#{escape(path_name)})"
+        def relationship_part(association, path_name, rel_length)
+          "#{association.arrow_cypher(escape("#{path_name}_rel"), {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
         def chain
