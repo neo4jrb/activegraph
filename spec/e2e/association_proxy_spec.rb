@@ -106,9 +106,9 @@ describe 'Association Proxy' do
   end
 
   it 'Should allow for string parameter with varibale length relationship notation' do
-    owner = post.owner.as(:owner)
+    user = post.owner.as(:owner)
     expect_queries(1) do
-      owner.with_associations('knows*.comments').each do |owner|
+      user.with_associations('knows*.comments').each do |owner|
         owner.knows.each do |known|
           known.knows[0].comments.to_a
         end

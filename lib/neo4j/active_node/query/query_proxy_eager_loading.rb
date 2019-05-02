@@ -57,9 +57,9 @@ module Neo4j
               path.reverse.inject({}) do |hash, rel|
                 if rel.include?('*')
                   specs = rel.split('*')
-                  { specs.first.to_sym => hash.merge(rel_length: { min: 1,  max: specs[1] }) }
+                  {specs.first.to_sym => hash.merge(rel_length: {min: 1, max: specs[1]})}
                 else
-                  { rel.to_sym => hash }
+                  {rel.to_sym => hash}
                 end
               end
             end
@@ -85,15 +85,18 @@ module Neo4j
             cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
               eager_records.first.zip(eager_records.last).each do |eager_record|
-                rel = eager_record.first
-                node = eager_record.last
-                rel = rel.last if rel.is_a?(Array)
-                add_to_cache(rel, node, element)
+                add_to_cache(*extract_rel_node(eager_record), element)
               end
             end
-
             record
           end
+        end
+
+        def extract_rel_node(eager_record)
+          rel = eager_record.first
+          node = eager_record.last
+          rel = rel.last if rel.is_a?(Array)
+          [rel, node]
         end
 
         def with_associations(*spec)
@@ -233,7 +236,7 @@ module Neo4j
         end
 
         def relationship_part(association, path_name, rel_length)
-          rel_var = rel_length ? nil : escape("#{path_name}_rel") 
+          rel_var = rel_length ? nil : escape("#{path_name}_rel")
           "#{association.arrow_cypher(rel_var, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
