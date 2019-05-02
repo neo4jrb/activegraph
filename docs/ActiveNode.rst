@@ -599,3 +599,17 @@ You can also use ``with_associations`` with multiple levels like:
 .. code-block:: ruby
 
   person.blog_posts.with_associations(:tags, comments: :hashtags)
+
+You can use ``*`` to eager load relationships with variable length like:
+
+.. code-block:: ruby
+
+  person.blog_posts.with_associations('comments.owner.friends*')
+
+To get fixed lenght relationships you can use ``*<length>`` like:
+
+.. code-block:: ruby
+
+  person.blog_posts.with_associations('comments.owner.friends*2')
+
+This will eager load ``friends`` relationship till 2 levels deep.
