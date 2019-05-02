@@ -227,18 +227,6 @@ describe 'Association Proxy' do
     end
   end
 
-  it 'Should allow for string parameter' do
-    Student.create.lessons << science
-    Student.create.lessons << science
-    expect_queries(1) do
-      science.students.with_associations('lessons.exams_given').each do |student|
-        student.lessons.rels.each do |lesson_rel|
-          lesson_rel.end_node.exams_given.to_a
-        end
-      end
-    end
-  end
-
   it 'Queries limited times in depth two loops with deep with_associations iterating over relationships with each_rel' do
     Student.create.lessons << science
     Student.create.lessons << science

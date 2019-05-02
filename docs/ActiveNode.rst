@@ -606,7 +606,7 @@ You can use ``*`` to eager load relationships with variable length like:
 
   person.blog_posts.with_associations('comments.owner.friends*')
 
-To get fixed lenght relationships you can use ``*<length>`` like:
+To get fixed length relationships you can use ``*<length>`` like:
 
 .. code-block:: ruby
 
