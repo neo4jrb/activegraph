@@ -139,7 +139,11 @@ module Neo4j
         end
 
         def init_associations(node, element)
-          element.each_key { |key| node.association_proxy(key).init_cache }
+          if element.rel_length && element.empty?
+            node.association_proxy(element.name).init_cache
+          else
+            element.each_key { |key| node.association_proxy(key).init_cache }
+          end
         end
 
         def cache_and_init(node, element)
@@ -201,8 +205,12 @@ module Neo4j
         def with_association_query_part(base_query, path, previous_with_vars)
           optional_match_with_where(base_query, path, previous_with_vars)
             .with(identity,
-                  "[collect(#{escape("#{path_name(path)}_rel")}), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
+                  "[#{relationship_collection(path)}, collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
                   *previous_with_vars)
+        end
+
+        def relationship_collection(path)
+          path.last.rel_length ? "collect(relationships(#{escape("#{path_name(path)}_path")}))" : "collect(#{escape("#{path_name(path)}_rel")})"
         end
 
         def optional_match_with_where(base_query, path, _)
@@ -214,15 +222,19 @@ module Neo4j
         end
 
         def optional_match(base_query, path)
-          base_query.optional_match(
-            "(#{identity})#{path.each_with_index.map do |element, index|
-              relationship_part(element.association, path_name(path[0..index]), element.rel_length)
-            end.join}"
-          )
+          base_query.optional_match(path_cypher(path))
+        end
+
+        def path_cypher(path)
+          cypher = "(#{identity})#{path.each_with_index.map do |element, index|
+            relationship_part(element.association, path_name(path[0..index]), element.rel_length)
+          end.join}"
+          path.last.rel_length ? "#{escape("#{path_name(path)}_path")}=#{cypher}" : cypher
         end
 
         def relationship_part(association, path_name, rel_length)
-          "#{association.arrow_cypher(escape("#{path_name}_rel"), {}, false, false, rel_length)}(#{escape(path_name)})"
+          rel_var = rel_length ? nil : escape("#{path_name}_rel") 
+          "#{association.arrow_cypher(rel_var, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
         def chain

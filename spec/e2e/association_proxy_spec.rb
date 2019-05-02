@@ -37,26 +37,25 @@ describe 'Association Proxy' do
 
       has_many :out, :knows, model_class: 'Person', type: nil
       has_many :in, :knows_me, origin: :knows, model_class: 'Person'
-      has_many :in, :posts, type: nil
+      has_many :in, :posts, type: :posts
+      has_many :in, :comments, type: :comments
     end
 
     stub_active_node_class('Post') do
       property :name
 
       has_one :out, :owner, origin: :posts, model_class: 'Person'
-      has_many :both, :friends, model_class: false, type: nil
-      has_many :out, :knows, model_class: 'Person', type: nil
-      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
+      has_many :in, :comments, type: :posts
+    end
+
+    stub_active_node_class('Comment') do
+      property :text
+
+      has_one :out, :owner, origin: :comments, model_class: 'Person'
+      has_one :out, :post, origin: :comments, model_class: 'Post'
     end
 
   end
-
-  let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
-  let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
-  let(:friend2) { Person.create(name: 'f-2') }
-  let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
-  let(:friend4) { Person.create(name: 'f-4') }
-  let(:post) { Post.create(name: 'Post-1', owner: node) }
 
   let(:billy)     { Student.create(name: 'Billy') }
   let(:math)      { Lesson.create(subject: 'math', level: 101) }
@@ -64,6 +63,16 @@ describe 'Association Proxy' do
   let(:math_exam) { Exam.create(name: 'Math Exam') }
   let(:science_exam) { Exam.create(name: 'Science Exam') }
   let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
+
+  let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
+  let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
+  let(:friend2) { Person.create(name: 'f-2', knows: [friend5]) }
+  let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
+  let(:friend4) { Person.create(name: 'f-4') }
+  let(:friend5) { Person.create(name: 'f-5') }
+  let(:post) { Post.create(name: 'Post-1', owner: node, comments: [comment]) }
+  let(:comment) { Comment.create(text: 'test-comment', owner: friend1) }
+
 
   before do
     [math, science].each { |lesson| billy.lessons << lesson }
@@ -75,11 +84,22 @@ describe 'Association Proxy' do
   end
 
   it 'Should allow for string parameter with varibale length relationship notation' do
+    post
+    expect_queries(1) do
+      post.comments.with_associations('owner.knows*').each do |comment|
+        comment.owner.knows.each do |known|
+          known.knows.to_a
+        end
+      end
+    end
+  end
+
+  it 'Should allow for string parameter with varibale length relationship notation' do
     owner = post.owner.as(:owner)
     expect_queries(1) do
-      owner.with_associations('knows*').each do |person|
-        person.knows.each do |known|
-          known.knows.to_a
+      owner.with_associations('knows*.comments').each do |owner|
+        owner.knows.each do |known|
+          known.knows[0].comments.to_a
         end
       end
     end
@@ -201,18 +221,6 @@ describe 'Association Proxy' do
     Student.create.lessons << science
     expect_queries(1) do
       science.students.with_associations('lessons.exams_given').each do |student|
-        student.lessons.rels.each do |lesson_rel|
-          lesson_rel.end_node.exams_given.to_a
-        end
-      end
-    end
-  end
-
-  it 'Should allow for string parameter with varibale length relationship notation' do
-    Student.create.lessons << science
-    Student.create.lessons << science
-    expect_queries(1) do
-      science.students.with_associations('lessons.exams_given*').each do |student|
         student.lessons.rels.each do |lesson_rel|
           lesson_rel.end_node.exams_given.to_a
         end
