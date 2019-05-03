@@ -36,7 +36,6 @@ describe 'Association Proxy' do
       property :name
 
       has_many :out, :knows, model_class: 'Person', type: nil
-      has_many :in, :knows_me, origin: :knows, model_class: 'Person'
       has_many :in, :posts, type: :posts
       has_many :in, :comments, type: :comments
     end
@@ -64,16 +63,6 @@ describe 'Association Proxy' do
   let(:science_exam) { Exam.create(name: 'Science Exam') }
   let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
 
-  let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
-  let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
-  let(:friend2) { Person.create(name: 'f-2', knows: [friend5]) }
-  let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
-  let(:friend4) { Person.create(name: 'f-4') }
-  let(:friend5) { Person.create(name: 'f-5') }
-  let(:post) { Post.create(name: 'Post-1', owner: node, comments: [comment]) }
-  let(:comment) { Comment.create(text: 'test-comment', owner: friend1) }
-
-
   before do
     [math, science].each { |lesson| billy.lessons << lesson }
     [math_exam, science_exam].each { |exam| billy.exams << exam }
@@ -83,34 +72,43 @@ describe 'Association Proxy' do
     billy.favorite_lesson = math
   end
 
-  it 'Should allow for string parameter with variable length relationship notation' do
-    post
-    expect_queries(1) do
-      post.comments.with_associations('owner.knows*').each do |comment|
-        comment.owner.knows.each do |known|
-          known.knows.to_a
+  context 'variable lenght relationship with with_associations' do
+
+    let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
+    let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
+    let(:friend2) { Person.create(name: 'f-2', knows: [friend5]) }
+    let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
+    let(:friend4) { Person.create(name: 'f-4') }
+    let(:friend5) { Person.create(name: 'f-5') }
+    let!(:post) { Post.create(name: 'Post-1', owner: node, comments: [comment]) }
+    let(:comment) { Comment.create(text: 'test-comment', owner: friend1) }
+
+    it 'Should allow for string parameter with variable length relationship notation' do
+      expect_queries(1) do
+        post.comments.with_associations(owner: 'knows*').each do |comment|
+          comment.owner.knows.each do |known|
+            known.knows.to_a
+          end
         end
       end
     end
-  end
 
-  it 'Should allow for string parameter with fixed length relationship notation' do
-    post
-    expect_queries(1) do
-      post.comments.with_associations('owner.knows*2').each do |comment|
-        comment.owner.knows.each do |known|
-          known.knows.to_a
+    it 'Should allow for string parameter with fixed length relationship notation' do
+      expect_queries(1) do
+        post.comments.with_associations('owner.knows*2').each do |comment|
+          comment.owner.knows.each do |known|
+            known.knows.to_a
+          end
         end
       end
     end
-  end
 
-  it 'Should allow for string parameter with variable length relationship notation' do
-    user = post.owner(chainable: true)
-    expect_queries(1) do
-      user.with_associations('knows*.comments').each do |owner|
-        owner.knows.each do |known|
-          known.knows[0].comments.to_a
+    it 'Should allow for string parameter with variable length relationship notation' do
+      expect_queries(1) do
+        post.owner(chainable: true).with_associations('knows*.comments').each do |owner|
+          owner.knows.each do |known|
+            known.knows[0].comments.to_a
+          end
         end
       end
     end

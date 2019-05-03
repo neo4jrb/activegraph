@@ -57,7 +57,7 @@ module Neo4j
               path.reverse.inject({}) do |hash, rel|
                 if rel.include?('*')
                   specs = rel.split('*')
-                  {specs.first.to_sym => hash.merge(rel_length: {min: 1, max: specs[1]})}
+                  {specs.first.to_sym => hash.merge(rel_length: {max: specs[1]})}
                 else
                   {rel.to_sym => hash}
                 end
