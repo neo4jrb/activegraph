@@ -83,7 +83,7 @@ describe 'Association Proxy' do
     billy.favorite_lesson = math
   end
 
-  it 'Should allow for string parameter with varibale length relationship notation' do
+  it 'Should allow for string parameter with variable length relationship notation' do
     post
     expect_queries(1) do
       post.comments.with_associations('owner.knows*').each do |comment|
