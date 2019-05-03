@@ -7,13 +7,12 @@ module Neo4j
       def open_neo4j_session(type, url_or_path, wait_for_connection = false, options = {})
         enable_unlimited_strength_crypto! if java_platform? && session_type_is_embedded?(type)
 
-        adaptor = wait_for_value(wait_for_connection, Neo4j::Core::CypherSession::ConnectionFailedError) do
-          verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
-          cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc,
-                                                                  verbose_query_logs: verbose_query_logs))
-        end
-
-        Neo4j::Core::CypherSession.new(adaptor)
+        verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
+        adaptor = cypher_session_adaptor(type, url_or_path, options.merge(wrap_level: :proc,
+                                                                          verbose_query_logs: verbose_query_logs))
+        session = Neo4j::Core::CypherSession.new(adaptor)
+        wait_and_retry(session) if wait_for_connection
+        session
       end
 
       def adaptor_class(type, options)
@@ -42,23 +41,17 @@ module Neo4j
         RUBY_PLATFORM =~ /java/
       end
 
-      def wait_for_value(wait, exception_class)
-        value = nil
+      def wait_and_retry(session)
         Timeout.timeout(60) do
-          until value
-            begin
-              if value = yield
-                # puts
-                return value
-              end
-            rescue exception_class => e
-              raise e if !wait
-
-              # putc '.'
-              sleep(1)
-            end
+          begin
+            session.constraints
+          rescue Neo4j::Core::CypherSession::ConnectionFailedError
+            sleep(1)
+            retry
           end
         end
+      rescue Timeout::Error
+        raise Timeout::Error, 'Timeout while waiting for connection to neo4j database'
       end
 
       private
