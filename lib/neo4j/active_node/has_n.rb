@@ -211,21 +211,32 @@ module Neo4j::ActiveNode
 
     def association_proxy(name, options = {})
       name = name.to_sym
-      hash = association_proxy_hash(name, options)
-      association_proxy_cache_fetch(hash) do
-        if result_cache = self.instance_variable_get('@source_proxy_result_cache')
-          cache = nil
-          result_cache.inject(nil) do |proxy_to_return, object|
-            proxy = fresh_association_proxy(name, options.merge(start_object: object),
-                                            proc { (cache ||= previous_proxy_results_by_previous_id(result_cache, name))[object.neo_id] })
+      proxy_hash_key = association_proxy_hash(name, options)
 
-            object.association_proxy_cache[hash] = proxy
+      association_proxy_cache_fetch(proxy_hash_key) do
+        source_result_cache = self.instance_variable_get('@source_proxy_result_cache')
+        next fresh_association_proxy(name, options) unless source_result_cache
 
-            (self == object ? proxy : proxy_to_return)
-          end
-        else
-          fresh_association_proxy(name, options)
+        # The query to load this association will load objects not just for this node,
+        # but possibly others that were part of the same source proxy.
+        # association_query_results caches the results so that the query is only done once.
+        association_query_results = nil
+
+        # iterate through the source result cache and assign proxies
+        # for all the nodes, including self.
+        source_result_cache.each do |object|
+          result_cache_proc = proc {
+            association_query_results ||= previous_proxy_results_by_previous_id(source_result_cache, name)
+            association_query_results[object.neo_id]
+          }
+
+          proxy_options = options.merge(start_object: object)
+          proxy_for_object = fresh_association_proxy(name, proxy_options, result_cache_proc)
+          object.association_proxy_cache[proxy_hash_key] = proxy_for_object
         end
+
+        # now return the proxy for self
+        self.association_proxy_cache[proxy_hash_key]
       end
     end
 
