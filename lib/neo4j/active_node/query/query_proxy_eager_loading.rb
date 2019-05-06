@@ -201,7 +201,8 @@ module Neo4j
         def with_association_query_part(base_query, path, previous_with_vars)
           optional_match_with_where(base_query, path, previous_with_vars)
             .with(identity,
-                  "[collect(last(relationships(#{escape("#{path_name(path)}_path")}))), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
+                  "[collect(last(relationships(#{escape("#{path_name(path)}_path")}))), collect(#{escape path_name(path)})] "\
+                  "AS #{escape("#{path_name(path)}_collection")}",
                   *previous_with_vars)
         end
 

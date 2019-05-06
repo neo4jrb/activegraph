@@ -53,7 +53,6 @@ describe 'Association Proxy' do
       has_one :out, :owner, origin: :comments, model_class: 'Person'
       has_one :out, :post, origin: :comments, model_class: 'Post'
     end
-
   end
 
   let(:billy)     { Student.create(name: 'Billy') }
@@ -73,7 +72,6 @@ describe 'Association Proxy' do
   end
 
   context 'variable lenght relationship with with_associations' do
-
     let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
     let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
     let(:friend2) { Person.create(name: 'f-2', knows: [friend5]) }
