@@ -10,7 +10,7 @@ module Neo4j::ActiveNode
 
     def delete_reverse_relationship(association)
       reverse_assoc = reverse_association(association)
-      self.send("#{reverse_assoc.name}=", nil) if reverse_assoc&.type == :has_one
+      self.send("#{reverse_assoc.name}=", nil) if reverse_assoc && reverse_assoc.type == :has_one
     end
 
     def reverse_association(association)
