@@ -207,7 +207,7 @@ module Neo4j
           Neo4j::ActiveBase.run_transaction do
             other_nodes.each do |other_node|
               if other_node.neo_id
-                other_node.delete_reverse_relationship(association)
+                other_node.try(:delete_reverse_relationship, association)
               else
                 other_node.save
               end
