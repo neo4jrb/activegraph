@@ -60,7 +60,7 @@ describe 'Association Proxy' do
     person3 = Person.create(name: '3')
     person2 = Person.create(name: '2', children: [person3])
     person1 = Person.create(name: '1', children: [person2])
-    person1.update(children: [person2,person3.id])
+    person1.update(children: [person2, person3.id])
     expect(person3.as(:p).parent.count).to eq(1)
   end
 
