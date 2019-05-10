@@ -31,6 +31,13 @@ describe 'Association Proxy' do
       has_many :in, :lessons, model_class: :Lesson, origin: :exams_given
       has_many :out, :students, type: :has_student, model_class: :Student
     end
+
+    stub_active_node_class('Person') do
+      property :name
+
+      has_one :out, :parent, type: :parent, model_class: 'Person', dependent: :delete
+      has_many :in, :children, origin: :parent, model_class: 'Person'
+    end
   end
 
   let(:billy)     { Student.create(name: 'Billy') }
@@ -47,6 +54,14 @@ describe 'Association Proxy' do
     science.exams_given << science_exam
     science.exams_given << science_exam2
     billy.favorite_lesson = math
+  end
+
+  it 'updates inverse has_one association correctly' do
+    person3 = Person.create(name: '3')
+    person2 = Person.create(name: '2', children: [person3])
+    person1 = Person.create(name: '1', children: [person2])
+    person1.update(children: [person2,person3.id])
+    expect(person3.as(:p).parent.count).to eq(1)
   end
 
   it 'allows associations to respond to to_ary' do

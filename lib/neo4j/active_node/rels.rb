@@ -7,5 +7,16 @@ module Neo4j::ActiveNode
       fail "Can't access relationship on a non persisted node" unless _persisted_obj
       _persisted_obj
     end
+
+    def delete_reverse_relationship(association)
+      reverse_assoc = reverse_association(association)
+      self.send("#{reverse_assoc.name}=", nil) if reverse_assoc&.type == :has_one
+    end
+
+    def reverse_association(association)
+      if association.target_class
+        self.class.associations.find {|key, assoc| association.inverse_of?(assoc)}&.last
+      end
+    end
   end
 end
