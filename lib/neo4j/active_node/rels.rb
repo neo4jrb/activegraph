@@ -15,7 +15,8 @@ module Neo4j::ActiveNode
 
     def reverse_association(association)
       if association.target_class
-        self.class.associations.find {|key, assoc| association.inverse_of?(assoc)}&.last
+        reverse_assoc = self.class.associations.find {|key, assoc| association.inverse_of?(assoc)}
+        reverse_assoc && reverse_assoc.last
       end
     end
   end
