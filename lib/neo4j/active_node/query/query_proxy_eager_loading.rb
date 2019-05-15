@@ -34,7 +34,7 @@ module Neo4j
             elsif spec.is_a?(Hash)
               process_hash(spec)
             elsif spec.is_a?(String)
-              add_spec(process_string(spec))
+              process_string(spec)
             else
               self[spec] ||= self.class.new(model, spec)
             end
@@ -52,16 +52,15 @@ module Neo4j
           end
 
           def process_string(spec)
-            paths = spec.split(',').collect { |path| path.split('.') }
-            paths.collect do |path|
-              path.reverse.inject({}) do |hash, rel|
-                if rel.include?('*')
-                  specs = rel.split('*')
-                  {specs.first.to_sym => hash.merge(rel_length: {max: specs[1]})}
-                else
-                  {rel.to_sym => hash}
-                end
+            spec.split(',').collect do |path|
+              rel = path.match(/[^.]+/)[0]
+              path = path.delete_prefix('.').delete_prefix(rel)
+              if rel.include?('*')
+                rel, length = rel.split('*')
+                rel_length = { max: length }
               end
+              s = self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)
+              s.add_spec(path) unless path.empty?
             end
           end
 
