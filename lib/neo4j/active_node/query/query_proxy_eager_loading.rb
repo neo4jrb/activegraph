@@ -52,15 +52,15 @@ module Neo4j
           end
 
           def process_string(spec)
-            spec.split(',').collect do |path|
-              rel = path.match(/[^.]+/)[0]
-              path.slice!('.').slice!(rel)
+            spec.split(',').collect do |seg|
+              rel = seg.match(/[^.]+/)[0]
+              seg = seg.sub(/^[.]/, '').sub(rel, '')
               if rel.include?('*')
                 rel, length = rel.split('*')
                 rel_length = {max: length}
               end
               (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
-                quey_spec.add_spec(path) unless path.empty?
+                quey_spec.add_spec(seg) unless seg.blank?
               end
             end
           end
