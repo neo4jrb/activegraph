@@ -59,8 +59,9 @@ module Neo4j
                 rel, length = rel.split('*')
                 rel_length = { max: length }
               end
-              s = self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)
-              s.add_spec(path) unless path.empty?
+              (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
+                quey_spec.add_spec(path) unless path.empty?
+              end
             end
           end
 
