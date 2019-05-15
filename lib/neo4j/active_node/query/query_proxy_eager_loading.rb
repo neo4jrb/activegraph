@@ -54,10 +54,10 @@ module Neo4j
           def process_string(spec)
             spec.split(',').collect do |path|
               rel = path.match(/[^.]+/)[0]
-              path = path.delete_prefix('.').delete_prefix(rel)
+              path.slice!('.').slice!(rel)
               if rel.include?('*')
                 rel, length = rel.split('*')
-                rel_length = { max: length }
+                rel_length = {max: length}
               end
               (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
                 quey_spec.add_spec(path) unless path.empty?
