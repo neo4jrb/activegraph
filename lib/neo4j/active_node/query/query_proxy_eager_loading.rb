@@ -55,17 +55,21 @@ module Neo4j
             spec.split(',').collect do |seg|
               rel = seg.match(/[^.]+/)[0]
               seg = seg.sub(/^[.]/, '').sub(rel, '')
-              if rel.include?('*')
-                rel, length = rel.split('*')
-                rel_length = {max: length}
-              end
-              (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
-                quey_spec.add_spec(seg) unless seg.blank?
-              end
+              add_strig_spec(rel, seg)
             end
           end
 
           private
+
+          def add_strig_spec(rel, seg)
+            if rel.include?('*')
+              rel, length = rel.split('*')
+              rel_length = {max: length}
+            end
+            (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
+              quey_spec.add_spec(seg) unless seg.blank?
+            end
+          end
 
           def target_class(model, key)
             association = model.associations[key]
