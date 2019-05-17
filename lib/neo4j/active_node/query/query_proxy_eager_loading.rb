@@ -232,7 +232,7 @@ module Neo4j
         end
 
         def relationship_part(association, path_name, rel_length)
-          rel_name = rel_length ? nil : escape("#{path_name}_rel") 
+          rel_name = rel_length ? nil : escape("#{path_name}_rel")
           "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
