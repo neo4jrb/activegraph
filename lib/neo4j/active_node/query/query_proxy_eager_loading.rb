@@ -205,9 +205,13 @@ module Neo4j
         def with_association_query_part(base_query, path, previous_with_vars)
           optional_match_with_where(base_query, path, previous_with_vars)
             .with(identity,
-                  "[collect(last(relationships(#{escape("#{path_name(path)}_path")}))), collect(#{escape path_name(path)})] "\
+                  "[#{relationship_collection(path)}, collect(#{escape path_name(path)})] "\
                   "AS #{escape("#{path_name(path)}_collection")}",
                   *previous_with_vars)
+        end
+
+        def relationship_collection(path)
+          path.last.rel_length ? "collect(last(relationships(#{escape("#{path_name(path)}_path")})))" : "collect(#{escape("#{path_name(path)}_rel")})"
         end
 
         def optional_match_with_where(base_query, path, _)
@@ -228,7 +232,8 @@ module Neo4j
         end
 
         def relationship_part(association, path_name, rel_length)
-          "#{association.arrow_cypher(nil, {}, false, false, rel_length)}(#{escape(path_name)})"
+          rel_name = rel_length ? nil : escape("#{path_name}_rel") 
+          "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
         def chain
