@@ -29,12 +29,15 @@ module Neo4j
               (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
             end
 
-            if spec.is_a?(Array)
+            case spec
+            when Array
               spec.each { |s| add_spec(s) }
-            elsif spec.is_a?(Hash)
+            when Hash
               process_hash(spec)
-            elsif spec.is_a?(String)
+            when String
               process_string(spec)
+            when nil
+              return
             else
               self[spec] ||= self.class.new(model, spec)
             end
@@ -45,31 +48,19 @@ module Neo4j
           end
 
           def process_hash(spec)
-            spec.each do |k, v|
-              rel_length = v.is_a?(Hash) ? v.delete(:rel_length) : nil
-              (self[k] ||= self.class.new(model, k, rel_length)).add_spec(v)
-            end
+            spec.each { |k, v| (self[k] ||= self.class.new(model, k)).add_spec(v) }
           end
 
           def process_string(spec)
-            spec.split(',').collect do |seg|
-              rel = seg.match(/[^.]+/)[0]
-              seg = seg.sub(/^[.]/, '').sub(rel, '')
-              add_strig_spec(rel, seg)
-            end
-          end
-
-          private
-
-          def add_strig_spec(rel, seg)
+            rel, seg = spec.split('.', 2)
             if rel.include?('*')
               rel, length = rel.split('*')
               rel_length = {max: length}
             end
-            (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).tap do |quey_spec|
-              quey_spec.add_spec(seg) unless seg.blank?
-            end
+            (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).add_spec(seg)
           end
+
+          private
 
           def target_class(model, key)
             association = model.associations[key]
