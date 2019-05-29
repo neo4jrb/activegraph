@@ -30,16 +30,16 @@ module Neo4j
             end
 
             case spec
+            when nil
+              nil
             when Array
-              spec.each { |s| add_spec(s) }
+              spec.each(&method(:add_spec))
             when Hash
               process_hash(spec)
             when String
               process_string(spec)
-            when nil
-              return
             else
-              self[spec] ||= self.class.new(model, spec)
+              add_key(spec)
             end
           end
 
@@ -48,16 +48,21 @@ module Neo4j
           end
 
           def process_hash(spec)
-            spec.each { |k, v| (self[k] ||= self.class.new(model, k)).add_spec(v) }
+            spec.each { |key, value| add_nested(key, value) }
           end
 
-          def process_string(spec)
-            rel, seg = spec.split('.', 2)
-            if rel.include?('*')
-              rel, length = rel.split('*')
-              rel_length = {max: length}
-            end
-            (self[rel.to_sym] ||= self.class.new(model, rel.to_sym, rel_length)).add_spec(seg)
+          def add_key(key, length = nil)
+            self[key] ||= self.class.new(model, key, length)
+          end
+
+          def add_nested(key, value, length = nil)
+            add_key(key, length).add_spec(value)
+          end
+
+          def process_string(str)
+            head, rest = str.split('.', 2)
+            k, length = head.split('*', -2)
+            add_nested(k.to_sym, rest, length)
           end
 
           private
@@ -223,8 +228,14 @@ module Neo4j
         end
 
         def relationship_part(association, path_name, rel_length)
-          rel_name = rel_length ? nil : escape("#{path_name}_rel")
-          "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
+          if rel_length
+            rel_name = nil
+            length = {max: rel_length}
+          else
+            rel_name = escape("#{path_name}_rel")
+            length = nil
+          end
+          "#{association.arrow_cypher(rel_name, {}, false, false, length)}(#{escape(path_name)})"
         end
 
         def chain
