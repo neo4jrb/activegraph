@@ -25,12 +25,8 @@ module Neo4j
             super.tap { |copy| copy.each { |key, value| copy[key] = value.clone } }
           end
 
-          # rubocop:disable Metrics/MethodLength
           def add_spec(spec)
-            unless model
-              fail "Cannot eager load \"past\" a polymorphic association. \
-              (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
-            end
+            check_for_model
 
             case spec
             when nil
@@ -45,7 +41,13 @@ module Neo4j
               add_key(spec)
             end
           end
-          # rubocop:enable Metrics/MethodLength
+
+          def check_for_model
+            unless model
+              fail "Cannot eager load \"past\" a polymorphic association. \
+              (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
+            end
+          end
 
           def paths(*prefix)
             values.flat_map { |v| [[*prefix, v]] + v.paths(*prefix, v) }
