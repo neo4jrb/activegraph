@@ -1,7 +1,9 @@
 module Neo4j
   module ActiveNode
     module Query
+      # rubocop:disable Metrics/ModuleLength
       module QueryProxyEagerLoading
+        # rubocop:enable Metrics/ModuleLength
         class IdentityMap < Hash
           def add(node)
             self[node.neo_id] ||= node
@@ -23,6 +25,7 @@ module Neo4j
             super.tap { |copy| copy.each { |key, value| copy[key] = value.clone } }
           end
 
+          # rubocop:disable Metrics/MethodLength
           def add_spec(spec)
             unless model
               fail "Cannot eager load \"past\" a polymorphic association. \
@@ -42,6 +45,7 @@ module Neo4j
               add_key(spec)
             end
           end
+          # rubocop:enable Metrics/MethodLength
 
           def paths(*prefix)
             values.flat_map { |v| [[*prefix, v]] + v.paths(*prefix, v) }
