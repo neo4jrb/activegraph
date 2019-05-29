@@ -72,38 +72,46 @@ describe 'Association Proxy' do
   end
 
   context 'variable lenght relationship with with_associations' do
-    let(:node) { Person.create(name: 'Billy', knows: [friend1, friend3]) }
+    let(:node) { Person.create(name: 'Billy', knows: [friend1]) }
     let(:friend1) { Person.create(name: 'f-1', knows: [friend2]) }
-    let(:friend2) { Person.create(name: 'f-2', knows: [friend5]) }
+    let(:friend2) { Person.create(name: 'f-2', knows: [friend3]) }
     let(:friend3) { Person.create(name: 'f-3', knows: [friend4]) }
-    let(:friend4) { Person.create(name: 'f-4') }
+    let(:friend4) { Person.create(name: 'f-4', knows: [friend5]) }
     let(:friend5) { Person.create(name: 'f-5') }
     let!(:post) { Post.create(name: 'Post-1', owner: node, comments: [comment]) }
+    let!(:billy_comment) { Comment.create(text: 'test-comment', owner: node) }
     let(:comment) { Comment.create(text: 'test-comment', owner: friend1) }
+
+    def deep_traversal(person)
+      person.knows.each(&method(:deep_traversal))
+    end
 
     it 'Should allow for string parameter with variable length relationship notation' do
       expect_queries(1) do
-        post.comments.with_associations(owner: 'knows*').each do |comment|
-          comment.owner.knows.each do |known|
-            known.knows.to_a
-          end
-        end
+        Post.comments.with_associations(owner: 'knows*').map(&:owner).each(&method(:deep_traversal))
       end
+    end
+
+    it 'allows on demand retrieval beyond eagerly fetched associations' do
+      expect(Post.owner.with_associations('knows*2')[0].knows[0].knows[0].knows[0].name).to eq 'f-3'
     end
 
     it 'Should allow for string parameter with fixed length relationship notation' do
+      expect(queries_count do
+        owners = Post.comments.with_associations('owner.knows*2').map(&:owner)
+        owners.each(&method(:deep_traversal))
+      end).to be > 1
+    end
+
+    it '* allows zero length relationships' do
       expect_queries(1) do
-        post.comments.with_associations('owner.knows*2').each do |comment|
-          comment.owner.knows.each do |known|
-            known.knows.to_a
-          end
-        end
+        expect(Post.owner(chainable: true).with_associations('knows*.comments').first.comments).to_not be_empty
       end
     end
 
     it 'Should allow for string parameter with variable length relationship notation' do
       expect_queries(1) do
-        post.owner(chainable: true).with_associations('knows*.comments').each do |owner|
+        Post.owner(chainable: true).with_associations('knows*.comments').each do |owner|
           owner.knows.each do |known|
             known.knows[0].comments.to_a
           end
@@ -309,7 +317,7 @@ describe 'Association Proxy' do
       l1 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!] }
       l2 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!, Exam.create!] }
       student = Student.create!.tap { |s| s.lessons = [l1, l2] }
-      totals = {l1.id => l1.exams_given.count, l2.id => l2.exams_given.count}
+      totals = { l1.id => l1.exams_given.count, l2.id => l2.exams_given.count }
 
       student.lessons.each do |l|
         expect(totals[l.id]).to eq l.exams_given.count
