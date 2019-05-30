@@ -141,11 +141,8 @@ module Neo4j
         end
 
         def init_associations(node, element)
-          if element.rel_length == '' && element.empty?
-            node.association_proxy(element.name).init_cache
-          else
-            element.each_key { |key| node.association_proxy(key).init_cache }
-          end
+          element.each_key { |key| node.association_proxy(key).init_cache }
+          node.association_proxy(element.name).init_cache if element.rel_length == ''
         end
 
         def cache_and_init(node, element)
