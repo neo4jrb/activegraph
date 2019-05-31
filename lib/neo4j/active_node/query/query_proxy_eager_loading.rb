@@ -90,10 +90,8 @@ module Neo4j
             .map do |record, eager_data|
             cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
-              current_length = 0
               eager_records.first.zip(eager_records.last).each do |eager_record|
-                current_length += 1 if element.rel_length
-                add_to_cache(*eager_record, element, current_length)
+                add_to_cache(*eager_record, element)
               end
             end
             record
@@ -130,23 +128,25 @@ module Neo4j
 
         private
 
-        def add_to_cache(rel, node, element, current_length)
+        def add_to_cache(rel, node, element)
           direction = element.association.direction
-          node = cache_and_init(node, element, current_length)
+          node = cache_and_init(node, element)
           if rel.is_a?(Neo4j::ActiveRel)
             rel.instance_variable_set(direction == :in ? '@from_node' : '@to_node', node)
           end
-          @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id].association_proxy(element.name)
-                                                                                  .add_to_cache(node, rel)
+          @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id].association_proxy(element.name).tap do |proxy|
+            proxy.init_cache
+            proxy.add_to_cache(node, rel)
+          end
         end
 
-        def init_associations(node, element, current_length)
+        def init_associations(node, element)
           element.each_key { |key| node.association_proxy(key).init_cache }
-          node.association_proxy(element.name).init_cache if element.rel_length == '' || (element.rel_length && current_length < element.rel_length.to_i)
+          node.association_proxy(element.name).init_cache if element.rel_length == ''
         end
 
-        def cache_and_init(node, element, current_length = nil)
-          @_cache.add(node).tap { |n| init_associations(n, element, current_length) }
+        def cache_and_init(node, element)
+          @_cache.add(node).tap { |n| init_associations(n, element) }
         end
 
         def with_associations_return_clause
