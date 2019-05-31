@@ -249,7 +249,7 @@ describe 'Association Proxy' do
         l1 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!] }
         l2 = Lesson.create!.tap { |l| l.exams_given = [Exam.create!, Exam.create!] }
         student = Student.create!.tap { |s| s.lessons = [l1, l2] }
-        totals = { l1.id => l1.exams_given.count, l2.id => l2.exams_given.count }
+        totals = {l1.id => l1.exams_given.count, l2.id => l2.exams_given.count}
 
         student.lessons.each do |l|
           expect(totals[l.id]).to eq l.exams_given.count
