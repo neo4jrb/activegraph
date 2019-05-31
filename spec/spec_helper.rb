@@ -181,12 +181,9 @@ module Neo4jEntityFindingHelpers
   def rel_cypher_string(dir = :both, type = nil)
     type_string = type ? ":#{type}" : ''
     case dir
-    when :both then
-      "-[r#{type_string}]-"
-    when :incoming then
-      "<-[r#{type_string}]-"
-    when :outgoing then
-      "-[r#{type_string}]->"
+    when :both then "-[r#{type_string}]-"
+    when :incoming then "<-[r#{type_string}]-"
+    when :outgoing then "-[r#{type_string}]->"
     end
   end
 
@@ -268,7 +265,6 @@ module ActiveNodeRelStubHelpers
       class << self
         attr_reader :class_name
         alias_method :name, :class_name
-
         def to_s
           name
         end
@@ -304,7 +300,7 @@ session_adaptor = case TEST_SESSION_MODE
                     server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
                     server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-                    basic_auth_hash = { username: server_username, password: server_password }
+                    basic_auth_hash = {username: server_username, password: server_password}
 
                     case URI(server_url).scheme
                     when 'http'
@@ -324,10 +320,8 @@ module FixingRSpecHelpers
   def let_context(*args, &block)
     context_string, hash =
       case args.map(&:class)
-      when [String, Hash] then
-        ["#{args[0]} #{args[1]}", args[1]]
-      when [Hash] then
-        [args[0].inspect, args[0]]
+      when [String, Hash] then ["#{args[0]} #{args[1]}", args[1]]
+      when [Hash] then [args[0].inspect, args[0]]
       end
 
     context(context_string) do
