@@ -18,7 +18,7 @@ module Neo4j
           end
 
           def add_spec(spec)
-            check_for_model
+            check_for_model(spec)
 
             case spec
             when nil
@@ -34,7 +34,7 @@ module Neo4j
             end
           end
 
-          def check_for_model
+          def check_for_model(spec)
             message = "Cannot eager load \"past\" a polymorphic association. \
               (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
             fail message unless model
