@@ -16,7 +16,7 @@ jdk: oraclejdk8
 rvm:
   - 2
   - 2.2
-  - jruby-9
+  - jruby-9.2.7.0
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
@@ -55,7 +55,7 @@ matrix:
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
 
     # Older versions of Neo4j with latest version of jRuby
-    - rvm: jruby-9
+    - rvm: jruby-9.2.7.0
       env: NEO4J_VERSION=community-2.3.11
 
     # Enterprise

@@ -159,7 +159,7 @@ module Neo4j
         def relationship_part(association, path_name, rel_length)
           if rel_length
             rel_name = nil
-            length = { max: rel_length }
+            length = {max: rel_length}
           else
             rel_name = escape("#{path_name}_rel")
             length = nil
