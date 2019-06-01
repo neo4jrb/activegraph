@@ -35,9 +35,10 @@ module Neo4j
           end
 
           def check_for_model(spec)
-            message = "Cannot eager load \"past\" a polymorphic association. \
+            unless model
+              fail "Cannot eager load \"past\" a polymorphic association. \
               (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
-            fail message unless model
+            end
           end
 
           def paths(*prefix)
