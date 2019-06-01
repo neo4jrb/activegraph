@@ -8,52 +8,6 @@ module Neo4j
           end
         end
 
-        class AssociationTree < Hash
-          attr_accessor :model, :name, :association, :path
-
-          def initialize(model, name = nil)
-            super()
-            self.model = name ? target_class(model, name) : model
-            self.name = name
-            self.association = name ? model.associations[name] : nil
-          end
-
-          def clone
-            super.tap { |copy| copy.each { |key, value| copy[key] = value.clone } }
-          end
-
-          def add_spec(spec)
-            unless model
-              fail "Cannot eager load \"past\" a polymorphic association. \
-              (Since the association can return multiple models, we don't how to handle the \"#{spec}\" association.)"
-            end
-
-            if spec.is_a?(Array)
-              spec.each { |s| add_spec(s) }
-            elsif spec.is_a?(Hash)
-              process_hash(spec)
-            else
-              self[spec] ||= self.class.new(model, spec)
-            end
-          end
-
-          def paths(*prefix)
-            values.flat_map { |v| [[*prefix, v]] + v.paths(*prefix, v) }
-          end
-
-          def process_hash(spec)
-            spec.each { |k, v| (self[k] ||= self.class.new(model, k)).add_spec(v) }
-          end
-
-          private
-
-          def target_class(model, key)
-            association = model.associations[key]
-            fail "Invalid association: #{[*path, key].join('.')}" unless association
-            model.associations[key].target_class
-          end
-        end
-
         def pluck_vars(node, rel)
           with_associations_tree.empty? ? super : perform_query
         end
@@ -68,7 +22,6 @@ module Neo4j
                 add_to_cache(*eager_record, element)
               end
             end
-
             record
           end
         end
@@ -115,6 +68,7 @@ module Neo4j
 
         def init_associations(node, element)
           element.each_key { |key| node.association_proxy(key).init_cache }
+          node.association_proxy(element.name).init_cache if element.rel_length == ''
         end
 
         def cache_and_init(node, element)
@@ -176,8 +130,13 @@ module Neo4j
         def with_association_query_part(base_query, path, previous_with_vars)
           optional_match_with_where(base_query, path, previous_with_vars)
             .with(identity,
-                  "[collect(#{escape("#{path_name(path)}_rel")}), collect(#{escape path_name(path)})] AS #{escape("#{path_name(path)}_collection")}",
+                  "[#{relationship_collection(path)}, collect(#{escape path_name(path)})] "\
+                  "AS #{escape("#{path_name(path)}_collection")}",
                   *previous_with_vars)
+        end
+
+        def relationship_collection(path)
+          path.last.rel_length ? "collect(last(relationships(#{escape("#{path_name(path)}_path")})))" : "collect(#{escape("#{path_name(path)}_rel")})"
         end
 
         def optional_match_with_where(base_query, path, _)
@@ -189,15 +148,23 @@ module Neo4j
         end
 
         def optional_match(base_query, path)
+          start_path = "#{escape("#{path_name(path)}_path")}=(#{identity})"
           base_query.optional_match(
-            "(#{identity})#{path.each_with_index.map do |element, index|
-              relationship_part(element.association, path_name(path[0..index]))
+            "#{start_path}#{path.each_with_index.map do |element, index|
+              relationship_part(element.association, path_name(path[0..index]), element.rel_length)
             end.join}"
           )
         end
 
-        def relationship_part(association, path_name)
-          "#{association.arrow_cypher(escape("#{path_name}_rel"))}(#{escape(path_name)})"
+        def relationship_part(association, path_name, rel_length)
+          if rel_length
+            rel_name = nil
+            length = {max: rel_length}
+          else
+            rel_name = escape("#{path_name}_rel")
+            length = nil
+          end
+          "#{association.arrow_cypher(rel_name, {}, false, false, length)}(#{escape(path_name)})"
         end
 
         def chain
