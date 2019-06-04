@@ -10,7 +10,7 @@ module Neo4j
         def rels
           fail 'Cannot get rels without a relationship variable.' if !@rel_var
 
-          pluck_vars(false, true)
+          pluck(@rel_var)
         end
 
         def rel

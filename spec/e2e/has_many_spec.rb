@@ -394,7 +394,6 @@ describe 'has_many' do
 
     it 'allows passing only a hash of options when naming node/rel is not needed' do
       expect(node.knows(rel_length: :any).to_a).to match_array([friend1, friend2])
-      expect(node.as(:person).knows(rel_length: :any).to_cypher).to include('MATCH path1=(person)-[:`KNOWS`*]->(result_knows3:`Person`)')
     end
 
     it 'honors default options' do
