@@ -102,7 +102,7 @@ module Neo4j::ActiveNode
       end
 
       def add_to_cache(object, rel = nil)
-        @cached_rels << rel if rel
+        (@cached_rels ||= []) << rel if rel
         (@cached_result ||= []) << object
       end
 

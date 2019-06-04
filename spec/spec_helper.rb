@@ -166,10 +166,14 @@ module Neo4jSpecHelpers
   end
 
   # rubocop:disable Style/GlobalVars
-  def expect_queries(count)
+  def expect_queries(count, &block)
+    expect(queries_count(&block)).to eq(count)
+  end
+
+  def queries_count
     start_count = $expect_queries_count
     yield
-    expect($expect_queries_count - start_count).to eq(count)
+    $expect_queries_count - start_count
   end
 end
 

@@ -110,7 +110,8 @@ module Neo4j
         def base_query(var, with_labels = true)
           if @association
             chain_var = _association_chain_var
-            (_association_query_start(chain_var) & _query).break.send(@match_type, query_path(chain_var, var))
+            (_association_query_start(chain_var) & _query).break.send(@match_type,
+                                                                      "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})")
           else
             starting_query ? starting_query : _query_model_as(var, with_labels)
           end
@@ -323,8 +324,7 @@ module Neo4j
         end
 
         def _association_arrow(properties = {}, create = false)
-          var = @rel_length ? nil : @rel_var
-          @association && @association.arrow_cypher(var, properties, create, false, @rel_length)
+          @association && @association.arrow_cypher(@rel_var, properties, create, false, @rel_length)
         end
 
         def _chain_level
@@ -350,15 +350,6 @@ module Neo4j
 
         def _rel_chain_var
           :"rel#{_chain_level - 1}"
-        end
-
-        def query_path(chain_var, var)
-          path = "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})"
-          @rel_length ? "#{path_var}=#{path}" : path
-        end
-
-        def path_var
-          "path#{_chain_level - 1}"
         end
 
         attr_writer :context

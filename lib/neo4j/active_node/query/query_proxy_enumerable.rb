@@ -91,12 +91,8 @@ module Neo4j
         def pluck_vars(node, rel)
           vars = []
           vars << ensure_distinct(identity) if node
-          vars << relation_variable if rel
+          vars << @rel_var if rel
           pluck(*vars)
-        end
-
-        def relation_variable
-          @rel_length ? "relationships(#{path_var}) as #{@rel_var}" : @rel_var
         end
 
         def set_instance_caches(instance, node, rel)
