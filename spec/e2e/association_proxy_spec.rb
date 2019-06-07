@@ -295,6 +295,8 @@ describe 'Association Proxy' do
         has_many :out, :knows, model_class: 'Person', type: nil
         has_many :in, :posts, type: :posts
         has_many :in, :comments, type: :comments
+        has_one :out, :parent, type: :parent, model_class: 'Person', dependent: :delete
+        has_many :in, :children, origin: :parent, model_class: 'Person'
       end
 
       stub_active_node_class('Post') do
@@ -376,6 +378,14 @@ describe 'Association Proxy' do
           person.as(:p).with_associations('knows*2').each(&method(:deep_traversal))
         end
       end
+    end
+
+    it 'updates inverse has_one association correctly' do
+      person3 = Person.create(name: '3')
+      person2 = Person.create(name: '2', children: [person3])
+      person1 = Person.create(name: '1', children: [person2])
+      person1.update(children: [person2, person3.id])
+      expect(person3.as(:p).parent.count).to eq(1)
     end
   end
 end

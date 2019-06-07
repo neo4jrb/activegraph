@@ -170,7 +170,7 @@ module Neo4j
         end
 
         def origin_association
-          target_class.associations[@origin]
+          target_class && target_class.associations[@origin]
         end
 
         def origin_type
