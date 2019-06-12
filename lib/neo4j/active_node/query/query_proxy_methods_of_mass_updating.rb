@@ -59,7 +59,7 @@ module Neo4j
         def idify_hash(args)
           [args].flatten.each_with_object({}).with_index do |(arg, hash), inx|
             if arg.is_a?(Integer) || arg.is_a?(String)
-              hash[arg] = @model.find(arg)
+              hash[arg.to_i] = @model.find(arg)
             else
               key = arg.persisted? ? arg.id : "tmp_#{inx}"
               hash[key] = arg
