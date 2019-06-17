@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.5.0] 2019-06-17
+
+## Added
+
+- Variable length relatinships in eager laoding (thanks @amitsuryavanshi / #1545)
+
+## Fixed
+
+- wait_for_connection (thanks @ayghor / see #1540)
+- Reverse has_one relationships (thanks @amitsuryavanshi / #1548)
+- Missing require 'forwardable' (thanks @jschulenklopper / #1535)
+
 ## [9.4.0] 2018-12-20
 
 ## Added
