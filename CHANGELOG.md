@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
-- wait_for_connection (thanks @ayghor / see #1540)
+- fixed `wait_for_connection` (thanks @ayghor / see #1540)
 - Reverse has_one relationships (thanks @amitsuryavanshi / #1548)
 - Missing require 'forwardable' (thanks @jschulenklopper / #1535)
 
