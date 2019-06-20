@@ -1,9 +1,0 @@
----
-rules:
-  ignore:
-    - assignment_in_conditional
-    - extra_blank_line_detected
-    - prefer_ruby_19_new_lambda_syntax
-    - shadowing_outer_local_variable
-    - space_inside_closing_curly_brace_missing
-    - space_inside_opening_curly_brace_missing
