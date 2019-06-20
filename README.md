@@ -7,12 +7,6 @@
 [![Coverage Status](https://coveralls.io/repos/neo4jrb/neo4j/badge.svg?branch=master)](https://coveralls.io/r/neo4jrb/neo4j?branch=master)
 [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.svg)](https://codeclimate.com/github/neo4jrb/neo4j)
 
-## Issues
-
-[![Next Release](https://badge.waffle.io/neo4jrb/neo4j.png?label=Next%20Release&title=Next%20Release) ![In Progress](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Progress&title=In%20Progress) ![In Master](https://badge.waffle.io/neo4jrb/neo4j.png?label=In%20Master&title=In%20Master)](https://waffle.io/neo4jrb/neo4j)
-
-[![Post an issue](https://img.shields.io/badge/Bug%3F-Post%20an%20issue!-blue.svg)](https://waffle.io/neo4jrb/neo4j)
-
 ## Get Support
 
 ### Documentation
