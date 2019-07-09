@@ -28,7 +28,7 @@ describe Neo4j::Migrations::Helpers do
   describe '#remove_property' do
     it 'removes a property' do
       remove_property :Book, :name
-      expect(Book.all(:n).pluck('n.title')).to eq([nil, nil, nil])
+      expect(Book.all(:n).pluck('n.name')).to eq([nil, nil, nil])
     end
   end
 
