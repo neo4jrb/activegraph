@@ -7,12 +7,15 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
           property :updated_at, type: Integer
           property :name
           has_many :out, :to_classes, type: 'HAS_REL'
+          has_one :out, :to_class, type: 'HAS_REL_2'
         end
 
         stub_active_node_class('ToClass') do
           property :created_at, type: Integer
           property :updated_at, type: Integer
           property :name
+          has_one :in, :from_class, type: 'HAS_REL'
+          has_many :in, :from_classes, type: 'HAS_REL_2'
         end
 
         stub_active_rel_class('RelClass') do
@@ -28,19 +31,19 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
               .pluck('COUNT(r)').first
           end
         end
+
+        stub_active_rel_class('Rel2Class') do
+          type 'HAS_REL_2'
+          from_class :FromClass
+          to_class :ToClass
+
+          property :score
+        end
       end
 
       let(:from_node) { FromClass.new(name: 'foo') }
       let(:to_node) { ToClass.new(name: 'bar') }
       let(:rel) { RelClass.new(from_node: from_node, to_node: to_node, score: 10) }
-
-      let(:graph_objects) do
-        {
-          from_node: from_node,
-          to_node: to_node,
-          rel: rel
-        }
-      end
 
       it 'creates nodes and the rel' do
         expect { rel.save }.to change { FromClass.count + ToClass.count + RelClass.count }.by(3)
@@ -71,6 +74,20 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
           expect(o).to receive(:run_callbacks).with(:create).and_call_original
         end
         rel.save
+      end
+
+      it 'deleted previous has_one rel from to_node before creating new one' do
+        from_node_2 = FromClass.new(name: 'foo-2')
+        rel.save
+        RelClass.new(from_node: from_node_2, to_node: to_node, score: 10).save
+        expect(from_node.reload.to_classes).to be_empty
+      end
+
+      it 'deleted previous has_one rel from from_node before creating new one' do
+        to_node_2 = ToClass.new(name: 'bar-2')
+        Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
+        Rel2Class.new(from_node: from_node, to_node: to_node_2, score: 10).save
+        expect(to_node.reload.from_classes).to be_empty
       end
     end
 

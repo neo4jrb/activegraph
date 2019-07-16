@@ -45,10 +45,18 @@ module Neo4j::ActiveRel
 
     def create_model
       validate_node_classes!
+      delete_has_one_rel
       rel = _create_rel
       return self unless rel.respond_to?(:props)
       init_on_load(rel, from_node, to_node, @rel_type)
       true
+    end
+
+    def delete_has_one_rel
+      to_node_rel_name = @to_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }&.first
+      @to_node.send("#{to_node_rel_name}=",nil) if to_node_rel_name
+      from_node_rel_name = @from_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }&.first
+      @from_node.send("#{from_node_rel_name}=",nil) if from_node_rel_name
     end
 
     def query_as(var)
