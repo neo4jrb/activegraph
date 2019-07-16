@@ -53,8 +53,8 @@ module Neo4j::ActiveRel
     end
 
     def delete_has_one_rel
-      
-      
+      delete_has_one_to_node_rel
+      delete_has_one_from_node_rel
     end
 
     def delete_has_one_to_node_rel
