@@ -53,10 +53,10 @@ module Neo4j::ActiveRel
     end
 
     def delete_has_one_rel
-      to_node_rel_name = @to_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }&.first
-      @to_node.send("#{to_node_rel_name}=",nil) if to_node_rel_name
-      from_node_rel_name = @from_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }&.first
-      @from_node.send("#{from_node_rel_name}=",nil) if from_node_rel_name
+      to_node_rel_name = @to_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }
+      @to_node.send("#{to_node_rel_name.first}=",nil) if to_node_rel_name
+      from_node_rel_name = @from_node.class.associations.find {|key, assoc| assoc.relationship_type == type.to_sym && assoc.type == :has_one  }
+      @from_node.send("#{from_node_rel_name.first}=",nil) if from_node_rel_name
     end
 
     def query_as(var)

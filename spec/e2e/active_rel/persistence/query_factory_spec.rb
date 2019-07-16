@@ -77,16 +77,16 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
       end
 
       it 'deleted previous has_one rel from to_node before creating new one' do
-        from_node_2 = FromClass.new(name: 'foo-2')
+        from_node_two = FromClass.new(name: 'foo-2')
         rel.save
-        RelClass.new(from_node: from_node_2, to_node: to_node, score: 10).save
+        RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save
         expect(from_node.reload.to_classes).to be_empty
       end
 
       it 'deleted previous has_one rel from from_node before creating new one' do
-        to_node_2 = ToClass.new(name: 'bar-2')
+        to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
-        Rel2Class.new(from_node: from_node, to_node: to_node_2, score: 10).save
+        Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save
         expect(to_node.reload.from_classes).to be_empty
       end
     end
