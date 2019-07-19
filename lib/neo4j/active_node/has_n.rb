@@ -229,6 +229,11 @@ module Neo4j::ActiveNode
       end
     end
 
+    def delete_has_one_rel(rel)
+      rel_name = self.class.associations.find { |_key, assoc| assoc.relationship_type == rel.type.to_sym && assoc.type == :has_one }
+      self.send("#{rel_name.first}=", nil) if rel_name
+    end
+
     private
 
     def fresh_association_proxy(name, options = {}, result_cache_proc = nil)
