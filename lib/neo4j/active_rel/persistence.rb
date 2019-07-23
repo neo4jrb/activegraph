@@ -53,8 +53,8 @@ module Neo4j::ActiveRel
     end
 
     def delete_has_one_rel
-      @to_node.delete_has_one_rel(self)
-      @from_node.delete_has_one_rel(self)
+      to_node.delete_has_one_rel(self, :in, from_node.class) if to_node.persisted?
+      from_node.delete_has_one_rel(self, :out, to_node.class) if from_node.persisted?
     end
 
     def query_as(var)
