@@ -391,12 +391,11 @@ describe 'Association Proxy' do
     end
 
     it 'updates inverse has_one association correctly in case of two relationships with same type' do
-      person_1 = Person.create(name: 'person-1')
-      person_2 = Person.create(name: 'person-2')
-      comment_1 = Comment.create(text: 'test-comment-1', owner: person_1)
-      comment_2 = Comment.create(text: 'test-comment-2', comment_owner: person_1)
-      person_2.owner_comments = [comment_2]
-      expect(comment_2.as(:c).comment_owner.count).to eq(1)
+      person1 = Person.create(name: 'person-1')
+      person2 = Person.create(name: 'person-2')
+      comment = Comment.create(text: 'test-comment-2', comment_owner: person1)
+      person2.owner_comments = [comment]
+      expect(comment.as(:c).comment_owner.count).to eq(1)
     end
   end
 end
