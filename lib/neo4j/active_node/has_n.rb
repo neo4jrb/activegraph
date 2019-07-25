@@ -229,6 +229,23 @@ module Neo4j::ActiveNode
       end
     end
 
+    def delete_has_one_rel(active_rel, direction, target_class)
+      rel = active_rel_corresponding_rel(active_rel, direction, target_class)
+      delete_rel(rel.last) if rel && rel.last.type == :has_one
+    end
+
+    def delete_rel(rel)
+      send("#{rel.name}=", nil)
+      association_proxy_cache.clear
+    end
+
+    def active_rel_corresponding_rel(active_rel, direction, target_class)
+      self.class.associations.find do |_key, assoc|
+        assoc.relationship_class_name == active_rel.class.name ||
+          (assoc.relationship_type == active_rel.type.to_sym && assoc.target_class == target_class && assoc.direction == direction)
+      end
+    end
+
     private
 
     def fresh_association_proxy(name, options = {}, result_cache_proc = nil)

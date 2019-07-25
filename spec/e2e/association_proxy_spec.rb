@@ -297,6 +297,7 @@ describe 'Association Proxy' do
         has_many :in, :comments, type: :comments
         has_one :out, :parent, type: :parent, model_class: 'Person', dependent: :delete
         has_many :in, :children, origin: :parent, model_class: 'Person'
+        has_many :out, :owner_comments, type: :comments, model_class: 'Comment'
       end
 
       stub_active_node_class('Post') do
@@ -310,6 +311,7 @@ describe 'Association Proxy' do
         property :text
 
         has_one :out, :owner, origin: :comments, model_class: 'Person'
+        has_one :in, :comment_owner, origin: :owner_comments, model_class: 'Person'
         has_one :out, :post, origin: :comments, model_class: 'Post'
       end
     end
@@ -386,6 +388,14 @@ describe 'Association Proxy' do
       person1 = Person.create(name: '1', children: [person2])
       person1.update(children: [person2, person3.id])
       expect(person3.as(:p).parent.count).to eq(1)
+    end
+
+    it 'updates inverse has_one association correctly in case of two relationships with same type' do
+      person1 = Person.create(name: 'person-1')
+      person2 = Person.create(name: 'person-2')
+      comment = Comment.create(text: 'test-comment-2', comment_owner: person1)
+      person2.owner_comments = [comment]
+      expect(comment.as(:c).comment_owner.count).to eq(1)
     end
   end
 end
