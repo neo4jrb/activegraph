@@ -51,9 +51,6 @@ matrix:
     - rvm: 2
       env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.3.11
 
-    - rvm: 2
-      env: NEO4J_URL="http://localhost:7474" NEO4J_VERSION=community-2.1.8
-
     # Older versions of Neo4j with latest version of jRuby
     - rvm: jruby-9.2.6.0
       env: NEO4J_VERSION=community-2.3.11
