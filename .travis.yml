@@ -1,3 +1,4 @@
+dist: trusty
 before_script:
   - "travis_retry bin/rake neo4j:install[$NEO4J_VERSION] --trace"
   - "bin/rake neo4j:config[development,7474] --trace"
