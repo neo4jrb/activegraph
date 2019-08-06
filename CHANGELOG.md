@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
-- Made neo4j_community gem a development dependency rather than a direct dependency.
+- Made neo4j_community gem a development dependency rather than a runtime dependency.
 
 ## [9.5.1] 2019-07-31
 
