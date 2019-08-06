@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.5.1] 2019-08-06
+
+## Fixed
+
+- Made neo4j_community gem a development dependency rather than a direct dependency.
+
 ## [9.5.1] 2019-07-31
 
 ## Fixed
