@@ -108,7 +108,7 @@ Variables
   **enforce_has_one**
     **Default:** ``false``
 
-    Enforce has_one relationship. When same reationship is created on reverse object with another object, raise the error.
+    Enforce has_one relationship. When same relationship is created on reverse object with another object, raise the error.
 
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~
