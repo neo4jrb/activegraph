@@ -248,7 +248,7 @@ module Neo4j::ActiveNode
     end
 
     def validate_has_one_rel!(rel, other_node)
-      raise_error = (node = send("#{rel.name}")) && node != other_node
+      raise_error = (node = send(rel.name.to_s)) && node != other_node
       fail(HasOneValidationError, "node #{self.class}##{neo_id} has a has_one relationship with #{other_node.class}##{other_node.neo_id}") if raise_error
     end
 
