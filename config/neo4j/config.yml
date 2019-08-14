@@ -34,5 +34,5 @@ cache_class_names: true
 
 transform_rel_type: :upcase
 
-# Enforce has_one relationship. When same reationship is created on reverse object with another object, delete the existing relationship.
+# Enforce has_one relationship. When same reationship is created on reverse object with another object, raise the error.
 enforce_has_one: false

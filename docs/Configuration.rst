@@ -105,6 +105,10 @@ Variables
     **Default:** ``false``
 
     Specifies that queries outputted to the log also get a source file / line outputted to aid debugging.
+  **enforce_has_one**
+    **Default:** ``false``
+
+    Enforce has_one relationship. When same reationship is created on reverse object with another object, raise the error.
 
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~
