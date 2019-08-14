@@ -96,30 +96,29 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         rel.save
       end
 
-      it 'deletes has_one rel from to_node before creating new one' do
+      it 'raises error when has_one rel from to_node is enforced' do
+        Neo4j::Config[:enforce_has_one] = true
         from_node_two = FromClass.new(name: 'foo-2')
         rel.save
-        RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save
-        expect(from_node.reload.to_classes).to be_empty
+        expect { RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
       end
 
-      it 'deletes has_one rel from from_node before creating new one' do
+      it 'raises error when has_one rel from to_node is enforced' do
+        Neo4j::Config[:enforce_has_one] = true
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
-        Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save
-        expect(to_node.reload.from_classes).to be_empty
+        expect { Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
       end
 
-      it 'deletes correct has_one rel in case of two relationships with same type' do
+      it 'raises error when has_one rel is enforced and two relationships with same type' do
+        Neo4j::Config[:enforce_has_one] = true
         f1 = FromClass.new(name: 'foo-1')
         f2 = FromClass.new(name: 'foo-2')
         t1 = ToClass.new(name: 'bar-1')
         t2 = ToClass.new(name: 'bar-2')
         Rel3Class.new(from_node: f1, to_node: t1, score_3: 10).save
         Rel4Class.new(from_node: t2, to_node: f2, score_4: 10).save
-        Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save
-        expect(f1.reload.rel_3).to be_nil
-        expect(f2.reload.rel_3.id).to eq(t1.id)
+        expect { Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
       end
     end
 

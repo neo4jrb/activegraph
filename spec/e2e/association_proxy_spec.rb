@@ -382,20 +382,28 @@ describe 'Association Proxy' do
       end
     end
 
-    it 'updates inverse has_one association correctly' do
+    it 'raises error in case of inverse has_one rel is enforced' do
+      Neo4j::Config[:enforce_has_one] = true
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
-      person1.update(children: [person2, person3.id])
-      expect(person3.as(:p).parent.count).to eq(1)
+      expect { person1.update(children: [person2, person3.id]) }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
     end
 
-    it 'updates inverse has_one association correctly in case of two relationships with same type' do
+    it 'raises error in case of inverse has_one rel is enforced and two relationships with same type' do
+      Neo4j::Config[:enforce_has_one] = true
       person1 = Person.create(name: 'person-1')
       person2 = Person.create(name: 'person-2')
       comment = Comment.create(text: 'test-comment-2', comment_owner: person1)
-      person2.owner_comments = [comment]
-      expect(comment.as(:c).comment_owner.count).to eq(1)
+      expect { person2.owner_comments = [comment] }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+    end
+
+    it 'does not raises error in case of inverse has_one rel is not enforced' do
+      Neo4j::Config[:enforce_has_one] = false
+      person3 = Person.create(name: '3')
+      person2 = Person.create(name: '2', children: [person3])
+      person1 = Person.create(name: '1', children: [person2])
+      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
     end
   end
 end
