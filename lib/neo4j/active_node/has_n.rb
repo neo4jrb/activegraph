@@ -3,7 +3,7 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
 
     class NonPersistedNodeError < Neo4j::Error; end
-    class HasOneValidationError < Neo4j::Error; end
+    class HasOneConstraintError < Neo4j::Error; end
     # Return this object from associations
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
