@@ -108,7 +108,7 @@ Variables
   **enforce_has_one**
     **Default:** ``false``
 
-    Enforce has_one relationship. When same relationship is created on reverse object with another object, raise the error.
+    If true raises an error if any operation would violate the uniqueness of a `has_one` relationship. Requires that associations are defined from both sides and that one side uses `origin:` in the definition.
 
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~
