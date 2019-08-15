@@ -387,7 +387,7 @@ describe 'Association Proxy' do
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
-      expect { person1.update(children: [person2, person3.id]) }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+      expect { person1.update(children: [person2, person3.id]) }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
     end
 
     it 'raises error in case of inverse has_one rel is enforced and two relationships with same type' do
@@ -395,7 +395,7 @@ describe 'Association Proxy' do
       person1 = Person.create(name: 'person-1')
       person2 = Person.create(name: 'person-2')
       comment = Comment.create(text: 'test-comment-2', comment_owner: person1)
-      expect { person2.owner_comments = [comment] }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+      expect { person2.owner_comments = [comment] }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
     end
 
     it 'does not raises error in case of inverse has_one rel is not enforced' do
@@ -403,7 +403,7 @@ describe 'Association Proxy' do
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
-      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
     end
   end
 end

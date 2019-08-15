@@ -100,14 +100,14 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         Neo4j::Config[:enforce_has_one] = true
         from_node_two = FromClass.new(name: 'foo-2')
         rel.save
-        expect { RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+        expect { RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
       end
 
       it 'raises error when has_one rel from to_node is enforced' do
         Neo4j::Config[:enforce_has_one] = true
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
-        expect { Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+        expect { Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
       end
 
       it 'raises error when has_one rel is enforced and two relationships with same type' do
@@ -118,7 +118,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         t2 = ToClass.new(name: 'bar-2')
         Rel3Class.new(from_node: f1, to_node: t1, score_3: 10).save
         Rel4Class.new(from_node: t2, to_node: f2, score_4: 10).save
-        expect { Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneValidationError)
+        expect { Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
       end
     end
 
