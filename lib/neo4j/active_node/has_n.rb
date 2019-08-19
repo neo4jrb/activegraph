@@ -3,7 +3,7 @@ module Neo4j::ActiveNode
     extend ActiveSupport::Concern
 
     class NonPersistedNodeError < Neo4j::Error; end
-
+    class HasOneConstraintError < Neo4j::Error; end
     # Return this object from associations
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
@@ -229,14 +229,27 @@ module Neo4j::ActiveNode
       end
     end
 
-    def delete_has_one_rel(active_rel, direction, target_class)
-      rel = active_rel_corresponding_rel(active_rel, direction, target_class)
-      delete_rel(rel.last) if rel && rel.last.type == :has_one
+    def validate_reverse_has_one_core_rel(association, other_node)
+      return unless Neo4j::Config[:enforce_has_one]
+      reverse_assoc = reverse_association(association)
+      validate_has_one_rel!(reverse_assoc, other_node) if reverse_assoc && reverse_assoc.type == :has_one
     end
 
-    def delete_rel(rel)
-      send("#{rel.name}=", nil)
-      association_proxy_cache.clear
+    def reverse_association(association)
+      reverse_assoc = self.class.associations.find do |_key, assoc|
+        association.inverse_of?(assoc) || assoc.inverse_of?(association)
+      end
+      reverse_assoc && reverse_assoc.last
+    end
+
+    def validate_reverse_has_one_active_rel(active_rel, direction, other_node)
+      rel = active_rel_corresponding_rel(active_rel, direction, other_node.class)
+      validate_has_one_rel!(rel.last, other_node) if rel && rel.last.type == :has_one
+    end
+
+    def validate_has_one_rel!(rel, other_node)
+      raise_error = (node = send(rel.name.to_s)) && node != other_node
+      fail(HasOneConstraintError, "node #{self.class}##{neo_id} has a has_one relationship with #{other_node.class}##{other_node.neo_id}") if raise_error
     end
 
     def active_rel_corresponding_rel(active_rel, direction, target_class)
