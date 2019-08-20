@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Fixed
 
 - Enforces has_one uniqness constraint on relationship with config flag. (#1566)
+- Restricting activemodel and activesupport version to < 6.0.
 
 ## [9.5.2] 2019-08-06
 
