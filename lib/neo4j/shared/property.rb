@@ -11,8 +11,11 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
+    # TODO: Set @attribute correctly using class ActiveModel::Attribute, and after that
+    # remove mutations_from_database and other ActiveModel::Dirty overrided methods
     def mutations_from_database
-      ActiveModel::NullMutationTracker.instance
+      @mutations_from_database ||=
+        defined?(ActiveModel::ForcedMutationTracker) ? ActiveModel::ForcedMutationTracker.new(self) : ActiveModel::NullMutationTracker.instance
     end
 
     def inspect
@@ -210,7 +213,7 @@ module Neo4j::Shared
         attributes[name.to_s] = declared_properties[name]
         define_method("#{name}=") do |value|
           typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
+          send("#{name}_will_change!") if typecast_value != read_attribute(name)
           super(value)
         end
       end
