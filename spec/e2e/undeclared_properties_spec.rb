@@ -32,7 +32,7 @@ describe Neo4j::ActiveNode do
 
   describe 'save' do
     it 'does not raise Neo4j::Shared::UnknownAttributeError if trying to set undeclared property' do
-      expect { Person.new[:foo] = 42 }.not_to raise_error(Neo4j::UnknownAttributeError)
+      expect { Person.new[:foo] = 42 }.not_to raise_error
     end
 
     it 'saves undeclared the properties that has been changed with []= operator' do
