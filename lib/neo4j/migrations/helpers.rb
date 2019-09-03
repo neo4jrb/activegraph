@@ -14,7 +14,7 @@ module Neo4j
                                  'To overwrite, call `remove_property(:%{label}, :%{new_property})` before this method.'.freeze
 
       def remove_property(label, property)
-        by_label(label).remove(n: property).exec
+        by_label(label).remove("n.#{property}").exec
       end
 
       def rename_property(label, old_property, new_property)
