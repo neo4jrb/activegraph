@@ -184,7 +184,7 @@ describe 'Association Proxy' do
     end
 
     it 'Raises error if attempting to deep eager load "past" a polymorphic association' do
-      expect { math.students.with_associations(homework: :lessons) }.to raise_error
+      expect { math.students.with_associations(homework: :lessons) }.to raise_error(RuntimeError, /Cannot eager load "past" a polymorphic association/)
     end
 
     it 'Queries limited times in depth two loops' do
@@ -403,7 +403,7 @@ describe 'Association Proxy' do
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
-      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
+      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error
     end
   end
 end
