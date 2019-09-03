@@ -33,8 +33,8 @@ DESCRIPTION
     'bug_tracker_uri' => 'https://github.com/neo4jrb/neo4j/issues'
   }
 
-  s.add_dependency('activemodel', ['>= 4.0', '< 6'])
-  s.add_dependency('activesupport', ['>= 4.0', '< 6'])
+  s.add_dependency('activemodel', '>= 4.0')
+  s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('i18n', '!= 1.3.0') # version 1.3.0 introduced a bug with `symbolize_key`
   s.add_dependency('neo4j-core', '>= 9.0.0')
   s.add_dependency('orm_adapter', '~> 0.5.0')

@@ -242,7 +242,14 @@ module Neo4j::Shared
                                  .pluck("#{element_name}.`#{attribute}`").first
       return false unless new_attribute
       self[attribute] = new_attribute
-      set_attribute_was(attribute, new_attribute)
+
+      if defined? ActiveModel::ForcedMutationTracker
+        # with ActiveModel 6.0.0 set_attribute_was is removed
+        # so we mark attribute's previous value using attr_will_change method
+        clear_attribute_change(attribute)
+      else
+        set_attribute_was(attribute, new_attribute)
+      end
       true
     end
 

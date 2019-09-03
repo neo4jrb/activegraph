@@ -27,8 +27,13 @@ module Neo4j::Shared
 
     # We should be using #clear_changes_information
     # but right now we don't use `ActiveModel` attributes correctly and so it doesn't work
+    # Once we set @attribute correctly from using class ActiveModel::Attribute
+    # we will no longer need to explicitly call following method and can safely remove it
     def changed_attributes_clear!
       return if changed_attributes.nil?
+
+      # with ActiveModel 6.0.0 we have to clear attribute changes with clear_attribute_changes
+      clear_attribute_changes(self.attributes.keys)
 
       # changed_attributes is frozen starting with ActiveModel 5.2.0
       # Not a good long term solution
@@ -39,7 +44,12 @@ module Neo4j::Shared
       end
     end
 
+    # Once we set @attribute correctly from using class ActiveModel::Attribute
+    # we will no longer need to explicitly call following method and can safely remove it
     def changed_attributes_selective_clear!(hash_to_clear)
+      # with ActiveModel 6.0.0 we have to clear attribute changes with clear_attribute_change
+      hash_to_clear.each_key { |k| clear_attribute_change(k) } if defined?(ActiveModel::ForcedMutationTracker)
+
       # changed_attributes is frozen starting with ActiveModel 5.2.0
       # Not a good long term solution
       if changed_attributes.frozen?
