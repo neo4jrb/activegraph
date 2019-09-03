@@ -7,7 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Added
 
-- support for activemodel and activesupport version 6
+- support for activemodel and activesupport version 6 (thanks @mrhardikjoshi)
+
+## Fixed
+
+- fixed cypher generation for `remove_property` (thanks @lshimokawa)
+- cleaned up deprecations, unused files and badges (thanks @olleolleolle)
 
 ## [9.5.3] 2019-08-16
 
