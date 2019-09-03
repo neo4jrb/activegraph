@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [9.6.0] 2019-09-3
 
-## Fixed
+## Added
 
-- supports activemodel and activesupport version 6.0.0
+- support for activemodel and activesupport version 6
 
 ## [9.5.3] 2019-08-16
 

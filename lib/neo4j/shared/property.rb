@@ -213,7 +213,7 @@ module Neo4j::Shared
         attributes[name.to_s] = declared_properties[name]
         define_method("#{name}=") do |value|
           typecast_value = typecast_attribute(_attribute_typecaster(name), value)
-          send("#{name}_will_change!") if typecast_value != read_attribute(name)
+          send("#{name}_will_change!") unless typecast_value == read_attribute(name)
           super(value)
         end
       end
