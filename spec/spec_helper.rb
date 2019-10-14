@@ -1,24 +1,24 @@
 # To run coverage via travis
-require 'simplecov'
+# require 'simplecov'
 require 'dotenv'
 require 'timecop'
 
 Dotenv.load
 
-SimpleCov.start do
-  add_filter 'spec'
-end
-if ENV['CI'] == 'true'
-  require 'codecov'
-  SimpleCov.formatter = SimpleCov::Formatter::Codecov
-end
+# SimpleCov.start do
+#   add_filter 'spec'
+# end
+# if ENV['CI'] == 'true'
+#   require 'codecov'
+#   SimpleCov.formatter = SimpleCov::Formatter::Codecov
+# end
 
 # To run it manually via Rake
-if ENV['COVERAGE']
-  require 'simplecov'
-  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-  SimpleCov.start
-end
+# if ENV['COVERAGE']
+#   require 'simplecov'
+#   SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+#   SimpleCov.start
+# end
 
 require 'bundler/setup'
 require 'rspec'
@@ -27,16 +27,14 @@ require 'fileutils'
 require 'tmpdir'
 require 'logger'
 
-require 'neo4j-core'
+require 'neo4j/core'
 require 'neo4j'
 require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
 require 'neo4j/core/cypher_session'
-require 'neo4j/core/cypher_session/adaptors/http'
-require 'neo4j/core/cypher_session/adaptors/bolt'
-require 'neo4j/core/cypher_session/adaptors/embedded'
+require 'neo4j/core/cypher_session/adaptors/driver'
 
 class MockLogger
   def debug(*_args)
@@ -61,8 +59,6 @@ end
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
-EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
-
 I18n.enforce_available_locales = false
 
 module Neo4jSpecHelpers
@@ -86,8 +82,6 @@ module Neo4jSpecHelpers
 
   def log_queries!
     Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
-    Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&method(:puts))
-    Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&method(:puts))
   end
 
   def action_controller_params(args)
@@ -202,8 +196,6 @@ Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
 end
 # rubocop:enable Style/GlobalVars
 
-FileUtils.rm_rf(EMBEDDED_DB_PATH)
-
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
@@ -289,28 +281,11 @@ module ActiveNodeRelStubHelpers
   end
 end
 
-# Should allow for http on java
-TEST_SESSION_MODE = RUBY_PLATFORM == 'java' ? :embedded : :http
+server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
+server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
+server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-session_adaptor = case TEST_SESSION_MODE
-                  when :embedded
-                    Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, impermanent: true, auto_commit: true, wrap_level: :proc)
-                  when :http
-                    server_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
-                    server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
-                    server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
-
-                    basic_auth_hash = {username: server_username, password: server_password}
-
-                    case URI(server_url).scheme
-                    when 'http'
-                      Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
-                    when 'bolt'
-                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc, ssl: false) # , logger_level: Logger::DEBUG)
-                    else
-                      fail "Invalid scheme for NEO4J_URL: #{scheme} (expected `http` or `bolt`)"
-                    end
-                  end
+session_adaptor = Neo4j::Core::CypherSession::Adaptors::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
 
 module FixingRSpecHelpers
   # Supports giving either a Hash or a String and a Hash as arguments
@@ -341,7 +316,6 @@ module FixingRSpecHelpers
   end
 end
 
-require 'neo4j-community' if RUBY_PLATFORM == 'java'
 Neo4j::ActiveBase.current_adaptor = session_adaptor
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
@@ -394,9 +368,4 @@ RSpec.configure do |config|
   #   end
   # end
 
-  config.exclusion_filter = {
-    api: lambda do |ed|
-      RUBY_PLATFORM == 'java' && ed == :server
-    end
-  }
 end

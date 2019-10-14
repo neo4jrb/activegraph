@@ -3,7 +3,7 @@ require 'neo4j/core/relationship'
 wrapping_proc = proc do |relationship|
   Neo4j::RelWrapping.wrapper(relationship)
 end
-Neo4j::Core::Relationship.wrapper_callback(wrapping_proc)
+Neo4j::Driver::Types::Relationship.wrapper_callback(wrapping_proc)
 
 module Neo4j
   module RelWrapping
@@ -24,7 +24,7 @@ module Neo4j
       end
 
       def class_from_type(rel_type)
-        Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] = rel_type.to_s.camelize
+        Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] || Neo4j::ActiveRel::Types::WRAPPED_CLASSES[rel_type] = rel_type.to_s.downcase.camelize
       end
     end
   end

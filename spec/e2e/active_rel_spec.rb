@@ -518,11 +518,9 @@ describe 'ActiveRel' do
       # relationships works differently, so we aren't as concerned with whether
       # it is loading two extra nodes.
       it 'does not load when calling neo_id from Neo4j Server' do
-        unless TEST_SESSION_MODE == :embedded
-          expect(reloaded.from_node).not_to be_loaded
-          expect(reloaded.from_node.neo_id).to eq from_node.neo_id
-          expect(reloaded.from_node.loaded?).to be_falsey
-        end
+        expect(reloaded.from_node).not_to be_loaded
+        expect(reloaded.from_node.neo_id).to eq from_node.neo_id
+        expect(reloaded.from_node.loaded?).to be_falsey
       end
 
       it 'delegates respond_to?' do

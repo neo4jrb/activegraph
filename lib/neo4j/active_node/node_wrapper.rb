@@ -9,7 +9,7 @@ wrapping_proc = proc do |node|
     wrapped_node.init_on_load(node, node.props)
   end
 end
-Neo4j::Core::Node.wrapper_callback(wrapping_proc)
+Neo4j::Driver::Types::Node.wrapper_callback(wrapping_proc)
 
 module Neo4j
   module NodeWrapping

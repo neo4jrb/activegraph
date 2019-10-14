@@ -5,8 +5,7 @@ describe Neo4j::RelWrapping do
   let(:start_node_id) { 1 }
   let(:end_node_id) { 2 }
 
-  let(:rel) { Neo4j::Core::Relationship.new(id, type, properties, start_node_id, end_node_id) }
-
+  let(:rel) { double(start_node_id: start_node_id, end_node_id: end_node_id, type: type, rel_type: type, props: properties) }
   subject { Neo4j::RelWrapping.wrapper(rel) }
 
   it { should eq(rel) }
@@ -22,7 +21,7 @@ describe Neo4j::RelWrapping do
     let_context type: :HAS_FOO do
       it { should be_a(HasFoo) }
 
-      let_context(properties: {'bar' => 'baz', 'biz' => 1}) do
+      let_context(properties: { 'bar' => 'baz', 'biz' => 1 }) do
         its(:bar) { should eq('baz') }
         its(:biz) { should eq(1) }
 

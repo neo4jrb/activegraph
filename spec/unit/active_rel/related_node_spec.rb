@@ -3,7 +3,7 @@ describe Neo4j::ActiveRel::RelatedNode do
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
-  let(:node1) { Neo4j::Core::Node.new(1, [:Test], {}) }
+  let(:node1) { double(id: 1, labels: [:Test], properties: {}) }
   let(:rel)   { double('ActiveRel object') }
 
   describe 'initialize' do

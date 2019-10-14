@@ -59,49 +59,15 @@ module Neo4j
     end
 
     def setup!(neo4j_config = empty_config)
-      wait_for_connection = neo4j_config.wait_for_connection
-      type, url, path, options = final_session_config!(neo4j_config).values_at(:type, :url, :path, :options)
-      type ||= default_session_type
+      url, path, options = final_session_config!(neo4j_config).values_at(:url, :path, :options)
       options ||= {}
-      register_neo4j_cypher_logging(type, options)
+      register_neo4j_cypher_logging
 
-      Neo4j::SessionManager.open_neo4j_session(type,
-                                               url || path || default_session_path_or_url,
-                                               wait_for_connection,
-                                               options)
+      Neo4j::SessionManager.open_neo4j_session( url || path || default_session_path_or_url, options)
     end
 
     def final_session_config!(neo4j_config)
-      support_deprecated_session_configs!(neo4j_config)
-
-      (neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]).dup.tap do |result|
-        result[:type] ||= URI(result[:url]).scheme if result[:url]
-      end
-    end
-
-    def support_deprecated_session_configs!(neo4j_config)
-      if neo4j_config.sessions.present?
-        ActiveSupport::Deprecation.warn('neo4j.config.sessions is deprecated, please use neo4j.config.session (not an array)')
-        neo4j_config[:session] = neo4j_config.sessions[0] if neo4j_config[:session].empty?
-      end
-
-      %w(type path url options).each do |key|
-        value = neo4j_config.send("session_#{key}")
-        if value.present?
-          ActiveSupport::Deprecation.warn("neo4j.config.session_#{key} is deprecated, please use neo4j.config.session.#{key}")
-          neo4j_config[:session][key] = value
-        end
-      end
-    end
-
-    def default_session_type
-      if ENV['NEO4J_URL']
-        scheme = URI(ENV['NEO4J_URL']).scheme
-        fail "Invalid scheme for NEO4J_URL: #{scheme}" if !%w(http https bolt).include?(scheme)
-        scheme == 'https' ? 'http' : scheme
-      else
-        ENV['NEO4J_TYPE'] || :http
-      end.to_sym
+      (neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]).dup
     end
 
     def default_session_path_or_url
@@ -123,7 +89,7 @@ module Neo4j
       end.detect(&:exist?)
     end
 
-    def register_neo4j_cypher_logging(session_type, options)
+    def register_neo4j_cypher_logging
       return if @neo4j_cypher_logging_registered
 
       Neo4j::Core::Query.pretty_cypher = Neo4j::Config[:pretty_logged_cypher_queries]
@@ -132,18 +98,9 @@ module Neo4j
         (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
       Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      subscribe_to_session_type_logging!(session_type, options, logger_proc)
+      Neo4j::Core::CypherSession::Adaptors::Driver.subscribe_to_request(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
-    end
-
-    def subscribe_to_session_type_logging!(session_type, options, logger_proc)
-      SessionManager
-        .adaptor_class(session_type, options)
-        .send(
-          [:embedded, :embedded_db].include?(session_type.to_sym) ? :subscribe_to_transaction : :subscribe_to_request,
-          &logger_proc
-        )
     end
   end
 end

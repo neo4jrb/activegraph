@@ -1,7 +1,7 @@
 require 'forwardable'
 require 'neo4j/version'
 
-require 'neo4j-core'
+require 'neo4j/core'
 require 'neo4j/core/query_ext' # From this gem
 
 require 'neo4j/active_base'
