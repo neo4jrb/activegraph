@@ -10,6 +10,14 @@ module Neo4j
       def ==(other)
         other.is_a?(Node) && neo_id == other.neo_id
       end
+
+      def labels
+        @labels ||= super
+      end
+
+      def properties
+        @properties ||= super
+      end
     end
   end
 end

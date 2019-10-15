@@ -11,5 +11,5 @@ require 'neo4j/core/node'
 require 'neo4j/core/relationship'
 
 Neo4j::Driver::Types::Entity.include Neo4j::Core::Wrappable
-Neo4j::Driver::Types::Node.include Neo4j::Core::Node
+Neo4j::Driver::Types::Node.prepend Neo4j::Core::Node
 Neo4j::Driver::Types::Relationship.include Neo4j::Core::Relationship

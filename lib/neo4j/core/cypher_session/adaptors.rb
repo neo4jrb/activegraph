@@ -3,6 +3,7 @@ require 'neo4j/core/instrumentable'
 require 'neo4j/core/label'
 require 'neo4j/core/logging'
 require 'neo4j/ansi'
+require 'neo4j/core/cypher_session/transactions/driver'
 
 module Neo4j
   module Core
@@ -56,10 +57,6 @@ ERROR
           gem_name, version = ['neo4j', ::Neo4j::VERSION]
 
           USER_AGENT_STRING = "#{gem_name}-gem/#{version} (https://github.com/neo4jrb/#{gem_name})"
-
-          def connect(*_args)
-            fail '#connect not implemented!'
-          end
 
           attr_accessor :wrap_level
           attr_reader :options
@@ -117,8 +114,7 @@ ERROR
           %i[query_set
              version
              indexes
-             constraints
-             connected?].each do |method|
+             constraints].each do |method|
             define_method(method) do |*_args|
               fail "##{method} method not implemented on adaptor!"
             end
@@ -130,7 +126,7 @@ ERROR
           # to the block and `commit` is ensured.  Any uncaught exceptions
           # will mark the transaction as failed first
           def transaction(session)
-            return self.class.transaction_class.new(session) if !block_given?
+            return Transactions::Driver.new(session) if !block_given?
 
             begin
               tx = transaction(session)
@@ -158,8 +154,6 @@ ERROR
           end
 
           def setup_queries!(queries, transaction, options = {})
-            validate_connection!(transaction)
-
             return if options[:skip_instrumentation]
             queries.each do |query|
               self.class.instrument_query(query, self) {}
@@ -190,12 +184,6 @@ ERROR
             true
           end
 
-          class << self
-            def transaction_class
-              fail '.transaction_class method not implemented on adaptor!'
-            end
-          end
-
           private
 
           def new_or_current_transaction(session, tx, &block)
@@ -204,11 +192,6 @@ ERROR
             else
               transaction(session, &block)
             end
-          end
-
-          def validate_connection!(transaction)
-            fail 'Query attempted without a connection' if !connected?
-            fail "Invalid transaction object: #{transaction}" if !transaction.is_a?(self.class.transaction_class)
           end
 
           def logger_location

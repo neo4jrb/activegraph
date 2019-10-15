@@ -41,11 +41,6 @@ module Neo4j
         @_persisted_obj.labels.uniq!
       end
 
-      # Remove this method in 9.0.0
-      def add_label(*_labels)
-        fail 'add_label has been removed in favor of `add_labels`'
-      end
-
       # Removes one or more labels
       # Be careful, don't remove the label representing the Ruby class.
       # @see Neo4j-core
@@ -54,11 +49,6 @@ module Neo4j
           query.remove("n:`#{label}`")
         end.exec
         labels.each(&@_persisted_obj.labels.method(:delete))
-      end
-
-      # Remove this method in 9.0.0
-      def remove_label(*_labels)
-        fail 'remove_label has been removed in favor of `remove_labels`'
       end
 
       def self._wrapped_classes

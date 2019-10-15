@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
 
-  s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg'
-  s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com'
+  s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg, Heinrich Klobuczek'
+  s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com, heinrich@mail.com'
   s.homepage = 'https://github.com/neo4jrb/neo4j/'
   s.rubyforge_project = 'neo4j'
   s.summary = 'A graph database for Ruby'
@@ -46,4 +46,5 @@ DESCRIPTION
   s.add_development_dependency('rake')
   s.add_development_dependency('rubocop', '~> 0.56.0')
   s.add_development_dependency('yard')
+  s.add_development_dependency('dryspec')
 end

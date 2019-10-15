@@ -3,8 +3,14 @@ describe Neo4j::ActiveRel::RelatedNode do
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
-  let(:node1) { double(id: 1, labels: [:Test], properties: {}) }
-  let(:rel)   { double('ActiveRel object') }
+  let(:node1) do
+    Class.new do
+      include Neo4j::Core::Node
+
+      def id; 1; end
+    end.new
+  end
+  let(:rel) { double('ActiveRel object') }
 
   describe 'initialize' do
     it 'can be called without params' do

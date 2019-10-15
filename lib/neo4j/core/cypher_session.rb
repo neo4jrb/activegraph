@@ -7,15 +7,7 @@ module Neo4j
       delegate :close, to: :adaptor
 
       def initialize(adaptor)
-        fail ArgumentError, "Invalid adaptor: #{adaptor.inspect}" if !adaptor.is_a?(Adaptors::Base)
-
         @adaptor = adaptor
-
-        @adaptor.connect
-      end
-
-      def transaction_class
-        Neo4j::Core::CypherSession::Transactions::Base
       end
 
       %w[

@@ -36,6 +36,9 @@ require 'pry' if ENV['APP_ENV'] == 'debug'
 require 'neo4j/core/cypher_session'
 require 'neo4j/core/cypher_session/adaptors/driver'
 
+require 'dryspec/helpers'
+require 'neo4j_spec_helpers'
+
 class MockLogger
   def debug(*_args)
   end
@@ -56,120 +59,9 @@ module Rails
   end
 end
 
-
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 I18n.enforce_available_locales = false
-
-module Neo4jSpecHelpers
-  extend ActiveSupport::Concern
-
-  def new_query
-    Neo4j::ActiveBase.new_query
-  end
-
-  def current_session
-    Neo4j::ActiveBase.current_session
-  end
-
-  def session
-    current_session
-  end
-
-  def neo4j_query(*args)
-    current_session.query(*args)
-  end
-
-  def log_queries!
-    Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
-  end
-
-  def action_controller_params(args)
-    ActionController::Parameters.new(args)
-  end
-
-  def handle_child_output(read, write)
-    read.close
-    begin
-      rest = yield
-      write.puts [Marshal.dump(rest)].pack('m')
-    rescue StandardError => e
-      write.puts [Marshal.dump(e)].pack('m')
-    end
-    exit!
-  end
-
-  def do_in_child(&block)
-    read, write = IO.pipe
-    pid = fork do
-      handle_child_output(read, write, &block)
-    end
-    write.close
-    result = Marshal.load(read.read.unpack('m').first)
-    Process.wait2(pid)
-
-    fail result if result.class < Exception
-    result
-  end
-
-  # A trick to load action_controller without requiring in all specs. Not working in JRuby.
-  def using_action_controller
-    if RUBY_PLATFORM == 'java'
-      require 'action_controller'
-      yield
-    else
-      do_in_child do
-        require 'action_controller'
-        yield
-      end
-    end
-  end
-
-  class_methods do
-    def let_config(var_name, value)
-      around do |example|
-        old_value = Neo4j::Config[var_name]
-        Neo4j::Config[var_name] = value
-        example.run
-        Neo4j::Config[var_name] = old_value
-      end
-    end
-
-    def capture_output!(variable)
-      around do |example|
-        @captured_stream = StringIO.new
-
-        original_stream = $stdout
-        $stdout = @captured_stream
-
-        example.run
-
-        $stdout = original_stream
-      end
-      let(variable) { @captured_stream.string }
-    end
-
-    def let_env_variable(var_name)
-      around do |example|
-        old_value = ENV[var_name.to_s]
-        ENV[var_name.to_s] = yield
-        example.run
-        ENV[var_name.to_s] = old_value
-      end
-    end
-  end
-
-  # rubocop:disable Style/GlobalVars
-  def expect_queries(count, &block)
-    expect(queries_count(&block)).to eq(count)
-  end
-
-  def queries_count
-    start_count = $expect_queries_count
-    yield
-    $expect_queries_count - start_count
-  end
-end
 
 module Neo4jEntityFindingHelpers
   def rel_cypher_string(dir = :both, type = nil)
@@ -190,12 +82,6 @@ module Neo4jEntityFindingHelpers
   end
 end
 
-$expect_queries_count = 0
-Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
-  $expect_queries_count += 1
-end
-# rubocop:enable Style/GlobalVars
-
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
@@ -204,13 +90,13 @@ def clear_model_memory_caches
   Neo4j::ActiveNode::Labels.clear_wrapped_models
 end
 
-def delete_db
-  Neo4j::ActiveBase.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+def delete_db(executor = Neo4j::ActiveBase)
+  executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
-def delete_schema
-  Neo4j::Core::Label.drop_uniqueness_constraints_for(Neo4j::ActiveBase.current_session)
-  Neo4j::Core::Label.drop_indexes_for(Neo4j::ActiveBase.current_session)
+def delete_schema(session = Neo4j::ActiveBase.current_session)
+  Neo4j::Core::Label.drop_uniqueness_constraints_for(session)
+  Neo4j::Core::Label.drop_indexes_for(session)
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
@@ -305,15 +191,6 @@ module FixingRSpecHelpers
       instance_eval(&block)
     end
   end
-
-  def subject_should_raise(error, message = nil)
-    it_string = error.to_s
-    it_string += " (#{message.inspect})" if message
-
-    it it_string do
-      expect { subject }.to raise_error error, message
-    end
-  end
 end
 
 Neo4j::ActiveBase.current_adaptor = session_adaptor
@@ -325,6 +202,7 @@ RSpec.configure do |config|
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
   config.include Neo4jEntityFindingHelpers
+  config.extend DRYSpec::Helpers
 
   # Setup the current session
   config.before(:suite) do
@@ -346,26 +224,8 @@ RSpec.configure do |config|
     Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
   end
 
-
   config.before(:each) do
     @active_base_logger = spy('ActiveBase logger')
     allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
   end
-
-  # config.before(:each) do
-  #   puts 'before each'
-  #   # TODO: What to do about this?
-  #   Neo4j::Session._listeners.clear
-  #   @current_session || create_session
-  # end
-
-  # config.after(:each) do
-  #   puts 'after each'
-  #   if current_transaction
-  #     puts 'WARNING forgot to close transaction'
-  #     Neo4j::ActiveBase.wait_for_schema_changes
-  #     current_transaction.close
-  #   end
-  # end
-
 end

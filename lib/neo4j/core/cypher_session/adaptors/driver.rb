@@ -54,15 +54,12 @@ module Neo4j
           end
 
           attr_reader :driver
-          alias connected? driver
 
           def initialize(url, options = {})
             self.url = url
             @driver = DriverRegistry.instance.driver_for(url)
             @options = options
           end
-
-          def connect; end
 
           def close
             DriverRegistry.instance.close(driver)
@@ -78,18 +75,6 @@ module Neo4j
             Responses.new(responses, wrap_level: wrap_level).to_a
           rescue Neo4j::Driver::Exceptions::Neo4jException => e
             raise Neo4j::Core::CypherSession::CypherError.new_from(e.code, e.message) # , e.stack_track.to_a
-          end
-
-          # def transaction(_session, &block)
-          #   session = driver.session(org.neo4j.driver.v1.AccessMode::WRITE)
-          #   session.writeTransaction(&block)
-          # ensure
-          #   session.close
-          # end
-
-          def self.transaction_class
-            require 'neo4j/core/cypher_session/transactions/driver'
-            Neo4j::Core::CypherSession::Transactions::Driver
           end
 
           instrument(:request, 'neo4j.core.bolt.request', %w[adaptor body]) do |_, start, finish, _id, payload|
