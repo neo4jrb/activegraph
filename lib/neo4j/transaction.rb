@@ -117,7 +117,7 @@ module Neo4j
     end
 
     # @return [Neo4j::Transaction::Instance]
-    def new(session = Session.current!)
+    def new(session)
       session.transaction
     end
 
