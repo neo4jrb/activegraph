@@ -13,11 +13,8 @@ module Neo4j
       %w[
         query
         queries
-
         transaction
-
         version
-
         indexes
         constraints
       ].each do |method, &_block|

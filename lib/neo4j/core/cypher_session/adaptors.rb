@@ -3,7 +3,7 @@ require 'neo4j/core/instrumentable'
 require 'neo4j/core/label'
 require 'neo4j/core/logging'
 require 'neo4j/ansi'
-require 'neo4j/core/cypher_session/transactions/driver'
+require 'neo4j/core/cypher_session/transaction'
 
 module Neo4j
   module Core
@@ -126,7 +126,7 @@ ERROR
           # to the block and `commit` is ensured.  Any uncaught exceptions
           # will mark the transaction as failed first
           def transaction(session)
-            return Transactions::Driver.new(session) if !block_given?
+            return Transaction.new(session) if !block_given?
 
             begin
               tx = transaction(session)
