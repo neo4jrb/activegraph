@@ -9,7 +9,7 @@ module Neo4j
         def initialize(*args)
           super
           return unless root?
-          @driver_session = session.adaptor.driver.session(Neo4j::Driver::AccessMode::WRITE)
+          @driver_session = driver.driver.session(Neo4j::Driver::AccessMode::WRITE)
           @driver_tx = @driver_session.begin_transaction
         rescue StandardError => e
           clean_transaction_registry
@@ -27,11 +27,11 @@ module Neo4j
                     end
           options[:transaction] ||= self
 
-          adaptor.query(@session, *args)
+          driver.query(*args)
         end
 
         def queries(options = {}, &block)
-          adaptor.queries(@session, { transaction: self }.merge(options), &block)
+          driver.queries({ transaction: self }.merge(options), &block)
         end
 
         def after_commit_registry
@@ -74,13 +74,7 @@ module Neo4j
         private
 
         def clean_transaction_registry
-          Neo4j::Transaction::TransactionsRegistry.transactions_by_session_id[session.object_id] = []
-        end
-
-        # Because we're inheriting from the old Transaction class
-        # but the new adaptors work much like the old sessions
-        def adaptor
-          @session.adaptor
+          Neo4j::Transaction::TransactionsRegistry.transactions_by_session_id = []
         end
       end
     end

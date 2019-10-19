@@ -32,7 +32,7 @@ module Neo4j
       end
 
       def current_adaptor=(adaptor)
-        self.current_session = Neo4j::Core::CypherSession.new(adaptor)
+        self.current_session = adaptor
       end
 
       def run_transaction(run_in_tx = true)
@@ -61,7 +61,7 @@ module Neo4j
 
       def current_transaction
         validate_model_schema!
-        Neo4j::Transaction.current_for(current_session)
+        Neo4j::Transaction.current_for
       end
 
       def label_object(label_name)
@@ -78,9 +78,9 @@ module Neo4j
         Neo4j::ModelSchema.validate_model_schema! unless Neo4j::Migrations.currently_running_migrations
       end
 
-      def make_session_wrap!(session)
-        session.adaptor.instance_variable_get('@options')[:wrap_level] = :proc
-        session
+      def make_session_wrap!(driver)
+        driver.instance_variable_get('@options')[:wrap_level] = :proc
+        driver
       end
     end
   end

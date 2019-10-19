@@ -33,7 +33,6 @@ require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
-require 'neo4j/core/cypher_session'
 require 'neo4j/core/cypher_session/driver'
 
 require 'dryspec/helpers'

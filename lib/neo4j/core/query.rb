@@ -234,19 +234,10 @@ module Neo4j
         !!@_unwrapped_obj
       end
 
-      def session_is_new_api?
-        defined?(::Neo4j::Core::CypherSession) && @session.is_a?(::Neo4j::Core::CypherSession)
-      end
-
       def response
         return @response if @response
 
-        @response = if session_is_new_api?
-                      @session.query(self, transaction: Transaction.current_for(@session), wrap_level: (:core_entity if unwrapped?))
-                    else
-                      @session._query(to_cypher, merge_params,
-                                      context: @options[:context], pretty_cypher: (pretty_cypher if self.class.pretty_cypher)).tap(&method(:raise_if_cypher_error!))
-                    end
+        @response = @session.query(self, transaction: Transaction.current_for, wrap_level: (:core_entity if unwrapped?))
       end
 
       def raise_if_cypher_error!(response)
@@ -274,15 +265,7 @@ module Neo4j
       end
 
       def each
-        response = self.response
-        if defined?(Neo4j::Server::CypherResponse) && response.is_a?(Neo4j::Server::CypherResponse)
-          response.unwrapped! if unwrapped?
-          response.to_node_enumeration
-        elsif defined?(Neo4j::Core::CypherSession::Result) && response.is_a?(Neo4j::Core::CypherSession::Result)
-          response.to_a
-        else
-          Neo4j::Embedded::ResultWrapper.new(response, to_cypher, unwrapped?)
-        end.each { |object| yield object }
+        response.each { |object| yield object }
       end
 
       # @method to_a

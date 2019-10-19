@@ -2,15 +2,15 @@ module Neo4j
   module Core
     class CypherSession
       module Schema
-        def version(session)
-          result = query(session, 'CALL dbms.components()', {}, skip_instrumentation: true)
+        def version
+          result = query('CALL dbms.components()', {}, skip_instrumentation: true)
 
           # BTW: community / enterprise could be retrieved via `result.first.edition`
           result.first.versions[0]
         end
 
-        def indexes(session)
-          result = query(session, 'CALL db.indexes()', {}, skip_instrumentation: true)
+        def indexes
+          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
           result.map do |row|
             label, property = row.description.match(/INDEX ON :([^\(]+)\(([^\)]+)\)/)[1, 2]
@@ -18,8 +18,8 @@ module Neo4j
           end
         end
 
-        def constraints(session)
-          result = query(session, 'CALL db.indexes()', {}, skip_instrumentation: true)
+        def constraints
+          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
           result.select { |row| row.type == 'node_unique_property' }.map do |row|
             label, property = row.description.match(/INDEX ON :([^\(]+)\(([^\)]+)\)/)[1, 2]

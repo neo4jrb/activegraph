@@ -13,14 +13,13 @@ module Neo4j
     end
 
     class Base
-      attr_reader :session, :root
+      attr_reader :driver, :root
 
-      def initialize(session, _options = {})
-        @session = session
+      def initialize(driver, _options = {})
+        @driver = driver
+        Transaction.stack_for << self
 
-        Transaction.stack_for(session) << self
-
-        @root = Transaction.stack_for(session).first
+        @root = Transaction.stack_for.first
         # Neo4j::Core::Label::SCHEMA_QUERY_SEMAPHORE.lock if root?
 
         # @parent = session_transaction_stack.last
@@ -37,7 +36,7 @@ module Neo4j
 
       # Commits or marks this transaction for rollback, depending on whether #mark_failed has been previously invoked.
       def close
-        tx_stack = Transaction.stack_for(@session)
+        tx_stack = Transaction.stack_for
         fail 'Tried closing when transaction stack is empty (maybe you closed too many?)' if tx_stack.empty?
         fail "Closed transaction which wasn't the most recent on the stack (maybe you forgot to close one?)" if tx_stack.pop != self
 
@@ -117,21 +116,17 @@ module Neo4j
     end
 
     # @return [Neo4j::Transaction::Instance]
-    def new(session)
-      session.transaction
+    def new(driver)
+     driver.transaction
     end
 
     # Runs the given block in a new transaction.
     # @param [Boolean] run_in_tx if true a new transaction will not be created, instead if will simply yield to the given block
     # @@yield [Neo4j::Transaction::Instance]
-    def run(*args)
-      session, run_in_tx = session_and_run_in_tx_from_args(args)
-
-      fail ArgumentError, 'Expected a block to run in Transaction.run' unless block_given?
-
+    def run(driver, run_in_tx)
       return yield(nil) unless run_in_tx
 
-      tx = Neo4j::Transaction.new(session)
+      tx = Neo4j::Transaction.new(driver)
       yield tx
     rescue Exception => e # rubocop:disable Lint/RescueException
       # print_exception_cause(e)
@@ -142,28 +137,12 @@ module Neo4j
       tx.close unless tx.nil?
     end
 
-    # To support old syntax of providing run_in_tx first
-    # But session first is ideal
-    def session_and_run_in_tx_from_args(args)
-      fail ArgumentError, 'Too few arguments' if args.empty?
-      fail ArgumentError, 'Too many arguments' if args.size > 2
-
-      if args.size == 1
-        fail ArgumentError, 'Session must be specified' if !args[0].is_a?(Neo4j::Core::CypherSession)
-
-        [args[0], true]
-      else
-        [true, false].include?(args[0]) ? args.reverse : args.dup
-      end
+    def current_for
+      stack_for.first
     end
 
-    def current_for(session)
-      stack_for(session).first
-    end
-
-    def stack_for(session)
-      TransactionsRegistry.transactions_by_session_id ||= {}
-      TransactionsRegistry.transactions_by_session_id[session.object_id] ||= []
+    def stack_for
+      TransactionsRegistry.transactions_by_session_id ||= []
     end
 
     private

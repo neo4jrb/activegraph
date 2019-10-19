@@ -1,4 +1,3 @@
-require 'neo4j/core/cypher_session'
 require 'neo4j/core/instrumentable'
 require 'neo4j/core/label'
 require 'neo4j/core/logging'
@@ -37,7 +36,7 @@ module Neo4j
           @options = options
         end
 
-        def query(session, *args)
+        def query(*args)
           options = case args.size
                     when 3
                       args.pop
@@ -45,15 +44,15 @@ module Neo4j
                       args.pop if args[0].is_a?(::Neo4j::Core::Query)
                     end || {}
 
-          queries(session, options) { append(*args) }[0]
+          queries(options) { append(*args) }[0]
         end
 
-        def queries(session, options = {}, &block)
+        def queries(options = {}, &block)
           query_builder = QueryBuilder.new
 
           query_builder.instance_eval(&block)
 
-          new_or_current_transaction(session, options[:transaction]) do |tx|
+          new_or_current_transaction(options[:transaction]) do |tx|
             query_set(tx, query_builder.queries, { commit: !options[:transaction] }.merge(options))
           end
         end
@@ -63,11 +62,11 @@ module Neo4j
         # If called with a block, the Transaction object is yielded
         # to the block and `commit` is ensured.  Any uncaught exceptions
         # will mark the transaction as failed first
-        def transaction(session)
-          return Transaction.new(session) if !block_given?
+        def transaction
+          return Transaction.new(self) if !block_given?
 
           begin
-            tx = transaction(session)
+            tx = transaction
 
             yield tx
           rescue => e
@@ -147,11 +146,11 @@ module Neo4j
 
         private
 
-        def new_or_current_transaction(session, tx, &block)
+        def new_or_current_transaction(tx, &block)
           if tx
             yield(tx)
           else
-            transaction(session, &block)
+            transaction(&block)
           end
         end
 

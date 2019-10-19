@@ -1,34 +1,33 @@
-# Requires that an `adaptor` let variable exist with the adaptor
-RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
+# Requires that an `driver` let variable exist with the driver
+RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
   let(:real_session) do
-    Neo4j::Core::CypherSession.new(adaptor)
+    driver
   end
-  let(:session_double) { double('session', adaptor: adaptor) }
 
-  before { adaptor.query(session_double, 'MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
+  before { driver.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
 
-  subject { adaptor }
+  subject { driver }
 
   describe '#query' do
     it 'Can make a query' do
-      adaptor.query(session_double, 'MERGE path=(n)-[rel:r]->(o) RETURN n, rel, o, path LIMIT 1')
+      driver.query('MERGE path=(n)-[rel:r]->(o) RETURN n, rel, o, path LIMIT 1')
     end
 
     it 'can make a query with a large payload' do
-      adaptor.query(session_double, 'CREATE (n:Test) SET n = {props} RETURN n', props: {text: 'a' * 10_000})
+      driver.query('CREATE (n:Test) SET n = {props} RETURN n', props: {text: 'a' * 10_000})
     end
   end
 
   describe '#queries' do
     it 'allows for multiple queries' do
-      result = adaptor.queries(session_double) do
+      result = driver.queries do
         append 'CREATE (n:Label1) RETURN n'
         append 'CREATE (n:Label2) RETURN n'
       end
 
       expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
       expect(result[1].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      if adaptor.supports_metadata?
+      if driver.supports_metadata?
         expect(result[0].to_a[0].n.labels.to_a).to eq([:Label1])
         expect(result[1].to_a[0].n.labels).to eq([:Label2])
       else
@@ -38,12 +37,12 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     end
 
     it 'allows for building with Query API' do
-      result = adaptor.queries(session_double) do
+      result = driver.queries do
         append query.create(n: {Label1: {}}).return(:n)
       end
 
       expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels).to eq(adaptor.supports_metadata? ? [:Label1] : nil)
+      expect(result[0].to_a[0].n.labels).to eq(driver.supports_metadata? ? [:Label1] : nil)
     end
   end
 
@@ -52,102 +51,102 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
       tx.query('CREATE (t:Temporary {id: {id}})', id: id)
     end
 
-    def get_object_by_id(id, adaptor)
-      first = adaptor.query(session_double, 'MATCH (t:Temporary {id: {id}}) RETURN t', id: id).first
+    def get_object_by_id(id, driver)
+      first = driver.query('MATCH (t:Temporary {id: {id}}) RETURN t', id: id).first
       first && first.t
     end
 
     it 'logs one query per query_set in transaction' do
       expect_queries(1) do
-        tx = adaptor.transaction(session_double)
+        tx = driver.transaction
         create_object_by_id(1, tx)
         tx.close
       end
-      expect(get_object_by_id(1, adaptor)).to be_a(Neo4j::Driver::Types::Node)
+      expect(get_object_by_id(1, driver)).to be_a(Neo4j::Driver::Types::Node)
 
       expect_queries(1) do
-        adaptor.transaction(session_double) do |tx|
+        driver.transaction do |tx|
           create_object_by_id(2, tx)
         end
       end
-      expect(get_object_by_id(2, adaptor)).to be_a(Neo4j::Driver::Types::Node)
+      expect(get_object_by_id(2, driver)).to be_a(Neo4j::Driver::Types::Node)
     end
 
     it 'allows for rollback' do
       expect_queries(1) do
-        tx = adaptor.transaction(session_double)
+        tx = driver.transaction
         create_object_by_id(3, tx)
         tx.mark_failed
         tx.close
       end
-      expect(get_object_by_id(3, adaptor)).to be_nil
+      expect(get_object_by_id(3, driver)).to be_nil
 
       expect_queries(1) do
-        adaptor.transaction(session_double) do |tx|
+        driver.transaction do |tx|
           create_object_by_id(4, tx)
           tx.mark_failed
         end
       end
-      expect(get_object_by_id(4, adaptor)).to be_nil
+      expect(get_object_by_id(4, driver)).to be_nil
 
       expect_queries(1) do
         expect do
-          adaptor.transaction(session_double) do |tx|
+          driver.transaction do |tx|
             create_object_by_id(5, tx)
             fail 'Failing transaction with error'
           end
         end.to raise_error 'Failing transaction with error'
       end
-      expect(get_object_by_id(5, adaptor)).to be_nil
+      expect(get_object_by_id(5, driver)).to be_nil
 
       # Nested transaction, error from inside inner transaction handled outside of inner transaction
       expect_queries(1) do
-        adaptor.transaction(session_double) do |_tx|
+        driver.transaction do |_tx|
           expect do
-            adaptor.transaction(session_double) do |tx|
+            driver.transaction do |tx|
               create_object_by_id(6, tx)
               fail 'Failing transaction with error'
             end
           end.to raise_error 'Failing transaction with error'
         end
       end
-      expect(get_object_by_id(6, adaptor)).to be_nil
+      expect(get_object_by_id(6, driver)).to be_nil
 
       # Nested transaction, error from inside inner transaction handled outside of inner transaction
       expect_queries(2) do
-        adaptor.transaction(session_double) do |tx|
+        driver.transaction do |tx|
           create_object_by_id(7, tx)
           expect do
-            adaptor.transaction(session_double) do |tx|
+            driver.transaction do |tx|
               create_object_by_id(8, tx)
               fail 'Failing transaction with error'
             end
           end.to raise_error 'Failing transaction with error'
         end
       end
-      expect(get_object_by_id(7, adaptor)).to be_nil
-      expect(get_object_by_id(8, adaptor)).to be_nil
+      expect(get_object_by_id(7, driver)).to be_nil
+      expect(get_object_by_id(8, driver)).to be_nil
 
       # Nested transaction, error from inside inner transaction handled outside of outer transaction
       expect_queries(1) do
         expect do
-          adaptor.transaction(session_double) do |_tx|
-            adaptor.transaction(session_double) do |tx|
+          driver.transaction do |_tx|
+            driver.transaction do |tx|
               create_object_by_id(9, tx)
               fail 'Failing transaction with error'
             end
           end
         end.to raise_error 'Failing transaction with error'
       end
-      expect(get_object_by_id(9, adaptor)).to be_nil
+      expect(get_object_by_id(9, driver)).to be_nil
     end
 
     describe 'after_commit hook' do
       it 'gets called when the root transaction is closed' do
         data = false
-        tx1 = adaptor.transaction(session_double)
-        tx2 = adaptor.transaction(session_double)
-        tx3 = adaptor.transaction(session_double)
+        tx1 = driver.transaction
+        tx2 = driver.transaction
+        tx3 = driver.transaction
         tx3.root.after_commit { data = true }
         tx3.close
         tx2.close
@@ -157,9 +156,9 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
 
       it 'is ignored when the root transaction fails' do
         data = false
-        tx1 = adaptor.transaction(session_double)
-        tx2 = adaptor.transaction(session_double)
-        tx3 = adaptor.transaction(session_double)
+        tx1 = driver.transaction
+        tx2 = driver.transaction
+        tx3 = driver.transaction
         tx3.root.after_commit { data = true }
         tx1.mark_failed
         tx3.close
@@ -170,9 +169,9 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
 
       it 'is ignored when a child transaction fails' do
         data = false
-        tx1 = adaptor.transaction(session_double)
-        tx2 = adaptor.transaction(session_double)
-        tx3 = adaptor.transaction(session_double)
+        tx1 = driver.transaction
+        tx2 = driver.transaction
+        tx3 = driver.transaction
         tx3.root.after_commit { data = true }
         tx3.mark_failed
         tx3.close
@@ -182,12 +181,12 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
       end
     end
     # it 'does not allow transactions in the wrong order' do
-    #   expect { adaptor.end_transaction }.to raise_error(RuntimeError, /Cannot close transaction without starting one/)
+    #   expect { driver.end_transaction }.to raise_error(RuntimeError, /Cannot close transaction without starting one/)
   end
 
   describe 'results' do
     it 'handles array results' do
-      result = adaptor.query(session_double, "CREATE (a {b: 'c'}) RETURN [a] AS arr")
+      result = driver.query("CREATE (a {b: 'c'}) RETURN [a] AS arr")
 
       expect(result.hashes).to be_a(Array)
       expect(result.hashes.size).to be(1)
@@ -197,7 +196,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     end
 
     it 'handles map results' do
-      result = adaptor.query(session_double, "CREATE (a {b: 'c'}) RETURN {foo: a} AS map")
+      result = driver.query("CREATE (a {b: 'c'}) RETURN {foo: a} AS map")
 
       expect(result.hashes).to be_a(Array)
       expect(result.hashes.size).to be(1)
@@ -207,7 +206,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     end
 
     it 'handles map results with arrays' do
-      result = adaptor.query(session_double, "CREATE (a {b: 'c'}) RETURN {foo: [a]} AS map")
+      result = driver.query("CREATE (a {b: 'c'}) RETURN {foo: [a]} AS map")
 
       expect(result.hashes).to be_a(Array)
       expect(result.hashes.size).to be(1)
@@ -218,7 +217,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     end
 
     it 'symbolizes keys for Neo4j objects' do
-      result = adaptor.query(session_double, 'RETURN {a: 1} AS obj')
+      result = driver.query('RETURN {a: 1} AS obj')
 
       expect(result.hashes).to eq([{obj: {a: 1}}])
 
@@ -229,7 +228,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     end
 
     describe 'parameter input and output' do
-      subject { adaptor.query(session_double, 'WITH {param} AS param RETURN param', param: param).first.param }
+      subject { driver.query('WITH {param} AS param RETURN param', param: param).first.param }
 
       [
         # Integers
@@ -279,7 +278,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
         "MERGE path=(n:Foo {a: 1})-[r:foo {b: 2}]->(b:Foo)
          RETURN #{return_clause} AS result"
       end
-      subject { adaptor.query(session_double, query, {}, wrap_level: wrap_level).to_a[0].result }
+      subject { driver.query(query, {}, wrap_level: wrap_level).to_a[0].result }
 
       # `wrap_level: nil` should resolve to `wrap_level: :core_entity`
       [nil, :core_entity].each do |type|
@@ -361,9 +360,9 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
       before { create_constraint(real_session, :Album, :uuid, type: :unique) }
 
       it 'raises an error' do
-        adaptor.query(real_session, "CREATE (:Album {uuid: 'dup'})").to_a
+        driver.query("CREATE (:Album {uuid: 'dup'})").to_a
         expect do
-          adaptor.query(real_session, "CREATE (:Album {uuid: 'dup'})").to_a
+          driver.query("CREATE (:Album {uuid: 'dup'})").to_a
         end.to raise_error(::Neo4j::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError)
       end
     end
@@ -371,7 +370,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     describe 'Invalid input error' do
       it 'raises an error' do
         expect do
-          adaptor.query(real_session, "CRATE (:Album {uuid: 'dup'})").to_a
+          driver.query("CRATE (:Album {uuid: 'dup'})").to_a
         end.to raise_error(::Neo4j::Core::CypherSession::CypherError, /Invalid input 'A'/)
       end
     end
@@ -379,7 +378,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
     describe 'Clause ordering error' do
       it 'raises an error' do
         expect do
-          adaptor.query(real_session, "RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
+          driver.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
         end.to raise_error(::Neo4j::Core::CypherSession::CypherError, /RETURN can only be used at the end of the query/)
       end
     end
@@ -399,7 +398,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
 
     describe 'constraints' do
       let(:label) {}
-      subject { adaptor.constraints(real_session) }
+      subject { driver.constraints }
 
       it do
         should match_array([
@@ -412,7 +411,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Adaptor' do
 
     describe 'indexes' do
       let(:label) {}
-      subject { adaptor.indexes(real_session) }
+      subject { driver.indexes }
 
       it do
         should match_array([
