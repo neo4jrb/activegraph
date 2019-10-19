@@ -2,7 +2,7 @@ require 'active_support/concern'
 
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       # Containing the logic for dealing with adaptors which use URIs
       module HasUri
         extend ActiveSupport::Concern

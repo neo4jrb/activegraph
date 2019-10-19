@@ -13,7 +13,7 @@ require 'neo4j/core/cypher_session/schema'
 
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class Driver
         include Neo4j::Core::Instrumentable
         include HasUri

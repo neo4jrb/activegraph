@@ -2,7 +2,7 @@ require 'neo4j/transaction'
 
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class Transaction < Neo4j::Transaction::Base
         attr_reader :driver_tx, :driver_session
 

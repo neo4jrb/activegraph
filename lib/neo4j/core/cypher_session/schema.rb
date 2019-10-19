@@ -1,6 +1,6 @@
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       module Schema
         def version
           result = query('CALL dbms.components()', {}, skip_instrumentation: true)

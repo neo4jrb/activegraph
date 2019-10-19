@@ -1,6 +1,6 @@
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class QueryBuilder
         attr_reader :queries
 

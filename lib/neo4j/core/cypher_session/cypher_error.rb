@@ -1,6 +1,6 @@
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class CypherError < StandardError
         attr_reader :code, :original_message, :stack_trace
 

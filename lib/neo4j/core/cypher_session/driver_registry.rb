@@ -3,7 +3,7 @@
 # The registry allows reusage of drivers which are thread safe and conveniently closing them in one call.
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class DriverRegistry < Hash
         include Singleton
 

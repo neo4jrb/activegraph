@@ -2,7 +2,7 @@ require 'neo4j/core/cypher_session/result'
 
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       class Responses
         include Enumerable
 

@@ -1,6 +1,6 @@
 module Neo4j
   module Core
-    class CypherSession
+    module CypherSession
       module SchemaErrors
         class ConstraintValidationFailedError < CypherError; end
         class ConstraintAlreadyExistsError < CypherError; end
