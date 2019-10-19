@@ -24,7 +24,7 @@ module Rails
 
       context 'no errors' do
         before do
-          stub_const('Neo4j::SessionManager', spy('Neo4j::SessionManager'))
+          stub_const('Neo4j::ActiveBase', spy('Neo4j::ActiveBase'))
 
           expect do
             Neo4j::Railtie.setup!(cfg)
@@ -34,8 +34,8 @@ module Rails
         context 'NEO4J_URL is bolt' do
           let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
 
-          it 'calls Neo4j::SessionManager' do
-            expect(Neo4j::SessionManager).to have_received(:open_neo4j_session).with('bolt://localhost:7472', {})
+          it 'calls Neo4j::ActiveBase' do
+            expect(Neo4j::ActiveBase).to have_received(:new_driver).with('bolt://localhost:7472', {})
           end
         end
       end

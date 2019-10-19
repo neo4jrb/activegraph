@@ -5,7 +5,7 @@ module Neo4j
     class << self
       # private?
       def current_session
-        (SessionRegistry.current_session ||= establish_session).tap do |session|
+        (@current_driver ||= establish_session).tap do |session|
           fail 'No session defined!' if session.nil?
         end
       end
@@ -18,6 +18,12 @@ module Neo4j
         make_session_wrap!(@establish_session_block.call) if @establish_session_block
       end
 
+      def new_driver(url, options = {})
+        verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
+        Neo4j::Core::CypherSession::Driver
+          .new(url, options.merge(wrap_level: :proc, verbose_query_logs: verbose_query_logs))
+      end
+
       def current_transaction_or_session
         current_transaction || current_session
       end
@@ -27,13 +33,11 @@ module Neo4j
       end
 
       # Should support setting session via config options
-      def current_session=(session)
-        SessionRegistry.current_session = make_session_wrap!(session)
+      def current_session=(driver)
+        @current_driver = make_session_wrap!(driver)
       end
 
-      def current_adaptor=(adaptor)
-        self.current_session = adaptor
-      end
+      alias current_driver= current_session=
 
       def run_transaction(run_in_tx = true)
         Neo4j::Transaction.run(current_session, run_in_tx) do |tx|

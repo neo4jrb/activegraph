@@ -10,7 +10,7 @@ if !defined?(Rails) && !Rake::Task.task_defined?('environment')
     neo4j_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
     $LOAD_PATH.unshift File.dirname('./')
     Neo4j::ActiveBase.on_establish_session do
-      Neo4j::SessionManager.open_neo4j_session(neo4j_url)
+      Neo4j::ActiveBase.new_driver(neo4j_url)
     end
   end
 end

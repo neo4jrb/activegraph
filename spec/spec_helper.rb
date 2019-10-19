@@ -166,12 +166,6 @@ module ActiveNodeRelStubHelpers
   end
 end
 
-server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
-server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
-server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
-
-session_adaptor = Neo4j::Core::CypherSession::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
-
 module FixingRSpecHelpers
   # Supports giving either a Hash or a String and a Hash as arguments
   # In both cases the Hash will be used to define `let` statements
@@ -192,7 +186,11 @@ module FixingRSpecHelpers
   end
 end
 
-Neo4j::ActiveBase.current_adaptor = session_adaptor
+server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
+server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
+server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
+
+Neo4j::ActiveBase.current_driver = Neo4j::Core::CypherSession::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 

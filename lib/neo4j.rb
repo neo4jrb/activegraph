@@ -6,7 +6,6 @@ require 'neo4j/core/query_ext' # From this gem
 
 require 'neo4j/active_base'
 require 'neo4j/model_schema'
-require 'neo4j/active_base/session_registry'
 
 require 'active_model'
 require 'active_support/concern'

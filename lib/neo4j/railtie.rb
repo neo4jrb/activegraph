@@ -1,6 +1,5 @@
 require 'active_support/notifications'
 require 'rails/railtie'
-require 'neo4j/session_manager'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
 require 'neo4j/core/cypher_session/driver'
@@ -63,7 +62,7 @@ module Neo4j
       options ||= {}
       register_neo4j_cypher_logging
 
-      Neo4j::SessionManager.open_neo4j_session( url || path || default_session_path_or_url, options)
+      Neo4j::ActiveBase.new_driver( url || path || default_session_path_or_url, options)
     end
 
     def final_session_config!(neo4j_config)
