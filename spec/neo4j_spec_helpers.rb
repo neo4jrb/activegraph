@@ -7,7 +7,7 @@ module Neo4jSpecHelpers
 
   self.expect_queries_count = 0
 
-  Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
+  Neo4j::Core::CypherSession::Driver.subscribe_to_query do |_message|
     self.expect_queries_count += 1
   end
 
@@ -34,7 +34,7 @@ module Neo4jSpecHelpers
   end
 
   def log_queries!
-    Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
+    Neo4j::Core::CypherSession::Driver.subscribe_to_query(&method(:puts))
   end
 
   def action_controller_params(args)
@@ -120,6 +120,6 @@ module Neo4jSpecHelpers
     options = {}
     options[:logger_level] = Logger::DEBUG if ENV['DEBUG']
 
-    Neo4j::Core::CypherSession::Adaptors::Driver.new(url, options.merge(extra_options))
+    Neo4j::Core::CypherSession::Driver.new(url, options.merge(extra_options))
   end
 end

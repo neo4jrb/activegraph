@@ -3,6 +3,7 @@ require 'active_support/core_ext/module/delegation'
 module Neo4j
   module Core
     class CypherSession
+
       attr_reader :adaptor
       delegate :close, to: :adaptor
 

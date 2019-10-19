@@ -2,7 +2,7 @@ require 'neo4j/core/config'
 
 require 'neo4j/transaction'
 require 'neo4j/core/query'
-require 'neo4j/core/cypher_session/adaptors/driver'
+require 'neo4j/core/cypher_session/driver'
 require 'neo4j/core/cypher_session/responses'
 
 require 'neo4j_ruby_driver'

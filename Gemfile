@@ -7,7 +7,7 @@ gemspec
 branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
 slug = !ENV['TRAVIS_PULL_REQUEST_SLUG'].to_s.empty? ? ENV['TRAVIS_PULL_REQUEST_SLUG'] : ENV['TRAVIS_REPO_SLUG']
 
-gem 'neo4j-java-driver', path: '../neo4j-ruby-driver'
+gem 'neo4j-java-driver'
 
 # gem 'active_attr', github: 'neo4jrb/active_attr', branch: 'performance'
 # gem 'active_attr', path: '../active_attr'

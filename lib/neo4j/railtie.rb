@@ -3,7 +3,7 @@ require 'rails/railtie'
 require 'neo4j/session_manager'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
-require 'neo4j/core/cypher_session/adaptors'
+require 'neo4j/core/cypher_session/driver'
 
 module Neo4j
   class Railtie < ::Rails::Railtie
@@ -97,8 +97,8 @@ module Neo4j
       logger_proc = ->(message) do
         (Neo4j::Config[:logger] ||= Rails.logger).debug message
       end
-      Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&logger_proc)
-      Neo4j::Core::CypherSession::Adaptors::Driver.subscribe_to_request(&logger_proc)
+      Neo4j::Core::CypherSession::Driver.subscribe_to_query(&logger_proc)
+      Neo4j::Core::CypherSession::Driver.subscribe_to_request(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end

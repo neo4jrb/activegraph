@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'neo4j/core/cypher_session/adaptors'
 
 module Neo4j
   module Core

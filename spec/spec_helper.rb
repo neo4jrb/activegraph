@@ -34,7 +34,7 @@ require 'unique_class'
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
 require 'neo4j/core/cypher_session'
-require 'neo4j/core/cypher_session/adaptors/driver'
+require 'neo4j/core/cypher_session/driver'
 
 require 'dryspec/helpers'
 require 'neo4j_spec_helpers'
@@ -171,7 +171,7 @@ server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
 server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-session_adaptor = Neo4j::Core::CypherSession::Adaptors::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
+session_adaptor = Neo4j::Core::CypherSession::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
 
 module FixingRSpecHelpers
   # Supports giving either a Hash or a String and a Hash as arguments
