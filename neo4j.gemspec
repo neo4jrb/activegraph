@@ -40,6 +40,7 @@ DESCRIPTION
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
   s.add_development_dependency('neo4j-rake_tasks', '>= 0.3.0')
+  s.add_development_dependency("neo4j-#{RUBY_PLATFORM =~ /java/ ? 'java' : 'ruby'}-driver", '>= 0.1.3')
   s.add_development_dependency('os')
   s.add_development_dependency('pry')
   s.add_development_dependency('railties', '>= 4.0')

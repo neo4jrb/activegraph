@@ -7,31 +7,14 @@ gemspec
 branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
 slug = !ENV['TRAVIS_PULL_REQUEST_SLUG'].to_s.empty? ? ENV['TRAVIS_PULL_REQUEST_SLUG'] : ENV['TRAVIS_REPO_SLUG']
 
-gem 'neo4j-java-driver'
-
-# gem 'active_attr', github: 'neo4jrb/active_attr', branch: 'performance'
-# gem 'active_attr', path: '../active_attr'
-
 gem 'listen', '< 3.1'
 
 active_model_version = ENV['ACTIVE_MODEL_VERSION']
 gem 'activemodel', "~> #{active_model_version}" if active_model_version
 
-if RUBY_VERSION.to_f < 2.2
-  gem 'activemodel', '~> 4.2'
-  gem 'activesupport', '~> 4.2'
-  gem 'railties', '~> 4.2'
-end
-
 group 'test' do
   gem 'coveralls', require: false
-  if RUBY_VERSION.to_f < 2.0
-    gem 'term-ansicolor', '< 1.4'
-    gem 'tins', '< 1.7'
-    gem 'overcommit', '< 0.35.0'
-  else
-    gem 'overcommit'
-  end
+  gem 'overcommit'
   gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
