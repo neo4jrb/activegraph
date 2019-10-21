@@ -237,7 +237,7 @@ module Neo4j
       def response
         return @response if @response
 
-        @response = @session.query(self, transaction: Transaction.current_for, wrap_level: (:core_entity if unwrapped?))
+        @response = @session.query(self, transaction: Transaction.root, wrap_level: (:core_entity if unwrapped?))
       end
 
       def raise_if_cypher_error!(response)

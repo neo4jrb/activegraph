@@ -3,7 +3,7 @@ require 'neo4j/core/label'
 require 'neo4j/core/logging'
 require 'neo4j/ansi'
 require 'neo4j/core/cypher_session/driver_registry'
-require 'neo4j/core/cypher_session/transaction'
+require 'neo4j/transaction'
 require 'neo4j/core/cypher_session/connection_failed_error'
 require 'neo4j/core/cypher_session/cypher_error'
 require 'neo4j/core/cypher_session/schema_errors'
@@ -118,7 +118,6 @@ module Neo4j
         def supports_metadata?
           true
         end
-
 
         def close
           DriverRegistry.instance.close(driver)

@@ -65,7 +65,7 @@ module Neo4j
 
       def current_transaction
         validate_model_schema!
-        Neo4j::Transaction.current_for
+        Neo4j::Transaction.root
       end
 
       def label_object(label_name)
