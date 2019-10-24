@@ -1,4 +1,4 @@
-describe Neo4j::Shared::Marshal do
+describe Neo4j::Shared::Marshal, :ffi do
   describe 'ActiveNode' do
     before do
       stub_active_node_class('Parent')
@@ -11,7 +11,6 @@ describe Neo4j::Shared::Marshal do
     let(:node) { Child.create(foo: 'bar') }
 
     it 'marshals correctly' do
-      pending "Java type is not serializable, cannot be marshaled. Is this really necessary"
       id = node.id
       neo_id = node.neo_id
       unmarshaled = Marshal.load(Marshal.dump(node))
@@ -40,7 +39,6 @@ describe Neo4j::Shared::Marshal do
     let(:rel) { HasParent.create(Person.create, Person.create, foo: 'bar') }
 
     it 'marshals correctly' do
-      pending "Java type is not serializable, cannot be marshaled. Is this really necessary"
       neo_id = rel.neo_id
       unmarshaled = Marshal.load(Marshal.dump(rel))
 

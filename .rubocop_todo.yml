@@ -42,7 +42,6 @@ Layout/EmptyLineBetweenDefs:
 # SupportedStyles: auto_detection, squiggly, active_support, powerpack, unindent
 Layout/IndentHeredoc:
   Exclude:
-    - 'bin/neo4j-jars'
     - 'lib/neo4j/migration.rb'
     - 'lib/neo4j/migrations/runner.rb'
     - 'lib/neo4j/model_schema.rb'

@@ -1,24 +1,24 @@
 # To run coverage via travis
-# require 'simplecov'
+require 'simplecov'
 require 'dotenv'
 require 'timecop'
 
 Dotenv.load
 
-# SimpleCov.start do
-#   add_filter 'spec'
-# end
-# if ENV['CI'] == 'true'
-#   require 'codecov'
-#   SimpleCov.formatter = SimpleCov::Formatter::Codecov
-# end
+SimpleCov.start do
+  add_filter 'spec'
+end
+if ENV['CI'] == 'true'
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
 
 # To run it manually via Rake
-# if ENV['COVERAGE']
-#   require 'simplecov'
-#   SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-#   SimpleCov.start
-# end
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+  SimpleCov.start
+end
 
 require 'bundler/setup'
 require 'rspec'
@@ -37,6 +37,7 @@ require 'neo4j/core/cypher_session/driver'
 
 require 'dryspec/helpers'
 require 'neo4j_spec_helpers'
+require 'action_controller'
 
 class MockLogger
   def debug(*_args)
@@ -225,4 +226,7 @@ RSpec.configure do |config|
     @active_base_logger = spy('ActiveBase logger')
     allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
   end
+
+  # TODO marshalling java objects, is it necessary?
+  config.filter_run_excluding ffi: !RUBY_PLATFORM =~ /java/
 end

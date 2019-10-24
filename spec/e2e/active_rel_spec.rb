@@ -465,37 +465,6 @@ describe 'ActiveRel' do
         expect(new_rel.to_node).not_to receive(:loaded)
         expect { new_rel.inspect }.not_to raise_error
       end
-
-      context 'single from/to class' do
-        it 'inserts the class names in String' do
-          next if Neo4j::VERSION >= '6.0.0'
-          expect(new_rel.inspect).to include('(FromClass)-[:rel_class_type]->(ToClass)')
-        end
-      end
-
-      context 'array of from/to class' do
-        before { MyRelClass.from_class([:FromClass, :ToClass]) }
-
-        it 'joins with ||' do
-          next if Neo4j::VERSION >= '6.0.0'
-          expect(new_rel.inspect).to include('(FromClass || ToClass)-[:rel_class_type]->(ToClass)')
-        end
-      end
-    end
-
-    context 'with set, unloaded from_node/to_node' do
-      let(:new_rel) { MyRelClass.create(from_node: from_node, to_node: to_node) }
-      let(:reloaded) { Neo4j::Relationship.load(new_rel.id) }
-      let(:inspected) { reloaded.inspect }
-
-      # Neo4j Embedded always returns nodes with rels. This is only possible in Server mode.
-      it 'notes the ids of the nodes' do
-        next if Neo4j::VERSION >= '6.0.0'
-        next if TEST_SESSION_MODE == :embedded
-        [from_node.neo_id, to_node.neo_id].each do |id|
-          expect(inspected).to include("(Node with neo_id #{id})")
-        end
-      end
     end
   end
 

@@ -7,6 +7,8 @@ gemspec
 branch = ENV['NEO4J_CORE_BRANCH'] || ENV['TRAVIS_PULL_REQUEST_BRANCH'] || ENV['TRAVIS_BRANCH']
 slug = !ENV['TRAVIS_PULL_REQUEST_SLUG'].to_s.empty? ? ENV['TRAVIS_PULL_REQUEST_SLUG'] : ENV['TRAVIS_REPO_SLUG']
 
+# gem 'neo4j-ruby-driver', path: '../neo4j-ruby-driver'
+
 gem 'listen', '< 3.1'
 
 active_model_version = ENV['ACTIVE_MODEL_VERSION']

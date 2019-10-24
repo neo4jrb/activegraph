@@ -41,43 +41,6 @@ module Neo4jSpecHelpers
     ActionController::Parameters.new(args)
   end
 
-  def handle_child_output(read, write)
-    read.close
-    begin
-      rest = yield
-      write.puts [Marshal.dump(rest)].pack('m')
-    rescue StandardError => e
-      write.puts [Marshal.dump(e)].pack('m')
-    end
-    exit!
-  end
-
-  def do_in_child(&block)
-    read, write = IO.pipe
-    pid = fork do
-      handle_child_output(read, write, &block)
-    end
-    write.close
-    result = Marshal.load(read.read.unpack('m').first)
-    Process.wait2(pid)
-
-    fail result if result.class < Exception
-    result
-  end
-
-  # A trick to load action_controller without requiring in all specs. Not working in JRuby.
-  def using_action_controller
-    if RUBY_PLATFORM == 'java'
-      require 'action_controller'
-      yield
-    else
-      do_in_child do
-        require 'action_controller'
-        yield
-      end
-    end
-  end
-
   class_methods do
     def let_config(var_name, value)
       around do |example|

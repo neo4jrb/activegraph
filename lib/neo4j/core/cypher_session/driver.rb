@@ -10,6 +10,7 @@ require 'neo4j/core/cypher_session/schema_errors'
 require 'neo4j/core/cypher_session/query_builder'
 require 'neo4j/core/cypher_session/has_uri'
 require 'neo4j/core/cypher_session/schema'
+require 'neo4j/core/cypher_session/responses'
 
 module Neo4j
   module Core
@@ -18,6 +19,7 @@ module Neo4j
         include Neo4j::Core::Instrumentable
         include HasUri
         include Schema
+        include Responses
 
         USER_AGENT_STRING = "neo4j-gem/#{::Neo4j::VERSION} (https://github.com/neo4jrb/neo4j)"
 
@@ -126,11 +128,10 @@ module Neo4j
         def query_set(transaction, queries, options = {})
           setup_queries!(queries, transaction, skip_instrumentation: options[:skip_instrumentation])
 
-          responses = queries.map do |query|
-            transaction.root_tx.run(query.cypher, query.parameters)
+          self.wrap_level = options[:wrap_level] || @options[:wrap_level] || Neo4j::Core::Config.wrapping_level
+          queries.map do |query|
+            result_from_data(transaction.root_tx.run(query.cypher, query.parameters))
           end
-          wrap_level = options[:wrap_level] || @options[:wrap_level]
-          Responses.new(responses, wrap_level: wrap_level).to_a
         rescue Neo4j::Driver::Exceptions::Neo4jException => e
           raise Neo4j::Core::CypherSession::CypherError.new_from(e.code, e.message) # , e.stack_track.to_a
         end
