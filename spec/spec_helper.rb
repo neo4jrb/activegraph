@@ -228,5 +228,5 @@ RSpec.configure do |config|
   end
 
   # TODO marshalling java objects, is it necessary?
-  config.filter_run_excluding ffi: !RUBY_PLATFORM =~ /java/
+  config.filter_run_excluding :ffi_only if RUBY_PLATFORM =~ /java/
 end

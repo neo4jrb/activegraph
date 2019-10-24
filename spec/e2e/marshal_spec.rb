@@ -1,4 +1,4 @@
-describe Neo4j::Shared::Marshal, :ffi do
+describe Neo4j::Shared::Marshal, :ffi_only do
   describe 'ActiveNode' do
     before do
       stub_active_node_class('Parent')
