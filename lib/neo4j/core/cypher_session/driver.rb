@@ -92,7 +92,7 @@ module Neo4j
                     end
         end
 
-        def setup_queries!(queries, transaction, options = {})
+        def setup_queries!(queries, options = {})
           return if options[:skip_instrumentation]
           queries.each do |query|
             self.class.instrument_query(query, self) {}
@@ -117,18 +117,14 @@ module Neo4j
           subscribe_to_request
         end
 
-        def supports_metadata?
-          true
-        end
-
         def close
           DriverRegistry.instance.close(driver)
         end
 
         def query_set(transaction, queries, options = {})
-          setup_queries!(queries, transaction, skip_instrumentation: options[:skip_instrumentation])
+          setup_queries!(queries, skip_instrumentation: options[:skip_instrumentation])
 
-          self.wrap_level = options[:wrap_level] || @options[:wrap_level] || Neo4j::Core::Config.wrapping_level
+          self.wrap_level = options[:wrap_level]
           queries.map do |query|
             result_from_data(transaction.root_tx.run(query.cypher, query.parameters))
           end

@@ -27,13 +27,8 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
 
       expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
       expect(result[1].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      if driver.supports_metadata?
-        expect(result[0].to_a[0].n.labels.to_a).to eq([:Label1])
-        expect(result[1].to_a[0].n.labels).to eq([:Label2])
-      else
-        expect(result[0].to_a[0].n.labels).to eq(nil)
-        expect(result[1].to_a[0].n.labels).to eq(nil)
-      end
+      expect(result[0].to_a[0].n.labels.to_a).to eq([:Label1])
+      expect(result[1].to_a[0].n.labels).to eq([:Label2])
     end
 
     it 'allows for building with Query API' do
@@ -42,7 +37,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
       end
 
       expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels).to eq(driver.supports_metadata? ? [:Label1] : nil)
+      expect(result[0].to_a[0].n.labels).to eq([:Label1])
     end
   end
 
@@ -280,7 +275,6 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
       end
       subject { driver.query(query, {}, wrap_level: wrap_level).to_a[0].result }
 
-      # `wrap_level: nil` should resolve to `wrap_level: :core_entity`
       [nil, :core_entity].each do |type|
         let_context wrap_level: type do
           let_context return_clause: 'n' do
@@ -303,7 +297,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
         end
       end
 
-      let_context wrap_level: :proc do
+      let_context wrap_level: nil do
         before do
           # Normally I don't think you wouldn't wrap nodes/relationships/paths
           # with the same class.  It's just expedient to do so in this spec

@@ -39,10 +39,8 @@ module Neo4j
           case wrap_level
           when :core_entity
             entity
-          when :proc
-            entity.wrap
           else
-            fail ArgumentError, "Invalid wrap_level: #{wrap_level.inspect}"
+            entity.wrap
           end
         end
       end

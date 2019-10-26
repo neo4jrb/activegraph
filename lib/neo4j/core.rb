@@ -1,5 +1,3 @@
-require 'neo4j/core/config'
-
 require 'neo4j/transaction'
 require 'neo4j/core/query'
 require 'neo4j/core/cypher_session/driver'

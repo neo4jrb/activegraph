@@ -191,7 +191,7 @@ server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
 server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-Neo4j::ActiveBase.current_driver = Neo4j::Core::CypherSession::Driver.new(server_url, wrap_level: :proc) # , logger_level: Logger::DEBUG)
+Neo4j::ActiveBase.current_driver = Neo4j::Core::CypherSession::Driver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 
