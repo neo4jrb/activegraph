@@ -98,8 +98,8 @@ require 'neo4j/active_node/scope'
 require 'neo4j/active_node'
 
 require 'active_support/concern'
-require 'neo4j/core/cypher_session/cypher_error'
-require 'neo4j/core/cypher_session/schema_errors'
+require 'neo4j/core/cypher_error'
+require 'neo4j/core/schema_errors'
 
 module Neo4j
   extend ActiveSupport::Autoload

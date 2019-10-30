@@ -1,9 +1,9 @@
-require 'neo4j/core/cypher_session/driver'
+require 'neo4j/core/driver'
 
 # The registry is necessary due to the specs constantly creating new Drivers.
 # Closing a driver is costly. Not closing it prevents the process from termination.
 # The registry allows reusage of drivers which are thread safe and conveniently closing them in one call.
-class TestDriver < Neo4j::Core::CypherSession::Driver
+class TestDriver < Neo4j::Core::Driver
   cattr_reader :cache, default: {}
 
   at_exit do

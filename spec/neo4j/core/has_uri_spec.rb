@@ -1,14 +1,14 @@
 require 'spec_helper'
-require 'neo4j/core/cypher_session/has_uri'
+require 'neo4j/core/has_uri'
 
-describe Neo4j::Core::CypherSession::HasUri do
+describe Neo4j::Core::HasUri do
   let(:uri_validation) {}
   let(:default_url) {}
   let!(:adaptor) do
     scoped_default_url = default_url
     scoped_uri_validation = uri_validation
     Class.new do
-      include Neo4j::Core::CypherSession::HasUri
+      include Neo4j::Core::HasUri
       default_url(scoped_default_url) if scoped_default_url
       validate_uri(&scoped_uri_validation)
 

@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'neo4j/core/cypher_session/driver'
+require 'neo4j/core/driver'
 require './spec/neo4j/core/shared_examples/driver'
 require 'neo4j/driver'
 
@@ -7,14 +7,14 @@ def port
   URI(ENV['NEO4J_URL']).port
 end
 
-describe Neo4j::Core::CypherSession::Driver do
+describe Neo4j::Core::Driver do
   let(:url) { ENV['NEO4J_URL'] }
 
-  # let(:driver) { Neo4j::Core::CypherSession::Adaptors::Driver.new(url, logger_level: Logger::DEBUG) }
+  # let(:driver) { Neo4j::Core::Adaptors::Driver.new(url, logger_level: Logger::DEBUG) }
   let(:driver) { TestDriver.new(url) }
 
   after(:context) do
-    # Neo4j::Core::CypherSession::DriverRegistry.instance.close_all
+    # Neo4j::Core::DriverRegistry.instance.close_all
   end
 
   subject { driver }
@@ -37,6 +37,6 @@ describe Neo4j::Core::CypherSession::Driver do
   end
 
   context 'driver' do
-    it_behaves_like 'Neo4j::Core::CypherSession::Driver'
+    it_behaves_like 'Neo4j::Core::Driver'
   end
 end

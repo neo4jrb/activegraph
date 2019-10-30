@@ -1,5 +1,5 @@
 # Requires that an `driver` let variable exist with the driver
-RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
+RSpec.shared_examples 'Neo4j::Core::Driver' do
   let(:real_session) do
     driver
   end
@@ -357,7 +357,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
         driver.query("CREATE (:Album {uuid: 'dup'})").to_a
         expect do
           driver.query("CREATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError)
+        end.to raise_error(::Neo4j::Core::SchemaErrors::ConstraintValidationFailedError)
       end
     end
 
@@ -365,7 +365,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
       it 'raises an error' do
         expect do
           driver.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::CypherSession::CypherError, /Invalid input 'A'/)
+        end.to raise_error(::Neo4j::Core::CypherError, /Invalid input 'A'/)
       end
     end
 
@@ -373,7 +373,7 @@ RSpec.shared_examples 'Neo4j::Core::CypherSession::Driver' do
       it 'raises an error' do
         expect do
           driver.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::CypherSession::CypherError, /RETURN can only be used at the end of the query/)
+        end.to raise_error(::Neo4j::Core::CypherError, /RETURN can only be used at the end of the query/)
       end
     end
   end

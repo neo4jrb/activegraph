@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Neo4j
   module Core
-    describe CypherSession::CypherError do
+    describe CypherError do
       let(:code) { 'SomeError' }
       let(:message) { 'some fancy error' }
       let(:stack_trace) { "class1:1\nclass2:2\nclass3:3" }
@@ -17,11 +17,11 @@ module Neo4j
       its(:stack_trace) { is_expected.to eq(stack_trace) }
 
       let_context code: 'ConstraintValidationFailed' do
-        it { is_expected.to be_a(CypherSession::SchemaErrors::ConstraintValidationFailedError) }
+        it { is_expected.to be_a(SchemaErrors::ConstraintValidationFailedError) }
       end
 
       let_context code: 'ConstraintViolation' do
-        it { is_expected.to be_a(CypherSession::SchemaErrors::ConstraintValidationFailedError) }
+        it { is_expected.to be_a(SchemaErrors::ConstraintValidationFailedError) }
       end
     end
   end

@@ -1,8 +1,8 @@
 require 'neo4j/transaction'
 require 'neo4j/core/instrumentable'
 require 'neo4j/core/query'
-require 'neo4j/core/cypher_session/driver'
-require 'neo4j/core/cypher_session/responses'
+require 'neo4j/core/driver'
+require 'neo4j/core/responses'
 
 require 'neo4j_ruby_driver'
 require 'neo4j/core/wrappable'

@@ -67,7 +67,7 @@ module Neo4j
       end
 
       def log_queries
-        subscriber = Neo4j::Core::CypherSession::Driver.subscribe_to_query(&method(:output))
+        subscriber = Neo4j::Core::Driver.subscribe_to_query(&method(:output))
         yield
       ensure
         ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
