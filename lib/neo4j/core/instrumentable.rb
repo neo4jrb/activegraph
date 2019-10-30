@@ -1,5 +1,6 @@
 require 'active_support/concern'
 require 'active_support/notifications'
+require 'neo4j/ansi'
 
 module Neo4j
   module Core

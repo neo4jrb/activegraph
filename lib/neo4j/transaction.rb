@@ -17,7 +17,6 @@ module Neo4j
         tx = Neo4j::Transaction.new(driver)
         yield tx
       rescue Exception => e # rubocop:disable Lint/RescueException
-        # print_exception_cause(e)
 
         tx.mark_failed unless tx.nil?
         raise e
@@ -27,15 +26,6 @@ module Neo4j
 
       def root
         stack.first
-      end
-
-      private
-
-      def print_exception_cause(exception)
-        return if !exception.respond_to?(:cause) || !exception.cause.respond_to?(:print_stack_trace)
-
-        Core.logger.info "Java Exception in a transaction, cause: #{exception.cause}"
-        exception.cause.print_stack_trace
       end
     end
 

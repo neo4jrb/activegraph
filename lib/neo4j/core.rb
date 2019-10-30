@@ -1,4 +1,5 @@
 require 'neo4j/transaction'
+require 'neo4j/core/instrumentable'
 require 'neo4j/core/query'
 require 'neo4j/core/cypher_session/driver'
 require 'neo4j/core/cypher_session/responses'
