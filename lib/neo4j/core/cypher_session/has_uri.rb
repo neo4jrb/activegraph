@@ -7,6 +7,14 @@ module Neo4j
       module HasUri
         extend ActiveSupport::Concern
 
+        included do
+          %w[scheme user password host port].each do |method|
+            define_method(method) do
+              (@uri && @uri.send(method)) || (self.class.default_uri && self.class.default_uri.send(method))
+            end
+          end
+        end
+
         module ClassMethods
           attr_reader :default_uri
 
@@ -50,14 +58,6 @@ module Neo4j
 
         def url_without_password
           @url_without_password ||= "#{scheme}://#{user + ':...@' if user}#{host}:#{port}"
-        end
-
-        included do
-          %w[scheme user password host port].each do |method|
-            define_method(method) do
-              (@uri && @uri.send(method)) || (self.class.default_uri && self.class.default_uri.send(method))
-            end
-          end
         end
       end
     end

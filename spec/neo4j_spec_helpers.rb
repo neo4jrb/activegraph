@@ -83,6 +83,6 @@ module Neo4jSpecHelpers
     options = {}
     options[:logger_level] = Logger::DEBUG if ENV['DEBUG']
 
-    Neo4j::Core::CypherSession::Driver.new(url, options.merge(extra_options))
+    TestDriver.new(url, options.merge(extra_options))
   end
 end

@@ -38,6 +38,7 @@ require 'neo4j/core/cypher_session/driver'
 require 'dryspec/helpers'
 require 'neo4j_spec_helpers'
 require 'action_controller'
+require 'test_driver'
 
 class MockLogger
   def debug(*_args)
@@ -191,7 +192,7 @@ server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
 server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-Neo4j::ActiveBase.current_driver = Neo4j::Core::CypherSession::Driver.new(server_url) # , logger_level: Logger::DEBUG)
+Neo4j::ActiveBase.current_driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 

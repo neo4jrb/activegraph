@@ -1,8 +1,8 @@
+require 'active_support/core_ext/module/attribute_accessors'
 require 'neo4j/core/instrumentable'
 require 'neo4j/core/label'
 require 'neo4j/core/logging'
 require 'neo4j/ansi'
-require 'neo4j/core/cypher_session/driver_registry'
 require 'neo4j/transaction'
 require 'neo4j/core/cypher_session/connection_failed_error'
 require 'neo4j/core/cypher_session/cypher_error'
@@ -23,8 +23,15 @@ module Neo4j
 
         USER_AGENT_STRING = "neo4j-gem/#{::Neo4j::VERSION} (https://github.com/neo4jrb/neo4j)"
 
+        cattr_reader :singleton
         attr_accessor :wrap_level
         attr_reader :options, :driver
+        delegate :close, to: :driver
+
+        @@mutex = Mutex.new
+        at_exit do
+          close
+        end
 
         default_url('bolt://neo4:neo4j@localhost:7687')
 
@@ -32,9 +39,35 @@ module Neo4j
           uri.scheme == 'bolt'
         end
 
+        class << self
+          def singleton=(driver)
+            @@mutex.synchronize do
+              singleton&.close
+              class_variable_set(:@@singleton, driver)
+            end
+          end
+
+          def new_instance(url)
+            uri = URI(url)
+            user = uri.user
+            password = uri.password
+            auth_token = if user
+                           Neo4j::Driver::AuthTokens.basic(user, password)
+                         else
+                           Neo4j::Driver::AuthTokens.none
+                         end
+            Neo4j::Driver::GraphDatabase.driver(url, auth_token)
+          end
+
+          def close
+            singleton&.close
+          end
+        end
+
         def initialize(url, options = {})
           self.url = url
-          @driver = DriverRegistry.instance.driver_for(url)
+          @driver = self.class.new_instance(url)
+          self.class.singleton = self
           @options = options
         end
 
@@ -95,49 +128,21 @@ module Neo4j
         def setup_queries!(queries, options = {})
           return if options[:skip_instrumentation]
           queries.each do |query|
-            self.class.instrument_query(query, self) {}
+            ActiveSupport::Notifications.instrument('neo4j.core.cypher_query', query: query)
           end
-        end
-
-        EMPTY = ''
-        NEWLINE_W_SPACES = "\n  "
-
-        instrument(:query, 'neo4j.core.cypher_query', %w[query adaptor]) do |_, _start, _finish, _id, payload|
-          query = payload[:query]
-          params_string = (query.parameters && !query.parameters.empty? ? "| #{query.parameters.inspect}" : EMPTY)
-          cypher = query.pretty_cypher ? (NEWLINE_W_SPACES if query.pretty_cypher.include?("\n")).to_s + query.pretty_cypher.gsub(/\n/, NEWLINE_W_SPACES) : query.cypher
-
-          source_line, line_number = Logging.first_external_path_and_line(caller_locations)
-
-          " #{ANSI::CYAN}#{query.context || 'CYPHER'}#{ANSI::CLEAR} #{cypher} #{params_string}" +
-            ("\n   ↳ #{source_line}:#{line_number}" if payload[:adaptor].options[:verbose_query_logs] && source_line).to_s
-        end
-
-        def default_subscribe
-          subscribe_to_request
-        end
-
-        def close
-          DriverRegistry.instance.close(driver)
         end
 
         def query_set(transaction, queries, options = {})
           setup_queries!(queries, skip_instrumentation: options[:skip_instrumentation])
 
-          self.wrap_level = options[:wrap_level]
-          queries.map do |query|
-            result_from_data(transaction.root_tx.run(query.cypher, query.parameters))
+          ActiveSupport::Notifications.instrument('neo4j.core.bolt.request') do
+            self.wrap_level = options[:wrap_level]
+            queries.map do |query|
+              result_from_data(transaction.root_tx.run(query.cypher, query.parameters))
+            end
+          rescue Neo4j::Driver::Exceptions::Neo4jException => e
+            raise Neo4j::Core::CypherSession::CypherError.new_from(e.code, e.message) # , e.stack_track.to_a
           end
-        rescue Neo4j::Driver::Exceptions::Neo4jException => e
-          raise Neo4j::Core::CypherSession::CypherError.new_from(e.code, e.message) # , e.stack_track.to_a
-        end
-
-        instrument(:request, 'neo4j.core.bolt.request', %w[adaptor body]) do |_, start, finish, _id, payload|
-          ms = (finish - start) * 1000
-          adaptor = payload[:adaptor]
-
-          type = nil # adaptor.ssl? ? '+TLS' : ' UNSECURE'
-          " #{ANSI::BLUE}BOLT#{type}:#{ANSI::CLEAR} #{ANSI::YELLOW}#{ms.round}ms#{ANSI::CLEAR} #{adaptor.url_without_password}"
         end
 
         private

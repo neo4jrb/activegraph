@@ -11,7 +11,7 @@ describe Neo4j::Core::CypherSession::Driver do
   let(:url) { ENV['NEO4J_URL'] }
 
   # let(:driver) { Neo4j::Core::CypherSession::Adaptors::Driver.new(url, logger_level: Logger::DEBUG) }
-  let(:driver) { Neo4j::Core::CypherSession::Driver.new(url) }
+  let(:driver) { TestDriver.new(url) }
 
   after(:context) do
     # Neo4j::Core::CypherSession::DriverRegistry.instance.close_all
