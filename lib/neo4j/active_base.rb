@@ -4,8 +4,8 @@ module Neo4j
   module ActiveBase
     class << self
       # private?
-      def current_session
-        (@current_driver ||= establish_session).tap do |session|
+      def current_driver
+        (@driver ||= establish_session).tap do |session|
           fail 'No session defined!' if session.nil?
         end
       end
@@ -25,41 +25,39 @@ module Neo4j
       end
 
       def current_transaction_or_session
-        current_transaction || current_session
+        current_transaction || current_driver
       end
 
       def query(*args)
         current_transaction_or_session.query(*args)
       end
 
-      # Should support setting session via config options
-      def current_session=(driver)
-        @current_driver = driver
+      # Should support setting driver via config options
+      def driver=(driver)
+        @driver = driver
       end
 
-      alias current_driver= current_session=
-
       def run_transaction(run_in_tx = true)
-        Neo4j::Transaction.run(current_session, run_in_tx) do |tx|
+        Neo4j::Transaction.run(current_driver, run_in_tx) do |tx|
           yield tx
         end
       end
 
       def new_transaction
         validate_model_schema!
-        Neo4j::Transaction.new(current_session)
+        Neo4j::Transaction.new(current_driver)
       end
 
       def new_query(options = {})
         validate_model_schema!
-        Neo4j::Core::Query.new({session: current_session}.merge(options))
+        Neo4j::Core::Query.new({session: current_driver}.merge(options))
       end
 
       def magic_query(*args)
         if args.empty? || args.map(&:class) == [Hash]
           ActiveBase.new_query(*args)
         else
-          ActiveBase.current_session.query(*args)
+          ActiveBase.current_driver.query(*args)
         end
       end
 
@@ -69,7 +67,7 @@ module Neo4j
       end
 
       def label_object(label_name)
-        Neo4j::Core::Label.new(label_name, current_session)
+        Neo4j::Core::Label.new(label_name, current_driver)
       end
 
       def logger

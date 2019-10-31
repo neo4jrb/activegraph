@@ -7,7 +7,7 @@ module Neo4j
   module Core
     module Querable
       extend ActiveSupport::Concern
-      include Neo4j::Core::Instrumentable
+      include Instrumentable
       include Responses
 
       def query(*args)

@@ -6,9 +6,9 @@ module Rails
 
 
     around(:each) do |example|
-      main_spec_session = Neo4j::ActiveBase.current_session
+      main_spec_driver = Neo4j::ActiveBase.current_driver
       example.run
-      Neo4j::ActiveBase.current_session = main_spec_session
+      Neo4j::ActiveBase.driver = main_spec_driver
     end
 
     describe '#setup!' do

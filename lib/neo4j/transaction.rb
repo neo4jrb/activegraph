@@ -75,7 +75,6 @@ module Neo4j
       @root == self
     end
 
-
     def query(*args)
       options = if args[0].is_a?(::Neo4j::Core::Query)
                   args[1] ||= {}

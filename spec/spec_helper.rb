@@ -95,7 +95,7 @@ def delete_db(executor = Neo4j::ActiveBase)
   executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
-def delete_schema(session = Neo4j::ActiveBase.current_session)
+def delete_schema(session = Neo4j::ActiveBase.current_driver)
   Neo4j::Core::Label.drop_uniqueness_constraints_for(session)
   Neo4j::Core::Label.drop_indexes_for(session)
 end
@@ -192,7 +192,7 @@ server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
 server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
-Neo4j::ActiveBase.current_driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
+Neo4j::ActiveBase.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 

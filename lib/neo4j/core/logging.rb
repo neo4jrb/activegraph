@@ -30,7 +30,7 @@ module Neo4j
         def neo4j_gem_path
           return if !defined?(::Rails.root)
 
-          @neo4j_gem_path ||= File.expand_path('../../..', Neo4j::ActiveBase.method(:current_session).source_location[0])
+          @neo4j_gem_path ||= File.expand_path('../../..', Neo4j::ActiveBase.method(:current_driver).source_location[0])
         end
 
         def active_support_gem_path

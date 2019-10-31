@@ -56,7 +56,7 @@ shared_examples_for 'timestamped model' do
           Neo4j::ActiveBase.run_transaction do
             query = 'MATCH (n) WHERE ID(n) = {neo_id} REMOVE n.updated_at'
             neo_id = subject._persisted_obj.neo_id
-            Neo4j::ActiveBase.current_session.query(query, neo_id: neo_id)
+            Neo4j::ActiveBase.current_driver.query(query, neo_id: neo_id)
           end
         end
 

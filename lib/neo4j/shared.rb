@@ -14,7 +14,7 @@ module Neo4j
 
       # remove?
       def neo4j_session
-        Neo4j::ActiveBase.current_session
+        Neo4j::ActiveBase.current_driver
       end
 
       # remove?

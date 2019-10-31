@@ -678,7 +678,7 @@ describe 'Neo4j::ActiveNode' do
       query = new_query.match(p: :Person)
                        .where(p: {neo_id: person.neo_id})
                        .return('p.datetime AS datetime')
-      Neo4j::ActiveBase.current_session.query(query).first.datetime
+      Neo4j::ActiveBase.current_driver.query(query).first.datetime
     end
 
     it 'saves as date/time string by default' do

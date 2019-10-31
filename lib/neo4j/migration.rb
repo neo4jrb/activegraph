@@ -28,7 +28,7 @@ module Neo4j
     end
 
     def query(*args)
-      Neo4j::ActiveBase.current_session.query(*args)
+      Neo4j::ActiveBase.current_driver.query(*args)
     end
 
     class AddIdProperty < Neo4j::Migration
@@ -115,7 +115,7 @@ MESSAGE
       # def id_batch_set(label, id_property, new_ids, count)
       #  tx = Neo4j::ActiveBase.new_transaction
 
-      #  Neo4j::ActiveBase.current_session.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
+      #  Neo4j::ActiveBase.current_driver.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
       #    with COLLECT(n) as nodes, #{new_ids} as ids
       #    FOREACH(i in range(0,#{count - 1})|
       #      FOREACH(node in [nodes[i]]|

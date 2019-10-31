@@ -18,7 +18,7 @@ describe 'Labels' do
       end
 
       def self.neo4j_session
-        current_session
+        current_driver
       end
 
       extend Neo4j::ActiveNode::Query::ClassMethods

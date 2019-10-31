@@ -70,7 +70,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         label_double = double('label')
-        expect(Neo4j::Core::Label).to receive(:new).with(:MyClass, Neo4j::ActiveBase.current_session).and_return(label_double)
+        expect(Neo4j::Core::Label).to receive(:new).with(:MyClass, Neo4j::ActiveBase.current_driver).and_return(label_double)
         expect(clazz.send(:mapped_label)).to eq(label_double)
       end
     end

@@ -32,7 +32,7 @@ module Neo4j
       def model_constraints
         return @model_constraints if @model_constraints
 
-        constraints = Neo4j::ActiveBase.current_session.constraints.each_with_object({}) do |row, result|
+        constraints = Neo4j::ActiveBase.current_driver.constraints.each_with_object({}) do |row, result|
           result[row[:label]] ||= []
           result[row[:label]] << row[:properties]
         end
@@ -43,7 +43,7 @@ module Neo4j
       def model_indexes
         return @model_indexes if @model_indexes
 
-        indexes = Neo4j::ActiveBase.current_session.indexes.each_with_object({}) do |row, result|
+        indexes = Neo4j::ActiveBase.current_driver.indexes.each_with_object({}) do |row, result|
           result[row[:label]] ||= []
           result[row[:label]] << row[:properties]
         end

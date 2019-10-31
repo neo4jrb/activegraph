@@ -25,12 +25,12 @@ module Neo4jSpecHelpers
     Neo4j::ActiveBase.new_query
   end
 
-  def current_session
-    Neo4j::ActiveBase.current_session
+  def current_driver
+    Neo4j::ActiveBase.current_driver
   end
 
   def neo4j_query(*args)
-    current_session.query(*args)
+    current_driver.query(*args)
   end
 
   def log_queries!

@@ -7,7 +7,7 @@ module Neo4j
         @label = if label.is_a?(Neo4j::Core::Label)
                    label
                  else
-                   Neo4j::Core::Label.new(label, ActiveBase.current_session)
+                   Neo4j::Core::Label.new(label, ActiveBase.current_driver)
                  end
 
         @property = property.to_sym
