@@ -10,7 +10,7 @@ module Neo4j
       EMPTY = ''
       NEWLINE_W_SPACES = "\n  "
 
-      module ClassMethods
+      class_methods do
         def subscribe_to_request
           ActiveSupport::Notifications.subscribe('neo4j.core.bolt.request') do |_, start, finish, _id, _payload|
             ms = (finish - start) * 1000

@@ -110,7 +110,7 @@ describe Neo4j::Migrations::Helpers do
   end
 
   def label_object
-    Neo4j::Core::Label.new(:Book, current_driver)
+    Neo4j::Core::Label.new(:Book)
   end
 
   describe '#add_constraint' do

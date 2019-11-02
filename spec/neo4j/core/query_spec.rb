@@ -97,17 +97,17 @@ describe Neo4j::Core::Query do
   end
 
   describe 'batch finding' do
-    let(:session) { test_driver_adaptor(test_bolt_url) }
-    let(:query_object) { Neo4j::Core::Query.new(session: session) }
+    let!(:session) { test_driver_adaptor(test_bolt_url) }
+    let(:query_object) { Neo4j::Core::Query.new }
 
     before(:each) do
-      delete_db(session)
+      delete_db
 
       5.times do
-        session.query('CREATE (n:Foo {uuid: {uuid}})', uuid: SecureRandom.uuid)
+        Neo4j::Transaction.query('CREATE (n:Foo {uuid: {uuid}})', uuid: SecureRandom.uuid)
       end
       2.times do
-        session.query('CREATE (n:Bar {uuid: {uuid}})', uuid: SecureRandom.uuid)
+        Neo4j::Transaction.query('CREATE (n:Bar {uuid: {uuid}})', uuid: SecureRandom.uuid)
       end
     end
 

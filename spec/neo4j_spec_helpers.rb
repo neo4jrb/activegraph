@@ -7,7 +7,7 @@ module Neo4jSpecHelpers
 
   self.expect_queries_count = 0
 
-  Neo4j::Core::Driver.subscribe_to_query do |_message|
+  Neo4j::Transaction.subscribe_to_query do |_message|
     self.expect_queries_count += 1
   end
 
@@ -30,11 +30,11 @@ module Neo4jSpecHelpers
   end
 
   def neo4j_query(*args)
-    current_driver.query(*args)
+    Neo4j::Transaction.query(*args)
   end
 
   def log_queries!
-    Neo4j::Core::Driver.subscribe_to_query(&method(:puts))
+    Neo4j::Transaction.subscribe_to_query(&method(:puts))
   end
 
   def action_controller_params(args)

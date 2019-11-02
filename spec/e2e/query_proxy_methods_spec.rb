@@ -367,7 +367,7 @@ describe 'query_proxy_methods' do
 
     context 'when building the query' do
       before do
-        @subscription = Neo4j::Core::Driver.subscribe_to_query do |query|
+        @subscription = Neo4j::Transaction.subscribe_to_query do |query|
           expect(query).to include('DISTINCT')
         end
       end

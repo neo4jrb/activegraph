@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'neo4j/core/driver'
-require './spec/neo4j/core/shared_examples/driver'
 require 'neo4j/driver'
 
 def port
@@ -34,9 +33,5 @@ describe Neo4j::Core::Driver do
 
     let_context(url: "bolt://localhost:#{port}") { subject_should_not_raise }
     let_context(url: "bolt://foo:bar@localhost:#{port}") { subject_should_not_raise }
-  end
-
-  context 'driver' do
-    it_behaves_like 'Neo4j::Core::Driver'
   end
 end

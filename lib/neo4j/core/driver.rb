@@ -1,15 +1,11 @@
 require 'active_support/core_ext/module/attribute_accessors'
 require 'neo4j/core/logging'
 require 'neo4j/core/has_uri'
-require 'neo4j/core/schema'
-require 'neo4j/core/querable'
 
 module Neo4j
   module Core
     class Driver
       include HasUri
-      include Schema
-      include Querable
 
       USER_AGENT_STRING = "neo4j-gem/#{::Neo4j::VERSION} (https://github.com/neo4jrb/neo4j)"
 

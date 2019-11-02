@@ -177,7 +177,7 @@ module Neo4j
               expect do
                 described_class.new.up '8888888888'
               end.not_to raise_error
-            end.to change { Neo4j::Core::Label.new(:Book, current_driver).constraint?(:some) }.to(true)
+            end.to change { Neo4j::Core::Label.new(:Book).constraint?(:some) }.to(true)
           end
 
           it 'run `down` without raising errors' do
@@ -187,7 +187,7 @@ module Neo4j
               expect do
                 described_class.new.down '8888888888'
               end.not_to raise_error
-            end.to change { Neo4j::Core::Label.new(:Book, current_driver).constraint?(:some) }.to(false)
+            end.to change { Neo4j::Core::Label.new(:Book).constraint?(:some) }.to(false)
           end
         end
 

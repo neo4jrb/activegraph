@@ -1,10 +1,15 @@
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
+require 'neo4j/core/querable'
+require 'neo4j/core/schema'
 
 module Neo4j
   class Transaction
+    include Neo4j::Core::Querable
+    extend Neo4j::Core::Schema
+
     thread_mattr_accessor :stack
-    attr_reader :driver, :root
+    attr_reader :root
     attr_reader :driver_tx, :driver_session
 
     class << self
@@ -14,7 +19,7 @@ module Neo4j
       def run(driver, run_in_tx)
         return yield(nil) unless run_in_tx
 
-        tx = Neo4j::Transaction.new(driver)
+        tx = Neo4j::Transaction.new
         yield tx
       rescue Exception => e # rubocop:disable Lint/RescueException
 
@@ -29,13 +34,12 @@ module Neo4j
       end
     end
 
-    def initialize(driver, _options = {})
-      @driver = driver
+    def initialize(_options = {})
       (self.stack ||= []) << self
 
       @root = stack.first
       return unless root?
-      @driver_session = driver.driver.session(Neo4j::Driver::AccessMode::WRITE)
+      @driver_session = Neo4j::Core::Driver.singleton.driver.session(Neo4j::Driver::AccessMode::WRITE)
       @driver_tx = @driver_session.begin_transaction
     rescue StandardError => e
       self.stack = []
@@ -84,11 +88,11 @@ module Neo4j
                 end
       options[:transaction] ||= self
 
-      driver.query(*args)
+      self.class.query(*args)
     end
 
     def queries(options = {}, &block)
-      driver.queries({ transaction: self }.merge(options), &block)
+      self.class.queries({ transaction: self }.merge(options), &block)
     end
 
     def after_commit_registry

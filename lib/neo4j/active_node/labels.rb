@@ -131,7 +131,7 @@ module Neo4j
 
         # @return [Neo4j::Label] the label for this class
         def mapped_label
-          Neo4j::Core::Label.new(mapped_label_name, neo4j_session)
+          Neo4j::Core::Label.new(mapped_label_name)
         end
 
         def base_class

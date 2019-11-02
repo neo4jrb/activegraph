@@ -3,9 +3,8 @@ module Neo4j
     class Label
       attr_reader :name
 
-      def initialize(name, session)
+      def initialize(name)
         @name = name
-        @session = session
       end
 
       def create_index(property, options = {})
@@ -61,30 +60,23 @@ module Neo4j
       end
 
       def indexes
-        @session.indexes.select do |definition|
+        self.class.indexes.select do |definition|
           definition[:label] == @name.to_sym
         end
       end
 
-      def self.indexes_for(session)
-        session.indexes
+      def self.indexes
+        Neo4j::Transaction.indexes
       end
 
       def drop_indexes
-        indexes.each do |definition|
-          begin
-            @session.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
-          rescue Neo4j::Server::CypherResponse::ResponseError
-            # This will error on each constraint. Ignore and continue.
-            next
-          end
-        end
+        self.class.drop_indexes
       end
 
-      def self.drop_indexes_for(session)
-        indexes_for(session).each do |definition|
+      def self.drop_indexes
+        indexes.each do |definition|
           begin
-            session.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
+            Neo4j::Transaction.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
           rescue Neo4j::Server::CypherResponse::ResponseError
             # This will error on each constraint. Ignore and continue.
             next
@@ -97,7 +89,7 @@ module Neo4j
       end
 
       def constraints(_options = {})
-        @session.constraints.select do |definition|
+        Neo4j::Transaction.constraints.select do |definition|
           definition[:label] == @name.to_sym
         end
       end
@@ -109,14 +101,12 @@ module Neo4j
       end
 
       def drop_uniqueness_constraints
-        uniqueness_constraints.each do |definition|
-          @session.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
-        end
+        self.class.drop_uniqueness_constraints
       end
 
-      def self.drop_uniqueness_constraints_for(session)
-        session.constraints.each do |definition|
-          session.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
+      def self.drop_uniqueness_constraints
+        Neo4j::Transaction.constraints.each do |definition|
+          Neo4j::Transaction.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
         end
       end
 
@@ -128,8 +118,8 @@ module Neo4j
         uniqueness_constraints.include?([property])
       end
 
-      def self.wait_for_schema_changes(session)
-        schema_threads(session).map(&:join)
+      def self.wait_for_schema_changes
+        schema_threads.map(&:join)
         set_schema_threads(session, [])
       end
 
@@ -138,25 +128,25 @@ module Neo4j
       # Store schema threads on the session so that we can easily wait for all
       # threads on a session regardless of label
       def schema_threads
-        self.class.schema_threads(@session)
+        self.class.schema_threads
       end
 
       def schema_threads=(array)
-        self.class.set_schema_threads(@session, array)
+        self.class.set_schema_threads(array)
       end
 
       class << self
-        def schema_threads(session)
-          session.instance_variable_get('@_schema_threads') || []
+        def schema_threads
+          Neo4j::Transaction.instance_variable_get('@_schema_threads') || []
         end
 
-        def set_schema_threads(session, array)
-          session.instance_variable_set('@_schema_threads', array)
+        def set_schema_threads(array)
+          Neo4j::Transaction.instance_variable_set('@_schema_threads', array)
         end
       end
 
       def schema_query(cypher)
-        @session.transaction { |tx| tx.query(cypher, {}) }
+        Neo4j::Transaction.transaction { |tx| tx.query(cypher, {}) }
       end
 
       def validate_index_options!(options)

@@ -25,7 +25,7 @@ module Neo4j
       end
 
       def current_transaction_or_session
-        current_transaction || current_driver
+        current_transaction || Transaction
       end
 
       def query(*args)
@@ -45,7 +45,7 @@ module Neo4j
 
       def new_transaction
         validate_model_schema!
-        Neo4j::Transaction.new(current_driver)
+        Neo4j::Transaction.new
       end
 
       def new_query(options = {})
@@ -67,7 +67,7 @@ module Neo4j
       end
 
       def label_object(label_name)
-        Neo4j::Core::Label.new(label_name, current_driver)
+        Neo4j::Core::Label.new(label_name)
       end
 
       def logger

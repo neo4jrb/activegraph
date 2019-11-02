@@ -95,9 +95,9 @@ def delete_db(executor = Neo4j::ActiveBase)
   executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
-def delete_schema(session = Neo4j::ActiveBase.current_driver)
-  Neo4j::Core::Label.drop_uniqueness_constraints_for(session)
-  Neo4j::Core::Label.drop_indexes_for(session)
+def delete_schema
+  Neo4j::Core::Label.drop_uniqueness_constraints
+  Neo4j::Core::Label.drop_indexes
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
