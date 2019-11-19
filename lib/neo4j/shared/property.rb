@@ -80,7 +80,7 @@ module Neo4j::Shared
       end
     end
 
-    DATE_KEY_REGEX = /\A([^\(]+)\((\d+)([if])\)$/
+    DATE_KEY_REGEX = /\A([^\(]+)\((\d+)([ifs])\)$/
     # Gives support for Rails date_select, datetime_select, time_select helpers.
     def process_attributes(attributes = nil)
       return attributes if attributes.blank?

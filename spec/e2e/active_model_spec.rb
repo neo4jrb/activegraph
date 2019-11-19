@@ -597,20 +597,14 @@ describe 'Neo4j::ActiveNode' do
       end
 
       context Time do
-        let(:tz_offset) { Time.now.gmt_offset }
-        let(:dst_offset) { tz_offset != 0 && Time.now.dst? ? 1 : 0 }
-        let(:base_hour) { 9 }
-        let(:expected_hour) { (base_hour - (tz_offset / 60 / 60) + dst_offset) % 24 }
-
         it 'converts to Time' do
-          person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => base_hour.to_s, 'time(5i)' => '12', 'time(6i)' => '42')
+          person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => '9', 'time(5i)' => '12', 'time(6i)' => '42', 'time(7s)' => '+00:00')
           expect(person.time).to be_a(Time)
-          expect(person.time.hour).to eq expected_hour
-          # expect(person.time.utc.min).to eq 12
-          # expect(person.time.utc.sec).to eq 42
+          expect(person.time.hour).to eq 9
+          expect(person.time.utc.min).to eq 12
+          expect(person.time.utc.sec).to eq 42
         end
       end
-
 
       it 'raises an error when it receives values it cannot process' do
         expect do
