@@ -175,6 +175,18 @@ describe 'Association Proxy' do
       end
     end
 
+    it 'does not fetches duplicate nodes with deep with_associations' do
+      Student.create(name: 'Leszek').lessons << science
+      Student.create(name: 'Lukasz').lessons << science
+      log_queries!
+
+      Student.all.with_associations({lessons: :exams_given}).each do |student|
+          student.lessons.each do |lesson|
+            expect(lesson.exams_given).to contain_exactly(science_exam, science_exam2) if lesson == science
+          end
+      end
+    end
+
     it 'Queries only one time when there are some empty associations' do
       Student.create.lessons << science
       Student.create.lessons += [science, Lesson.create]
