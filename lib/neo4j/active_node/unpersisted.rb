@@ -9,12 +9,11 @@ module Neo4j
 
       def defer_create(association_name, object, options = {})
         clear_deferred_nodes_for_association(association_name) if options[:clear]
-
         deferred_nodes_for_association(association_name) << object
       end
 
       def deferred_nodes_for_association(association_name)
-        deferred_create_cache[association_name.to_sym] ||= []
+        deferred_create_cache[association_name.to_sym] ||= Neo4j::ActiveNode::HasN::SetCollection.new
       end
 
       def pending_deferred_creations?

@@ -333,7 +333,7 @@ describe 'has_many' do
         end
 
         it 'should return all toys for all dogs from Dog.toys' do
-          expect(Dog.toys.to_a).to match_array([chewmate, realcat, realcat])
+          expect(Dog.toys.to_a).to match_array([chewmate, realcat])
         end
 
         it 'should return all toys for all dogs specified by where' do
