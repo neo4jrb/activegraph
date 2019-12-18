@@ -178,6 +178,7 @@ describe 'Association Proxy' do
     it 'does not fetches duplicate nodes with deep with_associations' do
       Student.create(name: 'Leszek').lessons << science
       Student.create(name: 'Lukasz').lessons << science
+      log_queries!
 
       Student.all.with_associations({lessons: :exams_given}).each do |student|
           student.lessons.each do |lesson|

@@ -4,22 +4,11 @@ module Neo4j::ActiveNode
 
     class NonPersistedNodeError < Neo4j::Error; end
     class HasOneConstraintError < Neo4j::Error; end
-    class SetCollection < Set
-
-      def respond_to?(method_name)
-        super || to_a.respond_to?(method_name)
-      end
-
-      def method_missing(method_name, *args, &block)
-        self.to_a.public_send(method_name, *args, &block)
-      end
-    end
-
     # Return this object from associations
     # It uses a QueryProxy to get results
     # But also caches results and can have results cached on it
     class AssociationProxy
-      def initialize(query_proxy, deferred_objects = SetCollection.new, result_cache_proc = nil)
+      def initialize(query_proxy, deferred_objects = [], result_cache_proc = nil)
         @query_proxy = query_proxy
         @deferred_objects = deferred_objects
 
@@ -77,7 +66,7 @@ module Neo4j::ActiveNode
       end
 
       def result
-        (@deferred_objects || SetCollection.new) + result_without_deferred
+        (@deferred_objects || []) + result_without_deferred
       end
 
       def result_without_deferred
@@ -108,13 +97,13 @@ module Neo4j::ActiveNode
       end
 
       def init_cache
-        @cached_rels ||= SetCollection.new
-        @cached_result ||= SetCollection.new
+        @cached_rels ||= []
+        @cached_result ||= []
       end
 
       def add_to_cache(object, rel = nil)
-        (@cached_rels ||= SetCollection.new) << rel if rel
-        (@cached_result ||= SetCollection.new) << object
+        (@cached_rels ||= []) << rel if rel
+        (@cached_result ||= []) << object
       end
 
       def rels
@@ -122,7 +111,7 @@ module Neo4j::ActiveNode
       end
 
       def cache_query_proxy_result
-        (result_cache_proc_cache || @query_proxy).to_a.tap { |result| cache_result(SetCollection.new(result)) }
+        (result_cache_proc_cache || @query_proxy).to_a.tap { |result| cache_result(result) }
       end
 
       def result_cache_proc_cache
@@ -138,7 +127,7 @@ module Neo4j::ActiveNode
       end
 
       def replace_with(*args)
-        nodes = SetCollection.new(@query_proxy.replace_with(*args).to_a)
+        nodes = @query_proxy.replace_with(*args).to_a
         if @query_proxy.start_object.try(:new_record?)
           @cached_result = nil
         else
