@@ -1,6 +1,7 @@
 require 'active_support/core_ext/module/attribute_accessors'
 require 'neo4j/core/logging'
 require 'neo4j/core/has_uri'
+require 'neo4j/version'
 
 module Neo4j
   module Core
