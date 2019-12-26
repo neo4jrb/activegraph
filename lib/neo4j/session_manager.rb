@@ -68,6 +68,9 @@ module Neo4j
         when :bolt
           require 'neo4j/core/cypher_session/adaptors/bolt'
           Neo4j::Core::CypherSession::Adaptors::Bolt
+        when :"bolt+routing"
+          require 'neo4j/core/cypher_session/adaptors/bolt_routing'
+          Neo4j::Core::CypherSession::Adaptors::BoltRouting
         else
           extra = ' (`server_db` has been replaced by `http` or `bolt`)'
           fail ArgumentError, "Invalid session type: #{type.inspect} (expected one of [:http, :bolt, :embedded])#{extra if type == :server_db}"
