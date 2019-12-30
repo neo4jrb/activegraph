@@ -64,7 +64,7 @@ namespace :neo4j do
 COMMENT
 
     def check_neo4j_version_3
-      if Neo4j::ActiveBase.current_session.version > '3.0.0'
+      if Neo4j::ActiveBase.transaction.version > '3.0.0'
         yield
       else
         puts 'WARNING: This task does not work for versions of Neo4j before 3.0.0'
@@ -76,7 +76,7 @@ COMMENT
       check_neo4j_version_3 do
         require 'neo4j/migrations/schema'
 
-        schema_data = Neo4j::Migrations::Schema.fetch_schema_data(Neo4j::ActiveBase.current_session)
+        schema_data = Neo4j::Migrations::Schema.fetch_schema_data(Neo4j::ActiveBase.transaction)
 
         runner = Neo4j::Migrations::Runner.new
         schema_data[:versions] = runner.complete_migration_versions.sort
@@ -100,7 +100,7 @@ COMMENT
         Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
 
         Neo4j::ActiveBase.run_transaction do
-          Neo4j::Migrations::Schema.synchronize_schema_data(Neo4j::ActiveBase.current_session, schema_data, args[:remove_missing])
+          Neo4j::Migrations::Schema.synchronize_schema_data(Neo4j::ActiveBase.transaction, schema_data, args[:remove_missing])
 
           runner = Neo4j::Migrations::Runner.new
           runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?

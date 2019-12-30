@@ -28,12 +28,12 @@ module Neo4j
           .new(url, options.merge(verbose_query_logs: verbose_query_logs))
       end
 
-      def current_transaction_or_session
+      def transaction
         current_transaction || Transaction
       end
 
       def query(*args)
-        current_transaction_or_session.query(*args)
+        transaction.query(*args)
       end
 
       # Should support setting driver via config options
@@ -43,7 +43,7 @@ module Neo4j
       end
 
       def run_transaction(run_in_tx = true)
-        Neo4j::Transaction.run(current_driver, run_in_tx) do |tx|
+        Transaction.run(current_driver, run_in_tx) do |tx|
           yield tx
         end
       end
@@ -68,7 +68,7 @@ module Neo4j
 
       def current_transaction
         validate_model_schema!
-        Neo4j::Transaction.root
+        Transaction.root
       end
 
       def label_object(label_name)
