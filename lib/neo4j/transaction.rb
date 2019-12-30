@@ -22,7 +22,6 @@ module Neo4j
         tx = Neo4j::Transaction.new
         yield tx
       rescue Exception => e # rubocop:disable Lint/RescueException
-
         tx.mark_failed unless tx.nil?
         raise e
       ensure
