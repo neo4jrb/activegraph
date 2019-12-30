@@ -39,7 +39,7 @@ module Neo4j
 
       @root = stack.first
       return unless root?
-      @driver_session = Neo4j::Core::Driver.singleton.driver.session(Neo4j::Driver::AccessMode::WRITE)
+      @driver_session = ActiveBase.current_driver.driver.session(Neo4j::Driver::AccessMode::WRITE)
       @driver_tx = @driver_session.begin_transaction
     rescue StandardError => e
       self.stack = []

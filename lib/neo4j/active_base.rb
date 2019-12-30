@@ -2,6 +2,10 @@ module Neo4j
   # To contain any base login for ActiveNode/ActiveRel which
   # is external to the main classes
   module ActiveBase
+    at_exit do
+      @driver&.close
+    end
+
     class << self
       # private?
       def current_driver
@@ -34,6 +38,7 @@ module Neo4j
 
       # Should support setting driver via config options
       def driver=(driver)
+        @driver&.close
         @driver = driver
       end
 
