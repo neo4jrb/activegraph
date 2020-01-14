@@ -107,7 +107,7 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.location = Neo4j::Driver::Types::Point.new(x: 10, y: 5)
+        subject.location = Neo4j::Shared::Point.new(x: 10, y: 5)
         subject.save
         expect(subject.class.where(flavour: 'vanilla')).to include(subject)
       end

@@ -6,7 +6,8 @@ require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
   class Boolean; end
-  class Point; end
+  class Point < Neo4j::Driver::Types::Point
+  end
 
   module TypeConverters
     CONVERTERS = {}
