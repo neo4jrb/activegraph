@@ -6,11 +6,13 @@ require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
   class Boolean; end
+  class Point; end
 
   module TypeConverters
     CONVERTERS = {}
 
     class Boolean; end
+    class Point; end
 
     class BaseConverter
       class << self
@@ -21,6 +23,21 @@ module Neo4j::Shared
 
       def supports_array?
         false
+      end
+    end
+
+    class PointConverter < BaseConverter
+      class << self
+        def db_type
+          Neo4j::Shared::Point
+        end
+
+        alias convert_type db_type
+
+        def to_db(value)
+          value
+        end
+        alias to_ruby to_db
       end
     end
 
@@ -326,7 +343,6 @@ module Neo4j::Shared
         end
       end
     end
-
 
     # Modifies a hash's values to be of types acceptable to Neo4j or matching what the user defined using `type` in property definitions.
     # @param [Neo4j::Shared::Property] obj A node or rel that mixes in the Property module

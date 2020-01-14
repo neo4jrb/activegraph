@@ -13,6 +13,7 @@ describe 'Neo4j::ActiveNode' do
       property :required_on_update
       property :created
       property :start, type: Time
+      property :location, type: Neo4j::Shared::Point
 
       property :created_at
       property :updated_at
@@ -106,6 +107,8 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
+        subject.location = Neo4j::Driver::Types::Point.new(x: 10, y: 5)
+        subject.save
         expect(subject.class.where(flavour: 'vanilla')).to include(subject)
       end
 
