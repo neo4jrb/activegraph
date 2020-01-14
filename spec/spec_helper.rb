@@ -1,5 +1,4 @@
 # To run coverage via travis
-require 'pry'
 require 'simplecov'
 require 'dotenv'
 require 'timecop'
@@ -189,7 +188,7 @@ module FixingRSpecHelpers
   end
 end
 
-server_url = ENV['NEO4J_URL'] || 'bolt://localhost:7473'
+server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
 server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
