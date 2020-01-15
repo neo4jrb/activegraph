@@ -27,56 +27,6 @@ module Neo4j::Shared
       end
     end
 
-    class PointConverter < BaseConverter
-      class << self
-        def db_type
-          Neo4j::Shared::Point
-        end
-
-        alias convert_type db_type
-
-        def to_db(value)
-          value
-        end
-        alias to_ruby to_db
-      end
-    end
-
-    class IntegerConverter < BaseConverter
-      class << self
-        def convert_type
-          Integer
-        end
-
-        def db_type
-          Integer
-        end
-
-        def to_db(value)
-          value.to_i
-        end
-
-        alias to_ruby to_db
-      end
-    end
-
-    class FloatConverter < BaseConverter
-      class << self
-        def convert_type
-          Float
-        end
-
-        def db_type
-          Float
-        end
-
-        def to_db(value)
-          value.to_f
-        end
-        alias to_ruby to_db
-      end
-    end
-
     class BigDecimalConverter < BaseConverter
       class << self
         def convert_type
@@ -101,23 +51,6 @@ module Neo4j::Shared
         def to_ruby(value)
           value.to_d
         end
-      end
-    end
-
-    class StringConverter < BaseConverter
-      class << self
-        def convert_type
-          String
-        end
-
-        def db_type
-          String
-        end
-
-        def to_db(value)
-          value.to_s
-        end
-        alias to_ruby to_db
       end
     end
 
@@ -155,93 +88,6 @@ module Neo4j::Shared
       end
     end
 
-    # Converts Date objects to Java long types. Must be timezone UTC.
-    class DateConverter < BaseConverter
-      class << self
-        def convert_type
-          Date
-        end
-
-        def db_type
-          Integer
-        end
-
-        def to_db(value)
-          Time.utc(value.year, value.month, value.day).to_i
-        end
-
-        def to_ruby(value)
-          value.respond_to?(:to_date) ? value.to_date : Time.at(value).utc.to_date
-        end
-      end
-    end
-
-    # Converts DateTime objects to and from Java long types. Must be timezone UTC.
-    class DateTimeConverter < BaseConverter
-      class << self
-        def convert_type
-          DateTime
-        end
-
-        def db_type
-          Integer
-        end
-
-        # Converts the given DateTime (UTC) value to an Integer.
-        # DateTime values are automatically converted to UTC.
-        def to_db(value)
-          value = value.new_offset(0) if value.respond_to?(:new_offset)
-
-          args = [value.year, value.month, value.day]
-          args += (value.class == Date ? [0, 0, 0] : [value.hour, value.min, value.sec])
-
-          Time.utc(*args).to_i
-        end
-
-        def to_ruby(value)
-          return value if value.is_a?(DateTime)
-          t = case value
-              when Time
-                return value.to_datetime.utc
-              when Integer
-                Time.at(value).utc
-              when String
-                return value.to_datetime
-              else
-                fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"
-              end
-
-          DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
-        end
-      end
-    end
-
-    class TimeConverter < BaseConverter
-      class << self
-        def convert_type
-          Time
-        end
-
-        def db_type
-          Integer
-        end
-
-        # Converts the given DateTime (UTC) value to an Integer.
-        # Only utc times are supported !
-        def to_db(value)
-          if value.class == Date
-            Time.utc(value.year, value.month, value.day, 0, 0, 0).to_i
-          else
-            value.utc.to_i
-          end
-        end
-
-        def to_ruby(value)
-          Time.at(value).utc
-        end
-      end
-    end
-
     # Converts hash to/from YAML
     class YAMLConverter < BaseConverter
       class << self
@@ -258,7 +104,7 @@ module Neo4j::Shared
         end
 
         def to_ruby(value)
-          Psych.load(value)
+          value.is_a?(Hash) ? value : Psych.load(value)
         end
       end
     end

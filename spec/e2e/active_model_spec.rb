@@ -13,7 +13,6 @@ describe 'Neo4j::ActiveNode' do
       property :required_on_update
       property :created
       property :start, type: Time
-      property :location, type: Neo4j::Shared::Point
 
       property :created_at
       property :updated_at
@@ -47,9 +46,52 @@ describe 'Neo4j::ActiveNode' do
       # has_n(:ingredients).to(Ingredient)
       validates_presence_of :flavour
     end
+
+    create_index(:IceCandy, :name, type: :exact)
+    stub_active_node_class('IceCandy') do
+      property :name, type: String
+      property :calories, type: Integer
+      property :expiry_date, type: Date
+      property :make_date, type: DateTime
+      property :created, type: Time
+      property :suger, type: Float
+      property :ingredients, type: Hash
+      #property :contents, type: Enumerable
+      property :storage, type: Neo4j::Driver::Types::Bytes
+      property :best_before, type: ActiveSupport::Duration
+      property :place, type: Neo4j::Driver::Types::Point
+
+    end
   end
 
   subject { IceLolly.new }
+
+  context 'Default data types by driver' do
+    let(:name) { 'Mango Candy' }
+    let(:calories) { 100 }
+    let(:expiry_date) { Date.today }
+    let(:make_date) { DateTime.now }
+    let(:created) { Time.now }
+    let(:suger) { 50.20 }
+    let(:ingredients) { { suger: 20, water: 50 } }
+    #let(:contents) { ['suger', 'water'] }
+    let(:storage) { Neo4j::Driver::Types::Bytes.new([1, 2, 3].pack('C*')) }
+    let(:best_before) { 6.months }
+    let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
+    it 'should support types' do
+      IceCandy.create(name: name, calories: calories, expiry_date: expiry_date,
+                      make_date: make_date, created: created, suger: suger, ingredients: ingredients,
+                      storage: storage, best_before: best_before, place: place)
+      candy = IceCandy.first
+      #make_date of type DateTime stored as date
+      [:name, :calories, :expiry_date, :created, :suger, :ingredients, :storage, :best_before].each do |property|
+        expect(candy.send(property)).to eq(eval(property.to_s))
+      end
+      expect(candy.place).to be_a(Neo4j::Driver::Types::Point)
+      expect(candy.place.x).to eq(10)
+      expect(candy.place.y).to eq(5)
+    end
+  end
 
   context 'when valid' do
     before :each do
@@ -107,8 +149,6 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it "should respond to class#all(:flavour => 'vanilla')" do
-        subject.location = Neo4j::Shared::Point.new(x: 10, y: 5)
-        subject.save
         expect(subject.class.where(flavour: 'vanilla')).to include(subject)
       end
 

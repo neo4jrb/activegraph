@@ -47,7 +47,7 @@ module Neo4j::Shared
 
     # Reads the attribute and typecasts the result
     def attribute(name)
-      typecast_attribute(_attribute_typecaster(name), super)
+      Property::NEO4J_DRIVER_DATA_TYPES.include?(_attribute_type(name)) ? super : typecast_attribute(_attribute_typecaster(name), super)
     end
 
     def typecast_attribute(typecaster, value)
