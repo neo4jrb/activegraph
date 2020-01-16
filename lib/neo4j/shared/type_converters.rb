@@ -24,22 +24,22 @@ module Neo4j::Shared
       end
     end
 
-    class IntegerConverter < BaseConverter  
-      class << self 
-        def convert_type  
-          Integer 
-        end 
+    class IntegerConverter < BaseConverter
+      class << self
+        def convert_type
+          Integer
+        end
 
-        def db_type 
-          Integer 
-        end 
+        def db_type
+          Integer
+        end
 
-        def to_db(value)  
-          value.to_i  
-        end 
+        def to_db(value)
+          value.to_i
+        end
 
-        alias to_ruby to_db 
-      end 
+        alias to_ruby to_db
+      end
     end
 
     class DateTimeConverter < BaseConverter 
