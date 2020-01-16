@@ -32,23 +32,11 @@ module Neo4j::Shared
       end
 
       it 'returns DateTypecaster for Date' do
-        expect(model.typecaster_for(Date)).to eq TypeConverters::DateConverter
-      end
-
-      it 'returns DateTypecaster for Date' do
         expect(model.typecaster_for(DateTime)).to eq TypeConverters::DateTimeConverter
-      end
-
-      it 'returns FloatTypecaster for Float' do
-        expect(model.typecaster_for(Float)).to eq TypeConverters::FloatConverter
       end
 
       it 'returns IntegerTypecaster for Integer' do
         expect(model.typecaster_for(Integer)).to eq TypeConverters::IntegerConverter
-      end
-
-      it 'returns StringTypecaster for String' do
-        expect(model.typecaster_for(String)).to eq TypeConverters::StringConverter
       end
 
       it 'returns ObjectTypecaster for Object' do

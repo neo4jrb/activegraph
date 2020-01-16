@@ -6,14 +6,11 @@ require 'active_support/core_ext/string/conversions'
 
 module Neo4j::Shared
   class Boolean; end
-  class Point < Neo4j::Driver::Types::Point
-  end
 
   module TypeConverters
     CONVERTERS = {}
 
     class Boolean; end
-    class Point; end
 
     class BaseConverter
       class << self
@@ -25,6 +22,63 @@ module Neo4j::Shared
       def supports_array?
         false
       end
+    end
+
+    class IntegerConverter < BaseConverter  
+      class << self 
+        def convert_type  
+          Integer 
+        end 
+
+        def db_type 
+          Integer 
+        end 
+
+        def to_db(value)  
+          value.to_i  
+        end 
+
+        alias to_ruby to_db 
+      end 
+    end
+
+    class DateTimeConverter < BaseConverter 
+      class << self 
+        def convert_type  
+          DateTime  
+        end 
+
+        def db_type 
+          Integer 
+        end 
+
+        # Converts the given DateTime (UTC) value to an Integer.  
+        # DateTime values are automatically converted to UTC. 
+        def to_db(value)  
+          value = value.new_offset(0) if value.respond_to?(:new_offset) 
+
+          args = [value.year, value.month, value.day] 
+          args += (value.class == Date ? [0, 0, 0] : [value.hour, value.min, value.sec])  
+
+          Time.utc(*args).to_i  
+        end 
+
+        def to_ruby(value)  
+          return value if value.is_a?(DateTime) 
+          t = case value  
+              when Time 
+                return value.to_datetime.utc  
+              when Integer  
+                Time.at(value).utc  
+              when String 
+                return value.to_datetime  
+              else  
+                fail ArgumentError, "Invalid value type for DateType property: #{value.inspect}"  
+              end 
+
+          DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)  
+        end 
+      end 
     end
 
     class BigDecimalConverter < BaseConverter

@@ -4,14 +4,6 @@ describe Neo4j::Shared::TypeConverters do
       expect(Neo4j::Shared::TypeConverters::CONVERTERS[DateTime]).to eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
     end
 
-    it 'has converters for Time' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Time]).to eq(Neo4j::Shared::TypeConverters::TimeConverter)
-    end
-
-    it 'has converters for Date' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Date]).to eq(Neo4j::Shared::TypeConverters::DateConverter)
-    end
-
     it 'has converters for JSON' do
       expect(Neo4j::Shared::TypeConverters::CONVERTERS[JSON]).to eq(Neo4j::Shared::TypeConverters::JSONConverter)
     end
@@ -67,19 +59,6 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  describe 'Float' do
-    subject { Neo4j::Shared::TypeConverters::FloatConverter }
-
-    it 'translates from and to database' do
-      db_value = subject.to_db('1')
-      ruby_value = subject.to_ruby('1')
-      [db_value, ruby_value].each do |i|
-        expect(i).to be_a(Float)
-        expect(i).to eq 1.0
-      end
-    end
-  end
-
   describe 'BigDecimal' do
     subject { Neo4j::Shared::TypeConverters::BigDecimalConverter }
 
@@ -128,17 +107,6 @@ describe Neo4j::Shared::TypeConverters do
       it 'translates' do
         expect(subject.to_ruby(r)).to be_a(BigDecimal)
         expect(subject.to_ruby(r)).to eq(BigDecimal('1.0'))
-      end
-    end
-  end
-
-  describe 'String' do
-    subject { Neo4j::Shared::TypeConverters::StringConverter }
-
-    describe '#to_db and #to_ruby' do
-      it 'calls to_s on the object' do
-        expect(subject.to_db(1)).to eq '1'
-        expect(subject.to_ruby(1)).to eq '1'
       end
     end
   end
@@ -358,66 +326,38 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  # describe Neo4j::Shared::TypeConverters::DateConverter do
-  #   subject { Neo4j::Shared::TypeConverters::DateConverter }
+  describe Neo4j::Shared::TypeConverters::DateTimeConverter do
+    subject { Neo4j::Shared::TypeConverters::DateTimeConverter }
 
-  #   let(:now) { Time.at(1_352_538_487).utc.to_date }
+    before(:each) do
+      @dt = 1_352_538_487
+      @hr = 3600
+    end
 
-  #   it 'translate from and to database' do
-  #     db_value = Neo4j::Shared::TypeConverters::DateConverter.to_db(now)
-  #     ruby_value = Neo4j::Shared::TypeConverters::DateConverter.to_ruby(db_value)
-  #     expect(ruby_value.class).to eq(Date)
-  #     expect(ruby_value.to_s).to eq(now.to_s)
-  #   end
-  # end
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { is_expected.to eq(@dt + 6 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { is_expected.to eq(@dt + 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { is_expected.to eq(@dt + 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { is_expected.to eq(@dt) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { is_expected.to eq(@dt - 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { is_expected.to eq(@dt - 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { is_expected.to eq(@dt - 6 * @hr) }
 
+    describe 'to_ruby' do
+      it 'translate a Integer back to DateTime' do
+        expect(subject.to_ruby(@dt + 6 * @hr)).to eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
+      end
 
-  # describe Neo4j::Shared::TypeConverters::TimeConverter do
-  #   subject { Neo4j::Shared::TypeConverters::TimeConverter }
+      it 'translate a String back to DateTime' do
+        expect(subject.to_ruby(Time.at(@dt - 6 * @hr).to_datetime.to_s)).to eq(DateTime.parse('2012-11-10T09:08:07+06:00'))
+      end
+    end
 
-  #   let(:now) { Time.now }
-
-  #   it 'translate from and to database' do
-  #     db_value = Neo4j::Shared::TypeConverters::TimeConverter.to_db(now)
-  #     ruby_value = Neo4j::Shared::TypeConverters::TimeConverter.to_ruby(db_value)
-
-  #     expect(ruby_value.class).to eq(Time)
-  #     expect(ruby_value.to_s).to eq(now.to_s)
-  #   end
-  # end
-
-  # describe Neo4j::Shared::TypeConverters::DateTimeConverter do
-  #   subject { Neo4j::Shared::TypeConverters::DateTimeConverter }
-
-  #   before(:each) do
-  #     @dt = 1_352_538_487
-  #     @hr = 3600
-  #   end
-
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { is_expected.to eq(@dt + 6 * @hr) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { is_expected.to eq(@dt + 4 * @hr) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { is_expected.to eq(@dt + 2 * @hr) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { is_expected.to eq(@dt) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { is_expected.to eq(@dt - 2 * @hr) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { is_expected.to eq(@dt - 4 * @hr) }
-  #   its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { is_expected.to eq(@dt - 6 * @hr) }
-
-  #   describe 'to_ruby' do
-  #     it 'translate a Integer back to DateTime' do
-  #       expect(subject.to_ruby(@dt + 6 * @hr)).to eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
-  #     end
-
-  #     it 'translate a String back to DateTime' do
-  #       expect(subject.to_ruby(Time.at(@dt - 6 * @hr).to_datetime.to_s)).to eq(DateTime.parse('2012-11-10T09:08:07+06:00'))
-  #     end
-  #   end
-
-  #   it 'translate from and to database' do
-  #     value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
-  #     db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
-  #     ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
-  #     expect(ruby_value.class).to eq(DateTime)
-  #     expect(ruby_value.to_s).to eq(value.to_s)
-  #   end
-  # end
+    it 'translate from and to database' do
+      value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
+      db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
+      ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
+      expect(ruby_value.class).to eq(DateTime)
+      expect(ruby_value.to_s).to eq(value.to_s)
+    end
+  end
 end
