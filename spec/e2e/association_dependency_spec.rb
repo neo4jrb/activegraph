@@ -104,6 +104,18 @@ describe 'association dependent delete/destroy' do
         node.destroy
       end
     end
+
+    context 'delete relationships' do
+      let(:band) { Band.create }
+      let(:other_band) { Band.create }
+      before { node.bands << band }
+
+      it 'deletes orphans' do
+        node.bands = [other_band]
+        expect{Band.find(band.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+        expect(User.find(node).bands.to_a).to contain_exactly(other_band)
+      end
+    end
   end
 
   describe 'Grzesiek is booking a tour for his bands' do
