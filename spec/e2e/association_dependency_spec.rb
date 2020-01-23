@@ -39,7 +39,7 @@ describe 'association dependent delete/destroy' do
       has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :delete_orphans
       has_one :out, :poorly_modeled_thing, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
       has_many :out, :poorly_modeled_things, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
-      has_many :out, :poorly_modeled_things_2, rel_class: 'MyRelClass'#, dependent: :destroy
+      has_many :out, :poorly_modeled_things_2, rel_class: 'MyRelClass', dependent: :destroy
     end
 
     stub_active_node_class('Band') do
