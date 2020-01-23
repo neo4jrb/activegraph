@@ -14,27 +14,6 @@ module Neo4j
           raise "Unknown dependent option #{dependent}"
         end
 
-        # Callback methods
-        def dependent_delete_callback(object, ids = [])
-          object.association_query_proxy(name).delete_all
-        end
-
-        def dependent_delete_orphans_callback(object, ids = [])
-          unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel, ids)
-          unique_query.query.optional_match('(n)-[r]-()').delete(:n, :r).exec if unique_query
-        end
-
-        def dependent_destroy_callback(object, ids = [])
-          unique_query = object.association_query_proxy(name)
-          unique_query.each_for_destruction(object, &:destroy) if unique_query
-        end
-
-        def dependent_destroy_orphans_callback(object, ids = [])
-          unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel, ids)
-          unique_query.each_for_destruction(object, &:destroy) if unique_query
-        end
-        # End callback methods
-
         private
 
         def valid_dependent_value?(value)
@@ -42,6 +21,28 @@ module Neo4j
 
           self.respond_to?("dependent_#{value}_callback", true)
         end
+
+        # Callback methods
+        def dependent_delete_callback(object)
+          object.association_query_proxy(name).delete_all
+        end
+
+        def dependent_delete_orphans_callback(object)
+          unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel)
+          unique_query.query.optional_match('(n)-[r]-()').delete(:n, :r).exec if unique_query
+        end
+
+        def dependent_destroy_callback(object)
+          unique_query = object.association_query_proxy(name)
+          unique_query.each_for_destruction(object, &:destroy) if unique_query
+        end
+
+        def dependent_destroy_orphans_callback(object)
+          unique_query = object.as(:self).unique_nodes(self, :self, :n, :other_rel)
+          unique_query.each_for_destruction(object, &:destroy) if unique_query
+        end
+
+        # End callback methods
       end
     end
   end

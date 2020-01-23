@@ -229,10 +229,9 @@ module Neo4j::ActiveNode
       end
     end
 
-    def validate_reverse_has_one_core_rel(association, other_node)
-      return unless Neo4j::Config[:enforce_has_one]
+    def delete_reverse_has_one_core_rel(association, other_node)
       reverse_assoc = reverse_association(association)
-      validate_has_one_rel!(reverse_assoc, other_node) if reverse_assoc && reverse_assoc.type == :has_one
+      delete_has_one_rel!(reverse_assoc, other_node) if reverse_assoc && reverse_assoc.type == :has_one
     end
 
     def reverse_association(association)
@@ -242,14 +241,14 @@ module Neo4j::ActiveNode
       reverse_assoc && reverse_assoc.last
     end
 
-    def validate_reverse_has_one_active_rel(active_rel, direction, other_node)
+    def delete_reverse_has_one_active_rel(active_rel, direction, other_node)
       rel = active_rel_corresponding_rel(active_rel, direction, other_node.class)
-      validate_has_one_rel!(rel.last, other_node) if rel && rel.last.type == :has_one
+      delete_has_one_rel!(rel.last, other_node) if rel && rel.last.type == :has_one
     end
 
-    def validate_has_one_rel!(rel, other_node)
-      raise_error = (node = send(rel.name.to_s)) && node != other_node
-      fail(HasOneConstraintError, "node #{self.class}##{neo_id} has a has_one relationship with #{other_node.class}##{other_node.neo_id}") if raise_error
+    def delete_has_one_rel!(rel)
+      send("#{rel.name}=", nil)
+      association_proxy_cache.clear
     end
 
     def active_rel_corresponding_rel(active_rel, direction, target_class)

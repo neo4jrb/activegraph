@@ -76,7 +76,7 @@ module Neo4j
         def delete_rels_for_nodes(ids)
           return unless ids.present?
           if association.dependent
-            association.public_send("dependent_#{association.dependent}_callback", start_object, ids)
+            start_object.public_send("dependent_#{association.dependent}_callback", association, ids)
           else
             self.where(id: ids).delete_all_rels
           end

@@ -45,6 +45,7 @@ module Neo4j
     include Neo4j::ActiveNode::Dependent
     include Neo4j::ActiveNode::Enum
     include Neo4j::Shared::PermittedAttributes
+    include Neo4j::ActiveNode::DependentCallbacks
 
     def initialize(args = nil)
       self.class.ensure_id_property_info! # So that we make sure all objects have an id_property

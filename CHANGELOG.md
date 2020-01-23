@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [10.0.x] 2020-01-23
+
+- Enforcing has_one constraint on relationships.
+
 ## [9.6.1] 2019-12-18
 
 ## Fixed
