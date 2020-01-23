@@ -39,6 +39,7 @@ describe 'association dependent delete/destroy' do
       has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :delete_orphans
       has_one :out, :poorly_modeled_thing, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
       has_many :out, :poorly_modeled_things, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
+      has_many :out, :poorly_modeled_things_2, rel_class: 'MyRelClass'#, dependent: :destroy
     end
 
     stub_active_node_class('Band') do
@@ -53,6 +54,7 @@ describe 'association dependent delete/destroy' do
     stub_active_node_class('BadModel') do
       has_one :out, :user, model_class: 'User', type: 'HAS_A_USER', dependent: :destroy
       has_many :out, :users, model_class: 'User', type: 'HAS_USERS', dependent: :destroy
+      has_many :in, :stops, rel_class: 'MyRelClass', dependent: :destroy
     end
 
     stub_active_node_class('Comment') do
@@ -61,6 +63,12 @@ describe 'association dependent delete/destroy' do
       # the topic of a comment just because the comment is destroyed.
       # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
       has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
+    end
+
+    stub_active_rel_class('MyRelClass') do
+      from_class :Stop
+      to_class :BadModel
+      type 'rel_class_type'
     end
   end
 
@@ -113,6 +121,18 @@ describe 'association dependent delete/destroy' do
       it 'deletes orphans' do
         node.bands = [other_band]
         expect{Band.find(band.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+      end
+    end
+
+    context 'ActiveRel with dependent destroy' do
+      let(:bad_model) { BadModel.create }
+      let(:city) { Stop.create(city: 'AMB') }
+      let(:rel) { MyRelClass.create(from_node: city, to_node: bad_model) }
+
+      it 'destroys the BadModel and Stop on deletion of ActiveRel' do
+        rel.destroy
+        expect{Stop.find(city.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+        expect{BadModel.find(bad_model.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
       end
     end
   end

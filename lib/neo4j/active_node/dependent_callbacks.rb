@@ -13,7 +13,7 @@ module Neo4j
       end
 
       def dependent_destroy_callback(association, ids)
-        unique_query = association_query_proxy(association.name).where(ids: ids)
+        unique_query = association_query_proxy(association.name).where(id: ids)
         unique_query.each_for_destruction(self, &:destroy) if unique_query
       end
 

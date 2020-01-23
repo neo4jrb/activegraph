@@ -10,6 +10,12 @@ module Neo4j
         end
         super(*args)
       end
+
+      def destroy
+        to_node.callbacks_from_active_rel(self, :in, from_node).try(:last)
+        from_node.callbacks_from_active_rel(self, :out, to_node).try(:last)
+        super
+      end
     end
   end
 end
