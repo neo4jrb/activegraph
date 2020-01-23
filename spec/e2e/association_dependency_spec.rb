@@ -113,7 +113,6 @@ describe 'association dependent delete/destroy' do
       it 'deletes orphans' do
         node.bands = [other_band]
         expect{Band.find(band.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-        expect(User.find(node).bands.to_a).to contain_exactly(other_band)
       end
     end
   end

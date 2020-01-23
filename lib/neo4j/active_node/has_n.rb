@@ -229,9 +229,9 @@ module Neo4j::ActiveNode
       end
     end
 
-    def delete_reverse_has_one_core_rel(association, other_node)
+    def delete_reverse_has_one_core_rel(association)
       reverse_assoc = reverse_association(association)
-      delete_has_one_rel!(reverse_assoc, other_node) if reverse_assoc && reverse_assoc.type == :has_one
+      delete_has_one_rel!(reverse_assoc) if reverse_assoc && reverse_assoc.type == :has_one
     end
 
     def reverse_association(association)
@@ -243,7 +243,7 @@ module Neo4j::ActiveNode
 
     def delete_reverse_has_one_active_rel(active_rel, direction, other_node)
       rel = active_rel_corresponding_rel(active_rel, direction, other_node.class)
-      delete_has_one_rel!(rel.last, other_node) if rel && rel.last.type == :has_one
+      delete_has_one_rel!(rel.last) if rel && rel.last.type == :has_one
     end
 
     def delete_has_one_rel!(rel)
