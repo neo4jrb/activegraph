@@ -24,7 +24,7 @@ module Neo4j
 
       def callbacks_from_active_rel(active_rel, direction, other_node)
         rel = active_rel_corresponding_rel(active_rel, direction, other_node.class).try(:last)
-        public_send("dependent_#{rel.dependent}_callback", rel, [other_node.id]) if rel.dependent
+        public_send("dependent_#{rel.dependent}_callback", rel, [other_node.id]) if rel && rel.dependent
       end
     end
   end
