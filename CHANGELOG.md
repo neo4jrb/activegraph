@@ -5,7 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [10.0.x] 2020-01-23
 
-- Enforcing has_one constraint on relationships.
+- Executing relationship callbacks on relationship deletion.
+- When assiging relationships, preserving earlier relationships.
+- Enforcing has one constraint on relationships.
 
 ## [9.6.1] 2019-12-18
 
