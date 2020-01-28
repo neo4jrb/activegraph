@@ -5,7 +5,7 @@ require 'neo4j/version'
 
 
 Gem::Specification.new do |s|
-  s.name     = 'neo4j'
+  s.name     = 'activegraph'
   s.version  = Neo4j::VERSION
 
   s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
