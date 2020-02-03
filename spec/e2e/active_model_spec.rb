@@ -69,10 +69,10 @@ describe 'Neo4j::ActiveNode' do
 
   context 'Default data types by driver' do
     let(:name) { 'Mango Candy' }
-    let(:calories) { 100 }
+    let(:calories) { 9223372036854775808 }
     let(:expiry_date) { Date.today }
     let(:created) { Time.now }
-    let(:suger) { 50.20 }
+    let(:suger) { 0.9223372036854776 }
     let(:ingredients) { { suger: 20, water: 50 } }
     let(:storage) { Neo4j::Driver::Types::Bytes.new([1, 2, 3].pack('C*')) }
     let(:best_before) { 6.months }

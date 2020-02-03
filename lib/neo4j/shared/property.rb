@@ -11,7 +11,7 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
-    NEO4J_DRIVER_DATA_TYPES = [String, Date, Time, Float, Hash, Neo4j::Driver::Types::Bytes, ActiveSupport::Duration,
+    NEO4J_DRIVER_DATA_TYPES = [Date, Time, Hash, Neo4j::Driver::Types::Bytes, ActiveSupport::Duration,
                                Neo4j::Driver::Types::Point, Neo4j::Driver::Types::OffsetTime, Neo4j::Driver::Types::LocalTime,
                                ActiveSupport::TimeWithZone, Neo4j::Driver::Types::LocalDateTime]
 
@@ -222,6 +222,7 @@ module Neo4j::Shared
                              typecast_attribute(_attribute_typecaster(name), value)
                            end
           send("#{name}_will_change!") unless typecast_value == read_attribute(name)
+          #binding.pry
           super(value)
         end
       end

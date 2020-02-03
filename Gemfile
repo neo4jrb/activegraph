@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 gemspec
 
-# gem 'neo4j-ruby-driver', path: '../neo4j-ruby-driver'
+#gem 'neo4j-java-driver', path: '/Users/amitsuryavanshi/projects/Amit-Git/neo4j-ruby-driver'
 
 gem 'listen', '< 3.1'
 
