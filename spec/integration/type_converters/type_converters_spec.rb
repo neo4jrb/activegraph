@@ -59,7 +59,7 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-   describe 'Float' do
+  describe 'Float' do
     subject { Neo4j::Shared::TypeConverters::FloatConverter }
 
     it 'translates from and to database' do
