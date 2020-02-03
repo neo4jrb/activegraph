@@ -59,17 +59,17 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-   describe 'Float' do  
-    subject { Neo4j::Shared::TypeConverters::FloatConverter } 
+   describe 'Float' do
+    subject { Neo4j::Shared::TypeConverters::FloatConverter }
 
-    it 'translates from and to database' do 
-      db_value = subject.to_db('1') 
-      ruby_value = subject.to_ruby('1') 
-      [db_value, ruby_value].each do |i|  
-        expect(i).to be_a(Float)  
-        expect(i).to eq 1.0 
-      end 
-    end 
+    it 'translates from and to database' do
+      db_value = subject.to_db('1')
+      ruby_value = subject.to_ruby('1')
+      [db_value, ruby_value].each do |i|
+        expect(i).to be_a(Float)
+        expect(i).to eq 1.0
+      end
+    end
   end
 
   describe 'BigDecimal' do
@@ -124,15 +124,15 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  describe 'String' do  
-    subject { Neo4j::Shared::TypeConverters::StringConverter }  
+  describe 'String' do
+    subject { Neo4j::Shared::TypeConverters::StringConverter }
 
-    describe '#to_db and #to_ruby' do 
-      it 'calls to_s on the object' do  
-        expect(subject.to_db(1)).to eq '1'  
-        expect(subject.to_ruby(1)).to eq '1'  
-      end 
-    end 
+    describe '#to_db and #to_ruby' do
+      it 'calls to_s on the object' do
+        expect(subject.to_db(1)).to eq '1'
+        expect(subject.to_ruby(1)).to eq '1'
+      end
+    end
   end
 
   # These tests originally from ActiveAttr gem
