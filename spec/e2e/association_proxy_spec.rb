@@ -398,16 +398,17 @@ describe 'Association Proxy' do
       end
     end
 
-    it 'raises error in case of inverse has_one rel is enforced' do
+    it 'deletes inverse has_one rel and does not call callbacks in inverse rel' do
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
       person1.update(children: [person2, person3.id])
 
       expect(person3.as(:p).parent.count).to eq(1)
+      expect{Person.find(person2.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
     end
 
-    it 'raises error in case of inverse has_one rel is enforced and two relationships with same type' do
+    it 'deletes rel in case of inverse has_one rel and two relationships with same type' do
       person1 = Person.create(name: 'person-1')
       person2 = Person.create(name: 'person-2')
       comment = Comment.create(text: 'test-comment-2', comment_owner: person1)

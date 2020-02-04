@@ -247,7 +247,7 @@ module Neo4j::ActiveNode
     end
 
     def delete_has_one_rel!(rel)
-      send("#{rel.name}=", nil)
+      send("#{rel.name}", :n, :r, chainable: true).query.delete(:r).exec
       association_proxy_cache.clear
     end
 
