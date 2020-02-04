@@ -25,9 +25,8 @@ module Neo4j
       end
 
       def named_constraints
-        query('CALL db.constraints()', {}, skip_instrumentation: true).tap do |result|
-          result.columns.include?(:name) ? result.map(&:name) : []
-        end
+        result = query('CALL db.constraints()', {}, skip_instrumentation: true)
+        result.columns.include?(:name) ? result : []
       end
 
       private
