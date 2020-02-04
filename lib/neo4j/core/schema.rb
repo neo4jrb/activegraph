@@ -12,8 +12,6 @@ module Neo4j
         result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
         result.map do |row|
-          label = (result.columns.include?(:labelsOrTypes) ? row.labelsOrTypes : row.tokenNames).first
-          property = row.properties.first
           { type: row.type.to_sym, label: label(result, row), properties: properties(row), state: row.state.to_sym }
         end
       end
@@ -21,7 +19,7 @@ module Neo4j
       def constraints
         result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
-        result.select { |row| row.type == 'node_unique_property' || row.uniqueness == 'UNIQUE' }.map do |row|
+        result.select(&method(v4?(result) ? :v4_filter : :v3_filter)).map do |row|
           { type: :uniqueness, label: label(result, row), properties: properties(row) }
         end
       end
@@ -34,8 +32,21 @@ module Neo4j
 
       private
 
+      def v4_filter(row)
+        row.uniqueness == 'UNIQUE'
+      end
+
+      def v3_filter(row)
+        row.type == 'node_unique_property'
+      end
+
       def label(result, row)
-        (result.columns.include?(:labelsOrTypes) ? row.labelsOrTypes : row.tokenNames).first.to_sym
+        (v4?(result) ? row.labelsOrTypes : row.tokenNames).first.to_sym
+      end
+
+      def v4?(result)
+        return @v4 unless @v4.nil?
+        @v4 = result.columns.include?(:labelsOrTypes)
       end
 
       def properties(row)
