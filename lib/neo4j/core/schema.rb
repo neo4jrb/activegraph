@@ -40,12 +40,17 @@ module Neo4j
       end
 
       def label(result, row)
-        (v4?(result) ? row.labelsOrTypes : row.tokenNames).first.to_sym
+        (v34?(result) ? row.label : (v4?(result) ? row.labelsOrTypes : row.tokenNames).first).to_sym
       end
 
       def v4?(result)
         return @v4 unless @v4.nil?
         @v4 = result.columns.include?(:labelsOrTypes)
+      end
+
+      def v34?(result)
+        return @v34 unless @v34.nil?
+        @v34 = result.columns.include?(:label)
       end
 
       def properties(row)
