@@ -72,58 +72,6 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  describe 'BigDecimal' do
-    subject { Neo4j::Shared::TypeConverters::BigDecimalConverter }
-
-    context 'from Rational' do
-      let(:r) { Rational(1) }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-        expect(subject.to_db(r)).to eq('1.0')
-        expect(subject.to_db(r)).not_to eq('1.1')
-      end
-    end
-
-    context 'from float' do
-      let(:r) { 1.0 }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-      end
-    end
-
-    context 'from String' do
-      let(:r) { '1.0' }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-      end
-    end
-
-    context 'from BidDecimal' do
-      let(:r) { BigDecimal('1.0') }
-
-      it 'is not converted' do
-        expect(subject.converted?(r)).to be false
-      end
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-        expect(subject.to_db(r)).to eq('1.0')
-      end
-    end
-
-    describe 'to_ruby' do
-      let(:r) { '1.0' }
-
-      it 'translates' do
-        expect(subject.to_ruby(r)).to be_a(BigDecimal)
-        expect(subject.to_ruby(r)).to eq(BigDecimal('1.0'))
-      end
-    end
-  end
-
   describe 'String' do
     subject { Neo4j::Shared::TypeConverters::StringConverter }
 
