@@ -349,4 +349,39 @@ describe Neo4j::Shared::TypeConverters do
       expect(ruby_value[:neo4j]).to eq 'http://www.neo4j.org'
     end
   end
+
+  describe Neo4j::Shared::TypeConverters::DateTimeConverter do
+    subject { Neo4j::Shared::TypeConverters::DateTimeConverter }
+
+    before(:each) do
+      @dt = 1_352_538_487
+      @hr = 3600
+    end
+
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-06:00')) { is_expected.to eq(@dt + 6 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-04:00')) { is_expected.to eq(@dt + 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07-02:00')) { is_expected.to eq(@dt + 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+00:00')) { is_expected.to eq(@dt) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+02:00')) { is_expected.to eq(@dt - 2 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+04:00')) { is_expected.to eq(@dt - 4 * @hr) }
+    its(:to_db, DateTime.parse('2012-11-10T09:08:07+06:00')) { is_expected.to eq(@dt - 6 * @hr) }
+
+    describe 'to_ruby' do
+      it 'translate a Integer back to DateTime' do
+        expect(subject.to_ruby(@dt + 6 * @hr)).to eq(DateTime.parse('2012-11-10T09:08:07-06:00'))
+      end
+
+      it 'translate a String back to DateTime' do
+        expect(subject.to_ruby(Time.at(@dt - 6 * @hr).to_datetime.to_s)).to eq(DateTime.parse('2012-11-10T09:08:07+06:00'))
+      end
+    end
+
+    it 'translate from and to database' do
+      value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
+      db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
+      ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
+      expect(ruby_value.class).to eq(DateTime)
+      expect(ruby_value.to_s).to eq(value.to_s)
+    end
+  end
 end
