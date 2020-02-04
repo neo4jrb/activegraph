@@ -47,7 +47,7 @@ module Neo4j::Shared
 
     def match_query
       base_query
-        .match(match_string).where("ID(#{identifier}) = {#{identifier_id}}")
+        .match(match_string).where("ID(#{identifier}) = $#{identifier_id}")
         .params(identifier_id.to_sym => graph_object.neo_id)
     end
 
@@ -70,7 +70,7 @@ module Neo4j::Shared
     def create_query
       return match_query if graph_object.persisted?
       labels = graph_object.labels_for_create.map { |l| ":`#{l}`" }.join
-      base_query.create("(#{identifier}#{labels} {#{identifier}_params})").params(identifier_params => graph_object.props_for_create)
+      base_query.create("(#{identifier}#{labels} $#{identifier}_params)").params(identifier_params => graph_object.props_for_create)
     end
   end
 
@@ -84,9 +84,9 @@ module Neo4j::Shared
     def create_query
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
-      base_query.send(graph_object.create_method, query_string).break
-                .set(identifier => set_props)
-                .params(:"#{identifier}_create_props" => create_props)
+      base_query.send(graph_object.create_method, query_string(create_props)).break
+        .set(identifier => set_props)
+        .params(params(create_props))
     end
 
     private
@@ -95,8 +95,28 @@ module Neo4j::Shared
       Neo4j::Shared::FilteredHash.new(graph_object.props_for_create, graph_object.creates_unique_option).filtered_base
     end
 
-    def query_string
-      "(#{graph_object.from_node_identifier})-[#{identifier}:`#{graph_object.type}` {#{identifier}_create_props}]->(#{graph_object.to_node_identifier})"
+    def query_string(create_props)
+      "(#{graph_object.from_node_identifier})-[#{identifier}:`#{graph_object.type}` #{pattern(create_props)}]->(#{graph_object.to_node_identifier})"
+    end
+
+    def params(create_props)
+      unique? ? create_props.transform_keys { |key| scoped(key).to_sym } : { namespace.to_sym => create_props }
+    end
+
+    def unique?
+      graph_object.create_method == :create_unique
+    end
+
+    def pattern(create_props)
+      unique? ? "{#{create_props.keys.map { |key| "#{key}: $#{scoped(key)}" }.join(', ')}}" : "$#{namespace}"
+    end
+
+    def scoped(key)
+      "#{namespace}_#{key}"
+    end
+
+    def namespace
+      "#{identifier}_create_props"
     end
   end
 end

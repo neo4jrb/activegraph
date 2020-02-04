@@ -12,18 +12,34 @@ module Neo4j
         result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
         result.map do |row|
-          label, property = row.description.match(/INDEX ON :([^\(]+)\(([^\)]+)\)/)[1, 2]
-          { type: row.type.to_sym, label: label.to_sym, properties: [property.to_sym], state: row.state.to_sym }
+          label = (result.columns.include?(:labelsOrTypes) ? row.labelsOrTypes : row.tokenNames).first
+          property = row.properties.first
+          { type: row.type.to_sym, label: label(result, row), properties: properties(row), state: row.state.to_sym }
         end
       end
 
       def constraints
         result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
-        result.select { |row| row.type == 'node_unique_property' }.map do |row|
-          label, property = row.description.match(/INDEX ON :([^\(]+)\(([^\)]+)\)/)[1, 2]
-          { type: :uniqueness, label: label.to_sym, properties: [property.to_sym] }
+        result.select { |row| row.type == 'node_unique_property' || row.uniqueness == 'UNIQUE' }.map do |row|
+          { type: :uniqueness, label: label(result, row), properties: properties(row) }
         end
+      end
+
+      def named_constraints
+        query('CALL db.constraints()', {}, skip_instrumentation: true).tap do |result|
+          result.columns.include?(:name) ? result.map(&:name) : []
+        end
+      end
+
+      private
+
+      def label(result, row)
+        (result.columns.include?(:labelsOrTypes) ? row.labelsOrTypes : row.tokenNames).first.to_sym
+      end
+
+      def properties(row)
+        row.properties.map(&:to_sym)
       end
     end
   end

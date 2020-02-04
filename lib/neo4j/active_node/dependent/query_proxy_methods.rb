@@ -42,7 +42,7 @@ module Neo4j
                .with(other_node)
                .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
                .with(other_node, count: 'count(*)')
-               .where('count = {one}', one: 1)
+               .where('count = $one', one: 1)
                .break
         end
       end

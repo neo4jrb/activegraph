@@ -108,8 +108,6 @@ describe 'association dependent delete/destroy' do
 
   describe 'Grzesiek is booking a tour for his bands' do
     before(:each) do
-      delete_db
-
       @user = User.create(name: 'Grzesiek')
       @tour = Tour.create(name: 'Absu and Woe')
       @user.tours << @tour

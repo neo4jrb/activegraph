@@ -1,8 +1,6 @@
 describe 'Neo4j::ActiveNode' do
   before do
     clear_model_memory_caches
-    delete_db
-    delete_schema
   end
 
   let!(:clazz) do

@@ -1,14 +1,11 @@
 module Neo4j
   module Migrations
     describe 'Neo4j::Migrations' do
-      before { delete_schema }
-
       capture_output!(:output_string)
 
       before do
         create_constraint :'Neo4j::Migrations::SchemaMigration', :migration_id, type: :unique
 
-        create_constraint :User, :uuid, type: :unique
         create_constraint :User, :name, type: :unique
         stub_active_node_class('User') do
           property :name
@@ -277,7 +274,6 @@ module Neo4j
             end
 
             Contact.delete_all
-            create_constraint :Contact, :uuid, type: :unique
             create_constraint :Contact, :phone, type: :unique
             Contact.create! phone: '123123'
 

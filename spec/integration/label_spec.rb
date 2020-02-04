@@ -2,8 +2,6 @@
 describe 'Labels' do
   before do
     clear_model_memory_caches
-    delete_schema
-    delete_db
 
     stub_active_node_class('TestClass')
 

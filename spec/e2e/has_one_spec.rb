@@ -1,6 +1,5 @@
 describe 'has_one' do
   before(:each) do
-    delete_db
     clear_model_memory_caches
   end
 

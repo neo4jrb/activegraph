@@ -188,13 +188,13 @@ module Neo4j
 
             param = add_param(param, value)
 
-            "#{key} #{array_value?(value, is_set) ? 'IN' : '='} {#{param}}"
+            "#{key} #{array_value?(value, is_set) ? 'IN' : '='} $#{param}"
           end
         end
 
         def range_key_value_string(key, value, previous_keys, param)
           begin_param, end_param = add_params("#{param}_range_min" => value.begin, "#{param}_range_max" => value.end)
-          "#{key} >= {#{begin_param}} AND #{previous_keys[-2]}.#{key} <#{'=' unless value.exclude_end?} {#{end_param}}"
+          "#{key} >= $#{begin_param} AND #{previous_keys[-2]}.#{key} <#{'=' unless value.exclude_end?} $#{end_param}"
         end
 
         def array_value?(value, is_set)
@@ -221,7 +221,7 @@ module Neo4j
             else
               param_key = "#{prefix}#{key}".gsub(/:+/, '_')
               param_key = add_param(param_key, value)
-              "#{key}: {#{param_key}}"
+              "#{key}: $#{param_key}"
             end
           end.join(Clause::COMMA_SPACE)
 
@@ -306,7 +306,7 @@ module Neo4j
 
           param = add_param(param, pattern)
 
-          "#{key} =~ {#{param}}"
+          "#{key} =~ $#{param}"
         end
 
         class << self
@@ -320,7 +320,7 @@ module Neo4j
                 params.add_params(params_arg)
               else
                 param_var = params.add_params(question_mark_param: params_arg)[0]
-                query_string = query_string.gsub(ARG_HAS_QUESTION_MARK_REGEX, "\\1{#{param_var}}\\2")
+                query_string = query_string.gsub(ARG_HAS_QUESTION_MARK_REGEX, "\\1$#{param_var}\\2")
               end
 
               [from_arg(query_string, params, options)]
@@ -456,7 +456,7 @@ module Neo4j
       end
 
       class CreateUniqueClause < CreateClause
-        KEYWORD = 'CREATE UNIQUE'
+        KEYWORD = 'MERGE'
       end
 
       class MergeClause < CreateClause
@@ -536,7 +536,7 @@ module Neo4j
         def from_string(value)
           param_var = "#{self.class.keyword_downcase}_#{value}"
           param_var = add_param(param_var, value.to_i)
-          "{#{param_var}}"
+          "$#{param_var}"
         end
 
         def from_integer(value)
@@ -566,13 +566,13 @@ module Neo4j
         def from_string(value)
           clause_id = "#{self.class.keyword_downcase}_#{value}"
           clause_id = add_param(clause_id, value.to_i)
-          "{#{clause_id}}"
+          "$#{clause_id}"
         end
 
         def from_integer(value)
           clause_id = "#{self.class.keyword_downcase}_#{value}"
           clause_id = add_param(clause_id, value)
-          "{#{clause_id}}"
+          "$#{clause_id}"
         end
 
         class << self
@@ -597,7 +597,7 @@ module Neo4j
           when Hash
             if @options[:set_props]
               param = add_param("#{key}_set_props", value)
-              "#{key} = {#{param}}"
+              "#{key} = $#{param}"
             else
               value.map { |k, v| key_value_string("#{key}.`#{k}`", v, ['setter'], true) }
             end

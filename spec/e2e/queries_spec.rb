@@ -1,7 +1,5 @@
 describe 'Neo4j::ActiveNode#find' do
   before do
-    delete_schema
-    delete_db
     clear_model_memory_caches
   end
 
@@ -24,8 +22,6 @@ end
 
 describe 'Neo4j::ActiveNode#all' do
   before do
-    delete_schema
-    delete_db
     clear_model_memory_caches
   end
 
