@@ -60,7 +60,6 @@ describe 'Neo4j::ActiveNode' do
       property :best_before, type: ActiveSupport::Duration
       property :place, type: Neo4j::Driver::Types::Point
       property :local_time, type: Neo4j::Driver::Types::LocalTime
-      property :time_in_zone, type: ActiveSupport::TimeWithZone
       property :local_datetime, type: Neo4j::Driver::Types::LocalDateTime
     end
   end
@@ -72,30 +71,28 @@ describe 'Neo4j::ActiveNode' do
     let(:calories) { 9223372036854775808 }
     let(:expiry_date) { Date.today }
     let(:created) { Time.now }
-    let(:suger) { 0.9223372036854776 }
+    let(:suger) { Float::MAX }
     let(:ingredients) { { suger: 20, water: 50 } }
     let(:storage) { Neo4j::Driver::Types::Bytes.new([1, 2, 3].pack('C*')) }
     let(:best_before) { 6.months }
     let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
     let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
     let(:local_time) { Neo4j::Driver::Types::LocalTime.new(Time.now) }
-    let(:time_in_zone) { Time.now.in_time_zone }
     let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now) }
 
     it 'should support types' do
       IceCandy.create(name: name, calories: calories, expiry_date: expiry_date,
                       make_date: make_date, created: created, suger: suger, ingredients: ingredients,
                       storage: storage, best_before: best_before, place: place, local_time: local_time,
-                      time_in_zone: time_in_zone, local_datetime: local_datetime)
+                      local_datetime: local_datetime)
       candy = IceCandy.first
-      [:name, :calories, :expiry_date, :created, :suger, :ingredients, :storage, :best_before, :make_date,
-       :local_time, :time_in_zone].each do |property|
+      [:name, :calories, :expiry_date, :created, :suger, :ingredients, :storage, :best_before,
+       :make_date, :local_time, :local_datetime].each do |property|
         expect(candy.send(property)).to eq(eval(property.to_s))
       end
       expect(candy.place).to be_a(Neo4j::Driver::Types::Point)
       expect(candy.place.x).to eq(10)
       expect(candy.place.y).to eq(5)
-      expect(candy.local_datetime.to_i).to eq(local_datetime.to_i)
     end
   end
 

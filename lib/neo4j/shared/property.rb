@@ -11,9 +11,8 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
-    NEO4J_DRIVER_DATA_TYPES = [Date, Time, Hash, Neo4j::Driver::Types::Bytes, ActiveSupport::Duration,
-                               Neo4j::Driver::Types::Point, Neo4j::Driver::Types::OffsetTime, Neo4j::Driver::Types::LocalTime,
-                               ActiveSupport::TimeWithZone, Neo4j::Driver::Types::LocalDateTime]
+    NEO4J_DRIVER_DATA_TYPES = [Date, Time, Hash, Neo4j::Driver::Types::Bytes, ActiveSupport::Duration, Neo4j::Driver::Types::Point,
+                               Neo4j::Driver::Types::OffsetTime, Neo4j::Driver::Types::LocalTime, Neo4j::Driver::Types::LocalDateTime]
 
     # TODO: Set @attribute correctly using class ActiveModel::Attribute, and after that
     # remove mutations_from_database and other ActiveModel::Dirty overrided methods
