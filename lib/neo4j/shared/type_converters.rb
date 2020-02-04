@@ -29,7 +29,7 @@ module Neo4j::Shared
       class << self
         
         def converted?(value)
-          value <= NEO4J_LARGEST_INT
+          value.to_i <= NEO4J_LARGEST_INT
         end
 
         def convert_type
