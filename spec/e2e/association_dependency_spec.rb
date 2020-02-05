@@ -150,8 +150,8 @@ describe 'association dependent delete/destroy' do
 
         it 'deletes only orphans' do
           node.bands = [other_band]
-          expect{Band.find(orphan_band.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{Band.find(non_orphan_band.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { Band.find(orphan_band.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Band.find(non_orphan_band.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -162,8 +162,8 @@ describe 'association dependent delete/destroy' do
         let(:route_2) { Route.create }
         it 'cascades dependent destroy' do
           tour.routes = [route_2]
-          expect{Route.find(route.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{Comment.find(comment.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { Route.find(route.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Comment.find(comment.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -174,8 +174,8 @@ describe 'association dependent delete/destroy' do
         let(:stop_2) { Stop.create(poorly_modeled_things: [bad_model]) }
         it 'deletes dependent model node without cascade' do
           stop.poorly_modeled_things = [bad_model_2]
-          expect{BadModel.find(bad_model.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{Stop.find(stop_2.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Stop.find(stop_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -187,8 +187,8 @@ describe 'association dependent delete/destroy' do
         let!(:stop_2) { Stop.create(comments: [comment_2]) }
         it 'deletes only orphans' do
           stop.comments = [comment_3]
-          expect{Comment.find(comment_1.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{Comment.find(comment_2.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { Comment.find(comment_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Comment.find(comment_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
     end
@@ -201,8 +201,8 @@ describe 'association dependent delete/destroy' do
 
         it 'destroys the BadModel and Stop on deletion of ActiveRel' do
           rel.destroy
-          expect{Stop.find(city.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{BadModel.find(bad_model.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { Stop.find(city.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -216,8 +216,8 @@ describe 'association dependent delete/destroy' do
         let!(:rel_3) { MyRelClass2.create(from_node: city_2, to_node: bad_model_2) }
         it 'deletes only orphans' do
           rel_1.destroy
-          expect{BadModel.find(bad_model_1.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{BadModel.find(bad_model_2.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { BadModel.find(bad_model_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+           expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -227,7 +227,7 @@ describe 'association dependent delete/destroy' do
         let(:rel) { MyRelClass3.create(from_node: city, to_node: bad_model) }
         it 'deletes relationship object' do
           rel.destroy
-          expect{BadModel.find(bad_model.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 
@@ -241,8 +241,8 @@ describe 'association dependent delete/destroy' do
         let!(:rel_3) { MyRelClass4.create(from_node: city_2, to_node: bad_model_2) }
         it 'deletes only orphans' do
           rel_1.destroy
-          expect{BadModel.find(bad_model_1.id)}.to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
-          expect{BadModel.find(bad_model_2.id)}.not_to raise_error Neo4j::ActiveNode::Labels::RecordNotFound
+          expect { BadModel.find(bad_model_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
     end
