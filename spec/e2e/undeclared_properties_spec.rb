@@ -19,7 +19,7 @@ describe Neo4j::ActiveNode do
 
   describe '.create' do
     it 'does allow to set undeclared properties using create' do
-      expect { Person.create(foo: 43) }.not_to raise_error Neo4j::Shared::Property::UndefinedPropertyError
+      expect { Person.create(foo: 43) }.not_to raise_error
     end
 
     it 'stores undefined attributes' do

@@ -189,8 +189,6 @@ module FixingRSpecHelpers
 end
 
 server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
-server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
-server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
 Neo4j::ActiveBase.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 

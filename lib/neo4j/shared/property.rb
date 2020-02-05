@@ -11,13 +11,6 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
-    # TODO: Set @attribute correctly using class ActiveModel::Attribute, and after that
-    # remove mutations_from_database and other ActiveModel::Dirty overrided methods
-    def mutations_from_database
-      @mutations_from_database ||=
-        defined?(ActiveModel::ForcedMutationTracker) ? ActiveModel::ForcedMutationTracker.new(self) : ActiveModel::NullMutationTracker.instance
-    end
-
     def inspect
       attribute_descriptions = inspect_attributes.map do |key, value|
         "#{Neo4j::ANSI::CYAN}#{key}: #{Neo4j::ANSI::CLEAR}#{value.inspect}"
