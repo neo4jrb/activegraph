@@ -14,6 +14,7 @@ require 'active_support/core_ext/class/subclasses.rb'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'json'
 
+require 'neo4j/lazy_attribute_hash'
 require 'neo4j/attribute_set'
 require 'neo4j/errors'
 require 'neo4j/config'

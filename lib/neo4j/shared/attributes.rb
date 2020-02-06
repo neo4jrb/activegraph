@@ -145,7 +145,7 @@ module Neo4j::Shared
       # @return [ActiveSupport::HashWithIndifferentAccess{String => Neo4j::Shared::AttributeDefinition}]
       #   The Hash of AttributeDefinition instances
       def attributes
-        @attributes ||= ActiveSupport::HashWithIndifferentAccess.new
+        @attributes ||= Neo4j::AttributeSet.new({})
       end
 
       # Determine if a given attribute name is dangerous
