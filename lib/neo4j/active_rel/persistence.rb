@@ -45,17 +45,16 @@ module Neo4j::ActiveRel
 
     def create_model
       validate_node_classes!
-      validate_has_one_rel
+      delete_has_one_rel
       rel = _create_rel
       return self unless rel.respond_to?(:props)
       init_on_load(rel, from_node, to_node, @rel_type)
       true
     end
 
-    def validate_has_one_rel
-      return unless Neo4j::Config[:enforce_has_one]
-      to_node.validate_reverse_has_one_active_rel(self, :in, from_node) if to_node.persisted?
-      from_node.validate_reverse_has_one_active_rel(self, :out, to_node) if from_node.persisted?
+    def delete_has_one_rel
+      to_node.delete_reverse_has_one_active_rel(self, :in, from_node) if to_node.persisted?
+      from_node.delete_reverse_has_one_active_rel(self, :out, to_node) if from_node.persisted?
     end
 
     def query_as(var)
