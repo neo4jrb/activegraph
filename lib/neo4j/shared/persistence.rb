@@ -237,7 +237,7 @@ module Neo4j::Shared
 
     def increment_by_query!(match_query, attribute, by, element_name = :n)
       new_attribute = match_query.with(element_name)
-                                 .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + {by}")
+                                 .set("#{element_name}.`#{attribute}` = COALESCE(#{element_name}.`#{attribute}`, 0) + $by")
                                  .params(by: by).limit(1)
                                  .pluck("#{element_name}.`#{attribute}`").first
       return false unless new_attribute

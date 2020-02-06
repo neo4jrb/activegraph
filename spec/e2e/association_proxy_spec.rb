@@ -1,7 +1,6 @@
 describe 'Association Proxy' do
   before do
     clear_model_memory_caches
-    delete_db
   end
 
   context 'simple relationships' do

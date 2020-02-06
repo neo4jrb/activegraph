@@ -1,8 +1,5 @@
 describe Neo4j::ActiveNode do
   before(:each) do
-    delete_schema
-    delete_db
-
     create_index :StoredFile, :type, type: :exact
     create_index :StoredFile, :size, type: :exact
     create_index :StoredFile, :flag, type: :exact

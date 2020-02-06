@@ -23,7 +23,7 @@ module Neo4j
       # This method does not exist within QueryProxy and can only be used to start a new chain.
       #
       # @example Start a new QueryProxy chain with the first identifier set manually
-      #   # Generates: MATCH (s:`Student`), (l:`Lesson`), s-[rel1:`ENROLLED_IN`]->(l:`Lesson`) WHERE ID(s) = {neo_id_17963}
+      #   # Generates: MATCH (s:`Student`), (l:`Lesson`), s-[rel1:`ENROLLED_IN`]->(l:`Lesson`) WHERE ID(s) = $neo_id_17963
       #   student.as(:s).lessons(:l)
       #
       # @param [String, Symbol] node_var The identifier to use within the QueryProxy object

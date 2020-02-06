@@ -2,7 +2,6 @@ describe Neo4j::ModelSchema do
   before { delete_schema }
 
   before do
-    create_constraint :User, :uuid, type: :unique
     create_index :User, :name, type: :exact
 
     stub_active_node_class('User') do

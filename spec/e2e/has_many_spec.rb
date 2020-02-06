@@ -1,7 +1,6 @@
 describe 'has_many' do
   before(:each) do
     clear_model_memory_caches
-    delete_db
 
     stub_active_node_class('Person') do
       property :name
@@ -227,20 +226,20 @@ describe 'has_many' do
 
       stub_active_node_class('Comment')
 
-      stub_active_node_class('Person')
+      stub_active_node_class('Author')
     end
 
     let!(:post) { Post.create }
 
     let!(:comments) { [Comment.create, Comment.create] }
 
-    let!(:person) { Person.create }
+    let!(:person) { Author.create }
 
     before(:each) do
       Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
                        .create('(post)<-[:comments_on]-(comment)').exec
 
-      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
+      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Author).where(person: {Author.id_property_name => person.id})
                        .create('(post)<-[:comments_on]-(person)').exec
     end
 
@@ -256,8 +255,8 @@ describe 'has_many' do
       it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
-    context "model_class: 'Person'" do
-      let(:model_class) { 'Person' }
+    context "model_class: 'Author'" do
+      let(:model_class) { 'Author' }
       it { is_expected.to eq([person.id]) }
     end
 
@@ -271,8 +270,8 @@ describe 'has_many' do
       it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
-    context "model_class: ['Comment', 'Person']" do
-      let(:model_class) { %w(Comment Person) }
+    context "model_class: ['Comment', 'Author']" do
+      let(:model_class) { %w(Comment Author) }
       it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
 
       describe 'plucking :id instead of id_property_name' do
@@ -305,7 +304,6 @@ describe 'has_many' do
 
   describe 'query chaining' do
     before(:each) do
-      delete_db
       clear_model_memory_caches
 
       stub_active_node_class('Dog') do

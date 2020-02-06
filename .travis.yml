@@ -16,9 +16,9 @@ script:
   - "travis_retry bin/rake default --trace"
 language: ruby
 cache: bundler
-jdk: openjdk8
+jdk: openjdk11
 rvm:
-  - 2.6.5
+  - 2.7.0
   - jruby-9.2.8.0
 env:
   global:
@@ -26,8 +26,8 @@ env:
     - NEO4J_URL="bolt://localhost:7472"
     - SEABOLT_LIB=./seabolt-1.7.4-Linux-ubuntu-16.04/usr/local/lib/libseabolt17.so
   matrix:
-    - NEO4J_VERSION=enterprise-3.5.12
-    - NEO4J_VERSION=enterprise-3.4.16
+    - NEO4J_VERSION=enterprise-3.5.14
+    - NEO4J_VERSION=enterprise-4.0.0
 matrix:
   include:
     - jdk:
@@ -37,5 +37,6 @@ matrix:
 
     # Testing older versions of ActiveModel
     - rvm: 2.5.7
-      env: NEO4J_VERSION=community-3.4.16 ACTIVE_MODEL_VERSION=5.2.3
+      jdk: openjdk8
+      env: NEO4J_VERSION=community-3.4.17 ACTIVE_MODEL_VERSION=5.2.3
 

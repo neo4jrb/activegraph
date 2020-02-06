@@ -17,7 +17,8 @@ class TestDriver < Neo4j::Core::Driver
   end
 
   class << self
-    def new_instance(url)
+    def new_instance(url, options = {})
+      options.merge(encryption: false)
       cache[url] ||= super
     end
 

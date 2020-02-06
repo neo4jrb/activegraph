@@ -54,7 +54,7 @@ shared_examples_for 'timestamped model' do
       context 'with missing updated_at' do
         before do
           Neo4j::ActiveBase.run_transaction do
-            query = 'MATCH (n) WHERE ID(n) = {neo_id} REMOVE n.updated_at'
+            query = 'MATCH (n) WHERE ID(n) = $neo_id REMOVE n.updated_at'
             neo_id = subject._persisted_obj.neo_id
             Neo4j::Transaction.query(query, neo_id: neo_id)
           end
