@@ -216,10 +216,10 @@ module Neo4j
 
       # Allows for the specification of values for params specified in query
       # @example
-      #   # Creates a query representing the cypher: MATCH (q: Person {id: {id}})
+      #   # Creates a query representing the cypher: MATCH (q: Person {id: $id})
       #   # Calls to params don't affect the cypher query generated, but the params will be
       #   # Passed down when the query is made
-      #   Query.new.match('(q: Person {id: {id}})').params(id: 12)
+      #   Query.new.match('(q: Person {id: $id})').params(id: 12)
       #
       def params(args)
         copy.tap { |new_query| new_query.instance_variable_get('@params'.freeze).add_params(args) }

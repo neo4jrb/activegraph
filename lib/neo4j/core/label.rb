@@ -48,11 +48,13 @@ module Neo4j
       def drop_constraint(property, constraint)
         cypher = case constraint[:type]
                  when :unique, :uniqueness
-                   "DROP CONSTRAINT ON (n:`#{name}`) ASSERT n.`#{property}` IS UNIQUE"
+                   "n.`#{property}` IS UNIQUE"
+                 when :exists
+                   "exists(n.`#{property}`)"
                  else
                    fail "Not supported constraint #{constraint.inspect}"
                  end
-        schema_query(cypher)
+        schema_query("DROP CONSTRAINT ON (n:`#{name}`) ASSERT #{cypher}")
       end
 
       def drop_uniqueness_constraint(property, options = {})
@@ -65,23 +67,8 @@ module Neo4j
         end
       end
 
-      def self.indexes
-        Neo4j::Transaction.indexes
-      end
-
       def drop_indexes
         self.class.drop_indexes
-      end
-
-      def self.drop_indexes
-        indexes.each do |definition|
-          begin
-            Neo4j::Transaction.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
-          rescue Neo4j::Server::CypherResponse::ResponseError
-            # This will error on each constraint. Ignore and continue.
-            next
-          end
-        end
       end
 
       def index?(property)
@@ -100,27 +87,12 @@ module Neo4j
         end
       end
 
-      def drop_uniqueness_constraints
-        self.class.drop_uniqueness_constraints
-      end
-
-      def self.drop_uniqueness_constraints
-        Neo4j::Transaction.constraints.each do |definition|
-          Neo4j::Transaction.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
-        end
-      end
-
       def constraint?(property)
         constraints.any? { |definition| definition[:properties] == [property.to_sym] }
       end
 
       def uniqueness_constraint?(property)
         uniqueness_constraints.include?([property])
-      end
-
-      def self.wait_for_schema_changes
-        schema_threads.map(&:join)
-        set_schema_threads(session, [])
       end
 
       private
@@ -136,6 +108,35 @@ module Neo4j
       end
 
       class << self
+        def indexes
+          Neo4j::Transaction.indexes
+        end
+
+        def drop_indexes
+          indexes.each do |definition|
+            begin
+              Neo4j::Transaction.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
+            rescue Neo4j::Driver::Exceptions::DatabaseException
+              # This will error on each constraint. Ignore and continue.
+              next
+            end
+          end
+        end
+
+        def drop_constraints
+          Neo4j::Transaction.named_constraints.each do |constraint|
+            Neo4j::Transaction.query("DROP CONSTRAINT #{constraint.name}")
+          end
+          Neo4j::Transaction.constraints.each do |definition|
+            Neo4j::Transaction.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
+          end
+        end
+
+        def wait_for_schema_changes
+          schema_threads.map(&:join)
+          set_schema_threads(session, [])
+        end
+
         def schema_threads
           Neo4j::Transaction.instance_variable_get('@_schema_threads') || []
         end

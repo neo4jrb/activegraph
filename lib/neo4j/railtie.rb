@@ -70,7 +70,7 @@ module Neo4j
     end
 
     def default_session_path_or_url
-      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'http://localhost:7474'
+      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'bolt://localhost:7474'
     end
 
     def yaml_config_data

@@ -1,6 +1,5 @@
 describe 'Inheritance', type: :e2e do
   before(:each) do
-    delete_db
     clear_model_memory_caches
 
     stub_active_node_class('Node') do

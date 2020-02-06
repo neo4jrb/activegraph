@@ -65,8 +65,6 @@ describe Neo4j::ActiveNode do
   # moved from unit/active_node/persistence_spec.rb
   describe 'save' do
     it 'creates a new node if not persisted before' do
-      delete_db
-
       p = Person.new
       expect(Person.count).to eq(0)
       p.save

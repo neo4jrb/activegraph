@@ -88,9 +88,9 @@ module Neo4j
         def include?(other, target = nil)
           query_with_target(target) do |var|
             where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
-                             "ID(#{var}) = {other_node_id}"
+                             "ID(#{var}) = $other_node_id"
                            else
-                             "#{var}.#{association_id_key} = {other_node_id}"
+                             "#{var}.#{association_id_key} = $other_node_id"
                            end
             node_id = other.respond_to?(:neo_id) ? other.neo_id : other
             self.where(where_filter).params(other_node_id: node_id).query.reorder.return("count(#{var}) as count").first.count > 0
@@ -287,7 +287,7 @@ module Neo4j
         def exists_query_start(condition, target)
           case condition
           when Integer
-            self.where("ID(#{target}) = {exists_condition}").params(exists_condition: condition)
+            self.where("ID(#{target}) = $exists_condition").params(exists_condition: condition)
           when Hash
             self.where(condition.keys.first => condition.values.first)
           when String

@@ -16,7 +16,7 @@ describe Neo4j::Transaction do
     end
 
     it 'can make a query with a large payload' do
-      subject.query('CREATE (n:Test) SET n = {props} RETURN n', props: {text: 'a' * 10_000})
+      subject.query('CREATE (n:Test) SET n = $props RETURN n', props: {text: 'a' * 10_000})
     end
   end
 
@@ -45,11 +45,11 @@ describe Neo4j::Transaction do
 
   describe 'transactions' do
     def create_object_by_id(id, tx)
-      tx.query('CREATE (t:Temporary {id: {id}})', id: id)
+      tx.query('CREATE (t:Temporary {id: $id})', id: id)
     end
 
     def get_object_by_id(id)
-      first = subject.query('MATCH (t:Temporary {id: {id}}) RETURN t', id: id).first
+      first = subject.query('MATCH (t:Temporary {id: $id}) RETURN t', id: id).first
       first && first.t
     end
 
@@ -225,7 +225,7 @@ describe Neo4j::Transaction do
     end
 
     describe 'parameter input and output' do
-      subject { Neo4j::Transaction.query('WITH {param} AS param RETURN param', param: param).first.param }
+      subject { Neo4j::Transaction.query('WITH $param AS param RETURN param', param: param).first.param }
 
       [
         # Integers

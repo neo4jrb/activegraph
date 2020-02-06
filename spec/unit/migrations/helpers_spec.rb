@@ -6,8 +6,6 @@ describe Neo4j::Migrations::Helpers do
 
   before do
     clear_model_memory_caches
-    delete_db
-    delete_schema
 
     stub_active_node_class('Bookcase') do
       has_many :out, :books, type: :has_books
@@ -78,7 +76,7 @@ describe Neo4j::Migrations::Helpers do
   describe '#execute' do
     it 'executes plan cypher query with parameters' do
       expect do
-        execute 'MATCH (b:`Book`) WHERE b.name = {book_name} DELETE b', book_name: Book.first.name
+        execute 'MATCH (b:`Book`) WHERE b.name = $book_name DELETE b', book_name: Book.first.name
       end.to change { Book.count }.by(-1)
     end
   end

@@ -25,7 +25,7 @@ module Neo4j
       def new_driver(url, options = {})
         verbose_query_logs = Neo4j::Config.fetch(:verbose_query_logs, false)
         Neo4j::Core::Driver
-          .new(url, options.merge(verbose_query_logs: verbose_query_logs))
+          .new(url, options, verbose_query_logs: verbose_query_logs)
       end
 
       def transaction
