@@ -58,7 +58,7 @@ module Neo4j
 
       def mark_versions_as_complete(versions)
         Neo4j::ActiveBase.new_query
-                         .with('{versions} AS versions').params(versions: versions).break
+                         .with('$versions AS versions').params(versions: versions).break
                          .unwind(version: :versions).break
                          .merge('(:`Neo4j::Migrations::SchemaMigration` {migration_id: version})')
                          .exec
