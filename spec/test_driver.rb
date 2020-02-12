@@ -18,8 +18,7 @@ class TestDriver < Neo4j::Core::Driver
 
   class << self
     def new_instance(url, options = {})
-      options.merge(encryption: false)
-      cache[url] ||= super
+      cache[url] ||= super(url, options.merge(encryption: false))
     end
 
     def close_all

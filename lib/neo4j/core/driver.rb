@@ -36,7 +36,7 @@ module Neo4j
 
       def initialize(url, options = {}, extended_options = {})
         self.url = url
-        @driver = self.class.new_instance(url, options.merge(encryption: false))
+        @driver = self.class.new_instance(url, options)
         @options = extended_options
       end
 
