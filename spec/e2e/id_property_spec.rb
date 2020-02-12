@@ -6,8 +6,6 @@ describe Neo4j::ActiveNode::IdProperty do
   end
 
   before do
-    delete_db
-    delete_schema
     clear_model_memory_caches
   end
 
@@ -428,8 +426,6 @@ describe Neo4j::ActiveNode::IdProperty do
       stub_active_node_class('NeoIdTest', false) do
         id_property :neo_id
       end
-
-      # delete_db
     end
 
     it 'has an index' do

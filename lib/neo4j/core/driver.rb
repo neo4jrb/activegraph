@@ -21,7 +21,7 @@ module Neo4j
       end
 
       class << self
-        def new_instance(url)
+        def new_instance(url, options = {})
           uri = URI(url)
           user = uri.user
           password = uri.password
@@ -30,14 +30,14 @@ module Neo4j
                        else
                          Neo4j::Driver::AuthTokens.none
                        end
-          Neo4j::Driver::GraphDatabase.driver(url, auth_token)
+          Neo4j::Driver::GraphDatabase.driver(url, auth_token, options)
         end
       end
 
-      def initialize(url, options = {})
+      def initialize(url, options = {}, extended_options = {})
         self.url = url
-        @driver = self.class.new_instance(url)
-        @options = options
+        @driver = self.class.new_instance(url, options)
+        @options = extended_options
       end
 
       def logger

@@ -105,10 +105,6 @@ Variables
     **Default:** ``false``
 
     Specifies that queries outputted to the log also get a source file / line outputted to aid debugging.
-  **enforce_has_one**
-    **Default:** ``false``
-
-    If true raises an error if any operation would violate the uniqueness of a `has_one` relationship. Requires that associations are defined from both sides and that one side uses `origin:` in the definition.
 
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~

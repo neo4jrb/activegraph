@@ -96,7 +96,7 @@ def delete_db(executor = Neo4j::ActiveBase)
 end
 
 def delete_schema
-  Neo4j::Core::Label.drop_uniqueness_constraints
+  Neo4j::Core::Label.drop_constraints
   Neo4j::Core::Label.drop_indexes
 end
 
@@ -224,6 +224,8 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
+    delete_db
+    delete_schema
     @active_base_logger = spy('ActiveBase logger')
     allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
   end

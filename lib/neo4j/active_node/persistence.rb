@@ -66,7 +66,7 @@ module Neo4j::ActiveNode
     # @param [Array] labels The labels to use for creating the new node.
     # @return [Neo4j::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
-      query = "CREATE (n:`#{Array(labels).join('`:`')}`) SET n = {props} RETURN n"
+      query = "CREATE (n:`#{Array(labels).join('`:`')}`) SET n = $props RETURN n"
       neo4j_query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
     end
 

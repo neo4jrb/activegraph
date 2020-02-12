@@ -26,24 +26,25 @@ module Neo4j
         # @param [String, Symbol] other_node The identifier to use for the other end of the chain.
         # @param [String, Symbol] other_rel The identifier to use for the relationship in the optional match.
         # @return [Neo4j::ActiveNode::Query::QueryProxy]
-        def unique_nodes(association, self_identifer, other_node, other_rel)
+        def unique_nodes(association, self_identifer, other_node, other_rel, ids = [])
           fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
           return false if send(association.name).empty?
-          unique_nodes_query(association, self_identifer, other_node, other_rel)
+          unique_nodes_query(association, self_identifer, other_node, other_rel, ids)
             .proxy_as(association.target_class, other_node)
         end
 
         private
 
-        def unique_nodes_query(association, self_identifer, other_node, other_rel)
-          query.with(identity).proxy_as_optional(source_object.class, self_identifer)
-               .send(association.name, other_node, other_rel)
-               .query
-               .with(other_node)
-               .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
-               .with(other_node, count: 'count(*)')
-               .where('count = {one}', one: 1)
-               .break
+        def unique_nodes_query(association, self_identifer, other_node, other_rel, ids)
+          base = query.with(identity).proxy_as_optional(source_object.class, self_identifer)
+                      .send(association.name, other_node, other_rel)
+          base = base.where(id: ids) if ids.present?
+          base.query
+              .with(other_node)
+              .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
+              .with(other_node, count: 'count(*)')
+              .where('count = $one', one: 1)
+              .break
         end
       end
     end

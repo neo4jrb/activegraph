@@ -23,10 +23,30 @@ module Neo4j
         end
 
         def fetch_index_descriptions(session)
-          session.query('CALL db.indexes()').reject do |row|
+          result = session.query('CALL db.indexes()')
+          if result.columns.include?(:description)
+            v3_indexes(result)
+          else
+            v4_indexes(result)
+          end
+        end
+
+        def v3_indexes(result)
+          result.reject do |row|
             # These indexes are created automagically when the corresponding constraints are created
             row.type == 'node_unique_property'
           end.map(&:description)
+        end
+
+        def v4_indexes(result)
+          result.reject do |row|
+            # These indexes are created automagically when the corresponding constraints are created
+            row.uniqueness == 'UNIQUE'
+          end.map(&method(:description))
+        end
+
+        def description(row)
+          "INDEX FOR (n:#{row.labelsOrTypes.first}) ON (#{row.properties.map{|prop| "n.#{prop}"}.join(', ')})"
         end
 
         def drop_and_create_queries(existing, specified, remove_missing)

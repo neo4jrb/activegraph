@@ -96,29 +96,30 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         rel.save
       end
 
-      it 'raises error when has_one rel from to_node is enforced' do
-        Neo4j::Config[:enforce_has_one] = true
+      it 'delets has_one rel from to_node when new relation is created' do
         from_node_two = FromClass.new(name: 'foo-2')
         rel.save
-        expect { RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
+        RelClass.new(from_node: from_node_two, to_node: to_node, score: 10).save
+        expect(from_node.reload.to_classes).to be_empty
       end
 
-      it 'raises error when has_one rel from to_node is enforced' do
-        Neo4j::Config[:enforce_has_one] = true
+      it 'delets has_one rel from from_node when new relation is created' do
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
-        expect { Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
+        Rel2Class.new(from_node: from_node, to_node: to_node_two, score: 10).save
+        expect(to_node.reload.from_classes).to be_empty
       end
 
-      it 'raises error when has_one rel is enforced and two relationships with same type' do
-        Neo4j::Config[:enforce_has_one] = true
+      it 'deletes correct has_one rel in case of two relationships with same type' do
         f1 = FromClass.new(name: 'foo-1')
         f2 = FromClass.new(name: 'foo-2')
         t1 = ToClass.new(name: 'bar-1')
         t2 = ToClass.new(name: 'bar-2')
         Rel3Class.new(from_node: f1, to_node: t1, score_3: 10).save
         Rel4Class.new(from_node: t2, to_node: f2, score_4: 10).save
-        expect { Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
+        Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save
+        expect(f1.reload.rel_3).to be_nil 
+        expect(f2.reload.rel_3.id).to eq(t1.id)
       end
     end
 

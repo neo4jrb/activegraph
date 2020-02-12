@@ -72,6 +72,7 @@ describe 'declared property classes' do
         validates :baz, inclusion: {in: [true, false]}
       end
 
+      create_constraint :MyModel, :uuid, type: :unique
       stub_const('MyModel', clazz)
     end
 
@@ -160,7 +161,7 @@ describe 'declared property classes' do
         subject { node.baz }
         it { is_expected.to eq false }
 
-        context 'model from new with attributes' do
+        context 'model from new without attributes' do
           let(:node) { MyModel.new }
           it { is_expected.to eq false }
         end
@@ -170,7 +171,7 @@ describe 'declared property classes' do
           it { is_expected.to eq false }
         end
 
-        context 'model from create' do
+        context 'model from create without attributes' do
           let(:node) { MyModel.create }
           it { is_expected.to eq false }
         end

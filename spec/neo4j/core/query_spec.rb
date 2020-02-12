@@ -101,13 +101,11 @@ describe Neo4j::Core::Query do
     let(:query_object) { Neo4j::Core::Query.new }
 
     before(:each) do
-      delete_db
-
       5.times do
-        Neo4j::Transaction.query('CREATE (n:Foo {uuid: {uuid}})', uuid: SecureRandom.uuid)
+        Neo4j::Transaction.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
       2.times do
-        Neo4j::Transaction.query('CREATE (n:Bar {uuid: {uuid}})', uuid: SecureRandom.uuid)
+        Neo4j::Transaction.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
     end
 
@@ -249,11 +247,11 @@ describe Neo4j::Core::Query do
     end
 
     describe ".match(n: {name: 'Brian', age: 33})" do
-      it_generates 'MATCH (n {name: {n_name}, age: {n_age}})', n_name: 'Brian', n_age: 33
+      it_generates 'MATCH (n {name: $n_name, age: $n_age})', n_name: 'Brian', n_age: 33
     end
 
     describe ".match(n: {Person: {name: 'Brian', age: 33}})" do
-      it_generates 'MATCH (n:`Person` {name: {n_Person_name}, age: {n_Person_age}})', n_Person_name: 'Brian', n_Person_age: 33
+      it_generates 'MATCH (n:`Person` {name: $n_Person_name, age: $n_Person_age})', n_Person_name: 'Brian', n_Person_age: 33
     end
 
     describe ".match('n--o')" do
@@ -322,44 +320,44 @@ describe Neo4j::Core::Query do
     end
 
     describe ".where('q.age' => 30)" do
-      it_generates 'WHERE (q.age = {q_age})', q_age: 30
+      it_generates 'WHERE (q.age = $q_age)', q_age: 30
     end
 
     describe ".where('q.age' => [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN {q_age})', q_age: [30, 32, 34]
+      it_generates 'WHERE (q.age IN $q_age)', q_age: [30, 32, 34]
     end
 
-    describe ".where('q.age IN {age}', age: [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN {age})', age: [30, 32, 34]
+    describe ".where('q.age IN $age', age: [30, 32, 34])" do
+      it_generates 'WHERE (q.age IN $age)', age: [30, 32, 34]
     end
 
-    describe ".where('(q.age IN {age})', age: [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN {age})', age: [30, 32, 34]
+    describe ".where('(q.age IN $age)', age: [30, 32, 34])" do
+      it_generates 'WHERE (q.age IN $age)', age: [30, 32, 34]
     end
 
     describe ".where('q.name =~ ?', '.*test.*')" do
-      it_generates 'WHERE (q.name =~ {question_mark_param})', question_mark_param: '.*test.*'
+      it_generates 'WHERE (q.name =~ $question_mark_param)', question_mark_param: '.*test.*'
     end
 
     describe ".where('(q.name =~ ?)', '.*test.*')" do
-      it_generates 'WHERE (q.name =~ {question_mark_param})', question_mark_param: '.*test.*'
+      it_generates 'WHERE (q.name =~ $question_mark_param)', question_mark_param: '.*test.*'
     end
 
     describe ".where('(LOWER(str(q.name)) =~ ?)', '.*test.*')" do
-      it_generates 'WHERE (LOWER(str(q.name)) =~ {question_mark_param})', question_mark_param: '.*test.*'
+      it_generates 'WHERE (LOWER(str(q.name)) =~ $question_mark_param)', question_mark_param: '.*test.*'
     end
 
     describe ".where('q.age IN ?', [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN {question_mark_param})', question_mark_param: [30, 32, 34]
+      it_generates 'WHERE (q.age IN $question_mark_param)', question_mark_param: [30, 32, 34]
     end
 
     describe ".where('q.age IN ?', [30, 32, 34]).where('q.age != ?', 60)" do
-      it_generates 'WHERE (q.age IN {question_mark_param}) AND (q.age != {question_mark_param2})', question_mark_param: [30, 32, 34], question_mark_param2: 60
+      it_generates 'WHERE (q.age IN $question_mark_param) AND (q.age != $question_mark_param2)', question_mark_param: [30, 32, 34], question_mark_param2: 60
     end
 
 
     describe '.where(q: {age: [30, 32, 34]})' do
-      it_generates 'WHERE (q.age IN {q_age})', q_age: [30, 32, 34]
+      it_generates 'WHERE (q.age IN $q_age)', q_age: [30, 32, 34]
     end
 
     describe ".where('q.age' => nil)" do
@@ -371,48 +369,48 @@ describe Neo4j::Core::Query do
     end
 
     describe '.where(q: {neo_id: 22})' do
-      it_generates 'WHERE (ID(q) = {ID_q})', ID_q: 22
+      it_generates 'WHERE (ID(q) = $ID_q)', ID_q: 22
     end
 
     describe ".where(q: {age: 30, name: 'Brian'})" do
-      it_generates 'WHERE (q.age = {q_age} AND q.name = {q_name})', q_age: 30, q_name: 'Brian'
+      it_generates 'WHERE (q.age = $q_age AND q.name = $q_name)', q_age: 30, q_name: 'Brian'
     end
 
     describe ".where(q: {age: 30, name: 'Brian'}).where('r.grade = 80')" do
-      it_generates 'WHERE (q.age = {q_age} AND q.name = {q_name}) AND (r.grade = 80)', q_age: 30, q_name: 'Brian'
+      it_generates 'WHERE (q.age = $q_age AND q.name = $q_name) AND (r.grade = 80)', q_age: 30, q_name: 'Brian'
     end
 
     describe '.where(q: {name: /Brian.*/i})' do
-      it_generates 'WHERE (q.name =~ {q_name})', q_name: '(?i)Brian.*'
+      it_generates 'WHERE (q.name =~ $q_name)', q_name: '(?i)Brian.*'
     end
 
     describe '.where(name: /Brian.*/i)' do
-      it_generates 'WHERE (name =~ {name})', name: '(?i)Brian.*'
+      it_generates 'WHERE (name =~ $name)', name: '(?i)Brian.*'
     end
 
     describe '.where(name: /Brian.*/i).where(name: /Smith.*/i)' do
-      it_generates 'WHERE (name =~ {name}) AND (name =~ {name2})', name: '(?i)Brian.*', name2: '(?i)Smith.*'
+      it_generates 'WHERE (name =~ $name) AND (name =~ $name2)', name: '(?i)Brian.*', name2: '(?i)Smith.*'
     end
 
     describe '.where(q: {age: (30..40)})' do
-      it_generates 'WHERE (q.age >= {q_age_range_min} AND q.age <= {q_age_range_max})', q_age_range_min: 30, q_age_range_max: 40
+      it_generates 'WHERE (q.age >= $q_age_range_min AND q.age <= $q_age_range_max)', q_age_range_min: 30, q_age_range_max: 40
     end
 
     # Non-integer ranges
     describe '.where(q: { created_at: 0.0...5.0 })' do
-      it_generates 'WHERE (q.created_at >= {q_created_at_range_min} AND q.created_at < {q_created_at_range_max})',
+      it_generates 'WHERE (q.created_at >= $q_created_at_range_min AND q.created_at < $q_created_at_range_max)',
                    q_created_at_range_min: 0.0,
                    q_created_at_range_max: 5.0
     end
 
     describe '.where(q: { created_at: Date.new(2017, 6, 1)...Date.new(2017, 6, 3) })' do
-      it_generates 'WHERE (q.created_at >= {q_created_at_range_min} AND q.created_at < {q_created_at_range_max})',
+      it_generates 'WHERE (q.created_at >= $q_created_at_range_min AND q.created_at < $q_created_at_range_max)',
                    q_created_at_range_min: Date.new(2017, 6, 1),
                    q_created_at_range_max: Date.new(2017, 6, 3)
     end
 
     describe '.where(q: { created_at: Date.new(2017, 6, 1)..Date.new(2017, 6, 3) })' do
-      it_generates 'WHERE (q.created_at >= {q_created_at_range_min} AND q.created_at <= {q_created_at_range_max})',
+      it_generates 'WHERE (q.created_at >= $q_created_at_range_min AND q.created_at <= $q_created_at_range_max)',
                    q_created_at_range_min: Date.new(2017, 6, 1),
                    q_created_at_range_max: Date.new(2017, 6, 3)
     end
@@ -432,19 +430,19 @@ describe Neo4j::Core::Query do
     end
 
     describe ".where_not('q.age' => 30)" do
-      it_generates 'WHERE NOT(q.age = {q_age})', q_age: 30
+      it_generates 'WHERE NOT(q.age = $q_age)', q_age: 30
     end
 
     describe ".where_not('q.age IN ?', [30, 32, 34])" do
-      it_generates 'WHERE NOT(q.age IN {question_mark_param})', question_mark_param: [30, 32, 34]
+      it_generates 'WHERE NOT(q.age IN $question_mark_param)', question_mark_param: [30, 32, 34]
     end
 
     describe ".where_not(q: {age: 30, name: 'Brian'})" do
-      it_generates 'WHERE NOT(q.age = {q_age} AND q.name = {q_name})', q_age: 30, q_name: 'Brian'
+      it_generates 'WHERE NOT(q.age = $q_age AND q.name = $q_name)', q_age: 30, q_name: 'Brian'
     end
 
     describe '.where_not(q: {name: /Brian.*/i})' do
-      it_generates 'WHERE NOT(q.name =~ {q_name})', q_name: '(?i)Brian.*'
+      it_generates 'WHERE NOT(q.name =~ $q_name)', q_name: '(?i)Brian.*'
     end
 
 
@@ -462,17 +460,17 @@ describe Neo4j::Core::Query do
       let(:node_object) { double(neo_id: 246) }
 
       describe '.match_nodes(var: node_object)' do
-        it_generates 'MATCH (var) WHERE (ID(var) = {ID_var})', ID_var: 246
+        it_generates 'MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 246
       end
 
       describe '.optional_match_nodes(var: node_object)' do
-        it_generates 'OPTIONAL MATCH (var) WHERE (ID(var) = {ID_var})', ID_var: 246
+        it_generates 'OPTIONAL MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 246
       end
     end
 
     context 'integer' do
       describe '.match_nodes(var: 924)' do
-        it_generates 'MATCH (var) WHERE (ID(var) = {ID_var})', ID_var: 924
+        it_generates 'MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 924
       end
     end
 
@@ -481,7 +479,7 @@ describe Neo4j::Core::Query do
       let(:post) { double(neo_id: 123) }
 
       describe '.match_nodes(user: user, post: post)' do
-        it_generates 'MATCH (user), (post) WHERE (ID(user) = {ID_user}) AND (ID(post) = {ID_post})', ID_user: 246, ID_post: 123
+        it_generates 'MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)', ID_user: 246, ID_post: 123
       end
     end
 
@@ -489,7 +487,7 @@ describe Neo4j::Core::Query do
       let(:user) { double(neo_id: 246) }
 
       describe '.match_nodes(user: user, post: 652)' do
-        it_generates 'MATCH (user), (post) WHERE (ID(user) = {ID_user}) AND (ID(post) = {ID_post})', ID_user: 246, ID_post: 652
+        it_generates 'MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)', ID_user: 246, ID_post: 652
       end
     end
   end
@@ -608,15 +606,15 @@ describe Neo4j::Core::Query do
 
   describe '#limit' do
     describe '.limit(3)' do
-      it_generates 'LIMIT {limit_3}', limit_3: 3
+      it_generates 'LIMIT $limit_3', limit_3: 3
     end
 
     describe ".limit('3')" do
-      it_generates 'LIMIT {limit_3}', limit_3: 3
+      it_generates 'LIMIT $limit_3', limit_3: 3
     end
 
     describe '.limit(3).limit(5)' do
-      it_generates 'LIMIT {limit_5}', limit_3: 3, limit_5: 5
+      it_generates 'LIMIT $limit_5', limit_3: 3, limit_5: 5
     end
 
     describe '.limit(nil)' do
@@ -628,19 +626,19 @@ describe Neo4j::Core::Query do
 
   describe '#skip' do
     describe '.skip(5)' do
-      it_generates 'SKIP {skip_5}', skip_5: 5
+      it_generates 'SKIP $skip_5', skip_5: 5
     end
 
     describe ".skip('5')" do
-      it_generates 'SKIP {skip_5}', skip_5: 5
+      it_generates 'SKIP $skip_5', skip_5: 5
     end
 
     describe '.skip(5).skip(10)' do
-      it_generates 'SKIP {skip_10}', skip_5: 5, skip_10: 10
+      it_generates 'SKIP $skip_10', skip_5: 5, skip_10: 10
     end
 
     describe '.offset(6)' do
-      it_generates 'SKIP {skip_6}', skip_6: 6
+      it_generates 'SKIP $skip_6', skip_6: 6
     end
   end
 
@@ -680,57 +678,57 @@ describe Neo4j::Core::Query do
     end
 
     describe '.create(age: 41, height: 70)' do
-      it_generates 'CREATE ( {age: {age}, height: {height}})', age: 41, height: 70
+      it_generates 'CREATE ( {age: $age, height: $height})', age: 41, height: 70
     end
 
     describe '.create(Person: {age: 41, height: 70})' do
-      it_generates 'CREATE (:`Person` {age: {Person_age}, height: {Person_height}})', Person_age: 41, Person_height: 70
+      it_generates 'CREATE (:`Person` {age: $Person_age, height: $Person_height})', Person_age: 41, Person_height: 70
     end
 
     describe '.create(q: {Person: {age: 41, height: 70}})' do
-      it_generates 'CREATE (q:`Person` {age: {q_Person_age}, height: {q_Person_height}})', q_Person_age: 41, q_Person_height: 70
+      it_generates 'CREATE (q:`Person` {age: $q_Person_age, height: $q_Person_height})', q_Person_age: 41, q_Person_height: 70
     end
 
     describe '.create(q: {Person: {age: nil, height: 70}})' do
-      it_generates 'CREATE (q:`Person` {age: {q_Person_age}, height: {q_Person_height}})', q_Person_age: nil, q_Person_height: 70
+      it_generates 'CREATE (q:`Person` {age: $q_Person_age, height: $q_Person_height})', q_Person_age: nil, q_Person_height: 70
     end
 
     describe ".create(q: {:'Child:Person' => {age: 41, height: 70}})" do
-      it_generates 'CREATE (q:`Child:Person` {age: {q_Child_Person_age}, height: {q_Child_Person_height}})', q_Child_Person_age: 41, q_Child_Person_height: 70
+      it_generates 'CREATE (q:`Child:Person` {age: $q_Child_Person_age, height: $q_Child_Person_height})', q_Child_Person_age: 41, q_Child_Person_height: 70
     end
 
     describe ".create(:'Child:Person' => {age: 41, height: 70})" do
-      it_generates 'CREATE (:`Child:Person` {age: {Child_Person_age}, height: {Child_Person_height}})', Child_Person_age: 41, Child_Person_height: 70
+      it_generates 'CREATE (:`Child:Person` {age: $Child_Person_age, height: $Child_Person_height})', Child_Person_age: 41, Child_Person_height: 70
     end
 
     describe '.create(q: {[:Child, :Person] => {age: 41, height: 70}})' do
-      it_generates 'CREATE (q:`Child`:`Person` {age: {q_Child_Person_age}, height: {q_Child_Person_height}})', q_Child_Person_age: 41, q_Child_Person_height: 70
+      it_generates 'CREATE (q:`Child`:`Person` {age: $q_Child_Person_age, height: $q_Child_Person_height})', q_Child_Person_age: 41, q_Child_Person_height: 70
     end
 
     describe '.create([:Child, :Person] => {age: 41, height: 70})' do
-      it_generates 'CREATE (:`Child`:`Person` {age: {Child_Person_age}, height: {Child_Person_height}})', Child_Person_age: 41, Child_Person_height: 70
+      it_generates 'CREATE (:`Child`:`Person` {age: $Child_Person_age, height: $Child_Person_height})', Child_Person_age: 41, Child_Person_height: 70
     end
   end
 
   describe '#create_unique' do
     describe ".create_unique('(:Person)')" do
-      it_generates 'CREATE UNIQUE (:Person)'
+      it_generates 'MERGE (:Person)'
     end
 
     describe '.create_unique(:Person)' do
-      it_generates 'CREATE UNIQUE (:Person)'
+      it_generates 'MERGE (:Person)'
     end
 
     describe '.create_unique(age: 41, height: 70)' do
-      it_generates 'CREATE UNIQUE ( {age: {age}, height: {height}})', age: 41, height: 70
+      it_generates 'MERGE ( {age: $age, height: $height})', age: 41, height: 70
     end
 
     describe '.create_unique(Person: {age: 41, height: 70})' do
-      it_generates 'CREATE UNIQUE (:`Person` {age: {Person_age}, height: {Person_height}})', Person_age: 41, Person_height: 70
+      it_generates 'MERGE (:`Person` {age: $Person_age, height: $Person_height})', Person_age: 41, Person_height: 70
     end
 
     describe '.create_unique(q: {Person: {age: 41, height: 70}})' do
-      it_generates 'CREATE UNIQUE (q:`Person` {age: {q_Person_age}, height: {q_Person_height}})', q_Person_age: 41, q_Person_height: 70
+      it_generates 'MERGE (q:`Person` {age: $q_Person_age, height: $q_Person_height})', q_Person_age: 41, q_Person_height: 70
     end
   end
 
@@ -748,15 +746,15 @@ describe Neo4j::Core::Query do
     end
 
     describe '.merge(age: 41, height: 70)' do
-      it_generates 'MERGE ( {age: {age}, height: {height}})', age: 41, height: 70
+      it_generates 'MERGE ( {age: $age, height: $height})', age: 41, height: 70
     end
 
     describe '.merge(Person: {age: 41, height: 70})' do
-      it_generates 'MERGE (:`Person` {age: {Person_age}, height: {Person_height}})', Person_age: 41, Person_height: 70
+      it_generates 'MERGE (:`Person` {age: $Person_age, height: $Person_height})', Person_age: 41, Person_height: 70
     end
 
     describe '.merge(q: {Person: {age: 41, height: 70}})' do
-      it_generates 'MERGE (q:`Person` {age: {q_Person_age}, height: {q_Person_height}})', q_Person_age: 41, q_Person_height: 70
+      it_generates 'MERGE (q:`Person` {age: $q_Person_age, height: $q_Person_height})', q_Person_age: 41, q_Person_height: 70
     end
   end
 
@@ -809,7 +807,7 @@ describe Neo4j::Core::Query do
     end
 
     describe ".set_props(n: {name: 'Brian', age: 30})" do
-      it_generates 'SET n = {n_set_props}', n_set_props: {name: 'Brian', age: 30}
+      it_generates 'SET n = $n_set_props', n_set_props: {name: 'Brian', age: 30}
     end
   end
 
@@ -819,15 +817,15 @@ describe Neo4j::Core::Query do
     end
 
     describe ".set(n: {name: 'Brian', age: 30})" do
-      it_generates 'SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.`age` = {setter_o_age}', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".set(n: {name: 'Brian', age: 30}).set_props('o.age = 29')" do
-      it_generates 'SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe '.set(n: :Label)' do
@@ -854,15 +852,15 @@ describe Neo4j::Core::Query do
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30})" do
-      it_generates 'ON CREATE SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON CREATE SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.`age` = {setter_o_age}', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}).on_create_set('o.age = 29')" do
-      it_generates 'ON CREATE SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
   end
 
@@ -876,15 +874,15 @@ describe Neo4j::Core::Query do
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30})" do
-      it_generates 'ON MATCH SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON MATCH SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.`age` = {setter_o_age}', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}).on_match_set('o.age = 29')" do
-      it_generates 'ON MATCH SET n.`name` = {setter_n_name}, n.`age` = {setter_n_age}, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
   end
 
@@ -930,14 +928,14 @@ describe Neo4j::Core::Query do
       q = Neo4j::Core::Query.new.match(o: :Person).where(o: {age: 10})
       result = Neo4j::Core::Query.new.match(n: :Person).union_cypher(q)
 
-      expect(result).to eq('MATCH (n:`Person`) UNION MATCH (o:`Person`) WHERE (o.age = {o_age})')
+      expect(result).to eq('MATCH (n:`Person`) UNION MATCH (o:`Person`) WHERE (o.age = $o_age)')
     end
 
     it 'can represent UNION ALL with an option' do
       q = Neo4j::Core::Query.new.match(o: :Person).where(o: {age: 10})
       result = Neo4j::Core::Query.new.match(n: :Person).union_cypher(q, all: true)
 
-      expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE (o.age = {o_age})')
+      expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE (o.age = $o_age)')
     end
   end
 
@@ -969,7 +967,7 @@ describe Neo4j::Core::Query do
     end
 
     describe '.match(q: {age: 30}).set_props(q: {age: 31})' do
-      it_generates 'MATCH (q {age: {q_age}}) SET q = {q_set_props}', q_age: 30, q_set_props: {age: 31}
+      it_generates 'MATCH (q {age: $q_age}) SET q = $q_set_props', q_age: 30, q_set_props: {age: 31}
     end
 
     # WITHS
@@ -1001,36 +999,36 @@ describe Neo4j::Core::Query do
     end
 
     describe ".with(:a).order(a: {name: :desc}).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = {a_name})', a_name: 'Foo'
+      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)', a_name: 'Foo'
     end
 
     describe ".with(:a).limit(2).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a LIMIT {limit_2} WHERE (a.name = {a_name})', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
     end
 
     describe ".with(:a).order(a: {name: :desc}).limit(2).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC LIMIT {limit_2} WHERE (a.name = {a_name})', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
     end
 
     describe ".order(a: {name: :desc}).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = {a_name})', a_name: 'Foo'
+      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)', a_name: 'Foo'
     end
 
     describe ".limit(2).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a LIMIT {limit_2} WHERE (a.name = {a_name})', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
     end
 
     describe ".order(a: {name: :desc}).limit(2).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC LIMIT {limit_2} WHERE (a.name = {a_name})', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
     end
 
     describe ".with('1 AS a').where(a: 1).limit(2)" do
-      it_generates 'WITH 1 AS a WHERE (a = {a}) LIMIT {limit_2}', a: 1, limit_2: 2
+      it_generates 'WITH 1 AS a WHERE (a = $a) LIMIT $limit_2', a: 1, limit_2: 2
     end
 
     # params
-    describe ".match(q: Person).where('q.age = {age}').params(age: 15)" do
-      it_generates 'MATCH (q:`Person`) WHERE (q.age = {age})', age: 15
+    describe ".match(q: Person).where('q.age = $age').params(age: 15)" do
+      it_generates 'MATCH (q:`Person`) WHERE (q.age = $age)', age: 15
     end
   end
 

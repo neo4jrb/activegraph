@@ -1,7 +1,6 @@
 describe 'Neo4j::ActiveNode' do
   before(:each) do
     clear_model_memory_caches
-    delete_db
 
     create_index(:IceLolly, :flavour, type: :exact)
     stub_active_node_class('IceLolly') do
@@ -575,7 +574,7 @@ describe 'Neo4j::ActiveNode' do
       person.age = 22
       person.save
 
-      person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = {neo_id} RETURN p',
+      person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = $neo_id RETURN p',
                             {neo_id: person.neo_id},
                             wrap_level: :core_entity).first.p
       expect(person2.props).to match hash_including age: 22, name: 'andreas'

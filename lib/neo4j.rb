@@ -61,6 +61,7 @@ require 'neo4j/active_rel/related_node'
 require 'neo4j/active_rel/types'
 require 'neo4j/active_rel'
 
+require 'neo4j/active_node/dependent_callbacks'
 require 'neo4j/active_node/node_list_formatter'
 require 'neo4j/active_node/dependent'
 require 'neo4j/active_node/dependent/query_proxy_methods'

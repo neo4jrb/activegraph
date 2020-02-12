@@ -3,8 +3,6 @@ describe 'migration tasks' do
   let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 
   before do
-    delete_db
-    delete_schema
     clear_model_memory_caches
 
     stub_active_node_class('User') do

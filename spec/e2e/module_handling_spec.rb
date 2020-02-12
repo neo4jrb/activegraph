@@ -1,7 +1,5 @@
 describe 'Module handling from config: :module_handling option' do
   before do
-    delete_db
-    delete_schema
     clear_model_memory_caches
 
     stub_active_node_class('Clazz')

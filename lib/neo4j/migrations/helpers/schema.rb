@@ -10,14 +10,26 @@ module Neo4j
           force = options[:force] || false
           type = options[:type] || :uniqueness
           label_object = ActiveBase.label_object(label)
-          fail_duplicate_constraint_or_index!(:constraint, label, property) if !force && label_object.constraint?(property)
+          if label_object.constraint?(property)
+            if force
+              label_object.drop_constraint(property, type: type)
+            else
+              fail_duplicate_constraint_or_index!(:constraint, label, property)
+            end
+          end
           label_object.create_constraint(property, type: type)
         end
 
         def add_index(label, property, options = {})
           force = options[:force] || false
           label_object = ActiveBase.label_object(label)
-          fail_duplicate_constraint_or_index!(:index, label, property) if !force && label_object.index?(property)
+          if label_object.index?(property)
+            if force
+              label_object.drop_index(property)
+            else
+              fail_duplicate_constraint_or_index!(:index, label, property)
+            end
+          end
           label_object.create_index(property)
         end
 

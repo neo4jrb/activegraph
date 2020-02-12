@@ -179,6 +179,7 @@ describe 'query_proxy_methods' do
 
   describe 'first and last' do
     it 'returns different objects' do
+      Student.create
       expect(Student.all.count).to be > 1
       expect(Student.all.first).to_not eq(Student.all.last)
     end
@@ -452,7 +453,7 @@ describe 'query_proxy_methods' do
 
     it 'updates people with age < 30 (using string parameter)' do
       expect do
-        expect(Student.as(:p).where('p.name = "Jimmy"').update_all('p.name = {new_name}', new_name: 'Bob')).to eq(2)
+        expect(Student.as(:p).where('p.name = "Jimmy"').update_all('p.name = $new_name', new_name: 'Bob')).to eq(2)
       end.to change(changing_students, :count).by(2)
     end
 
@@ -868,8 +869,6 @@ describe 'query_proxy_methods' do
 
   describe 'optional' do
     before(:each) do
-      delete_db
-
       @lauren = Student.create(name: 'Lauren')
       @math = Lesson.create(name: 'Math')
       @science = Lesson.create(name: 'Science')
@@ -891,8 +890,6 @@ describe 'query_proxy_methods' do
 
   describe '#inspect' do
     before(:each) do
-      delete_db
-
       Student.create(name: 'Lauren')
       Student.create(name: 'Bob')
       Student.create(name: 'Bill')

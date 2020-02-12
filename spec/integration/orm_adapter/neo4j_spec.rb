@@ -4,10 +4,6 @@ require File.join(orm_adapter_path, 'spec/orm_adapter/example_app_shared')
 module Neo4j
   module OrmSpec
     describe '[Neo4j orm adapter]', type: :integration do
-      before :each do
-        delete_db
-      end
-
       #      describe "the OrmAdapter class" do
       #        subject { Neo4j::ActiveNode::OrmAdapter }
       #

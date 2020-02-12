@@ -39,6 +39,10 @@ describe 'association dependent delete/destroy' do
       has_many :out, :comments, model_class: 'Comment', type: 'HAS_COMMENT', dependent: :delete_orphans
       has_one :out, :poorly_modeled_thing, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODEL', dependent: :delete
       has_many :out, :poorly_modeled_things, model_class: 'BadModel', type: 'HAS_TERRIBLE_MODELS', dependent: :delete
+      has_many :out, :things, rel_class: 'MyRelClass', dependent: :destroy
+      has_many :out, :things_2, rel_class: 'MyRelClass2', dependent: :destroy_orphans
+      has_many :out, :things_3, rel_class: 'MyRelClass3', dependent: :delete
+      has_many :out, :things_4, rel_class: 'MyRelClass4', dependent: :delete_orphans
     end
 
     stub_active_node_class('Band') do
@@ -53,6 +57,10 @@ describe 'association dependent delete/destroy' do
     stub_active_node_class('BadModel') do
       has_one :out, :user, model_class: 'User', type: 'HAS_A_USER', dependent: :destroy
       has_many :out, :users, model_class: 'User', type: 'HAS_USERS', dependent: :destroy
+      has_many :in, :stops, rel_class: 'MyRelClass', dependent: :destroy
+      has_many :in, :stops_2, rel_class: 'MyRelClass2'
+      has_many :in, :stops_3, rel_class: 'MyRelClass3'
+      has_many :in, :stops_4, rel_class: 'MyRelClass4'
     end
 
     stub_active_node_class('Comment') do
@@ -61,6 +69,30 @@ describe 'association dependent delete/destroy' do
       # the topic of a comment just because the comment is destroyed.
       # For the purpose of these tests, we're setting this to demonstrate that we are protected against loops.
       has_one :in, :topic, model_class: false, type: 'HAS_COMMENT', dependent: :destroy
+    end
+
+    stub_active_rel_class('MyRelClass') do
+      from_class :Stop
+      to_class :BadModel
+      type 'rel_class_type'
+    end
+
+    stub_active_rel_class('MyRelClass2') do
+      from_class :Stop
+      to_class :BadModel
+      type 'rel_class_type_2'
+    end
+
+    stub_active_rel_class('MyRelClass3') do
+      from_class :Stop
+      to_class :BadModel
+      type 'rel_class_type_3'
+    end
+
+    stub_active_rel_class('MyRelClass4') do
+      from_class :Stop
+      to_class :BadModel
+      type 'rel_class_type_4'
     end
   end
 
@@ -104,12 +136,120 @@ describe 'association dependent delete/destroy' do
         node.destroy
       end
     end
+
+    context 'delete relationships' do
+      context 'dependent destroy_orphans' do
+        let(:orphan_band) { Band.create }
+        let(:non_orphan_band) { Band.create }
+        let(:other_band) { Band.create }
+        let(:user_2) { User.create(bands: [non_orphan_band]) }
+        before do
+          node.bands = [orphan_band, non_orphan_band]
+          user_2
+        end
+
+        it 'deletes only orphans' do
+          node.bands = [other_band]
+          expect { Band.find(orphan_band.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Band.find(non_orphan_band.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent destroy' do
+        let(:comment) { Comment.create }
+        let(:route) { Route.create(comments: [comment]) }
+        let(:tour) { Tour.create(routes: [route]) }
+        let(:route_2) { Route.create }
+        it 'cascades dependent destroy' do
+          tour.routes = [route_2]
+          expect { Route.find(route.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Comment.find(comment.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent delete' do
+        let(:bad_model) { BadModel.create }
+        let(:bad_model_2) { BadModel.create }
+        let(:stop) { Stop.create(poorly_modeled_things: [bad_model]) }
+        let(:stop_2) { Stop.create(poorly_modeled_things: [bad_model]) }
+        it 'deletes dependent model node without cascade' do
+          stop.poorly_modeled_things = [bad_model_2]
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Stop.find(stop_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent delete_orphans' do
+        let(:comment_1) { Comment.create }
+        let(:comment_2) { Comment.create }
+        let(:comment_3) { Comment.create }
+        let(:stop) { Stop.create(comments: [comment_1, comment_2]) }
+        let!(:stop_2) { Stop.create(comments: [comment_2]) }
+        it 'deletes only orphans' do
+          stop.comments = [comment_3]
+          expect { Comment.find(comment_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { Comment.find(comment_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+    end
+
+    context 'destroy ActiveRel relationship' do
+      context 'dependent destroy' do
+        let(:bad_model) { BadModel.create }
+        let(:city) { Stop.create(city: 'AMB') }
+        let(:rel) { MyRelClass.create(from_node: city, to_node: bad_model) }
+
+        it 'destroys the BadModel and Stop on deletion of ActiveRel' do
+          rel.destroy
+          expect { Stop.find(city.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent destroy orphans' do
+        let(:bad_model_1) { BadModel.create }
+        let(:city_1) { Stop.create(city: 'AMB') }
+        let(:bad_model_2) { BadModel.create }
+        let(:city_2) { Stop.create(city: 'UNR') }
+        let(:rel_1) { MyRelClass2.create(from_node: city_1, to_node: bad_model_1) }
+        let!(:rel_2) { MyRelClass2.create(from_node: city_1, to_node: bad_model_2) }
+        let!(:rel_3) { MyRelClass2.create(from_node: city_2, to_node: bad_model_2) }
+        it 'deletes only orphans' do
+          rel_1.destroy
+          expect { BadModel.find(bad_model_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+           expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent delete' do
+        let(:bad_model) { BadModel.create }
+        let(:city) { Stop.create(city: 'AMB') }
+        let(:rel) { MyRelClass3.create(from_node: city, to_node: bad_model) }
+        it 'deletes relationship object' do
+          rel.destroy
+          expect { BadModel.find(bad_model.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+
+      context 'dependent delete orphans' do
+        let(:bad_model_1) { BadModel.create }
+        let(:city_1) { Stop.create(city: 'AMB') }
+        let(:bad_model_2) { BadModel.create }
+        let(:city_2) { Stop.create(city: 'UNR') }
+        let(:rel_1) { MyRelClass4.create(from_node: city_1, to_node: bad_model_1) }
+        let!(:rel_2) { MyRelClass4.create(from_node: city_1, to_node: bad_model_2) }
+        let!(:rel_3) { MyRelClass4.create(from_node: city_2, to_node: bad_model_2) }
+        it 'deletes only orphans' do
+          rel_1.destroy
+          expect { BadModel.find(bad_model_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+        end
+      end
+    end
   end
 
   describe 'Grzesiek is booking a tour for his bands' do
     before(:each) do
-      delete_db
-
       @user = User.create(name: 'Grzesiek')
       @tour = Tour.create(name: 'Absu and Woe')
       @user.tours << @tour
