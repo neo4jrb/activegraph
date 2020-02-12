@@ -26,6 +26,7 @@ module Neo4j::Shared
 
     class IntegerConverter < BaseConverter
       NEO4J_LARGEST_INT = 9223372036854775807
+      NEO4J_SMALLEST_INT = -9223372036854775808
       class << self
         
         def converted?(value)
@@ -42,7 +43,7 @@ module Neo4j::Shared
 
         def to_db(value)
           val = value.to_i
-          val > NEO4J_LARGEST_INT ? val.to_s : val
+          val > NEO4J_LARGEST_INT || val < NEO4J_SMALLEST_INT ? val.to_s : val
         end
 
         def to_ruby(value)

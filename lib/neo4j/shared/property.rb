@@ -221,7 +221,6 @@ module Neo4j::Shared
                              typecast_attribute(_attribute_typecaster(name), value)
                            end
           send("#{name}_will_change!") unless typecast_value == read_attribute(name)
-          #binding.pry
           super(value)
         end
       end

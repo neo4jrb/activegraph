@@ -49,7 +49,8 @@ describe 'Neo4j::ActiveNode' do
     create_index(:IceCandy, :name, type: :exact)
     stub_active_node_class('IceCandy') do
       property :name, type: String
-      property :calories, type: Integer
+      property :calories_max, type: Integer
+      property :calories_min, type: Integer
       property :suger, type: Float
       property :ingredients, type: Hash
       property :created, type: Time
@@ -67,7 +68,8 @@ describe 'Neo4j::ActiveNode' do
 
   context 'Default data types by driver' do
     let(:name) { 'Mango Candy' }
-    let(:calories) { 9223372036854775808 }
+    let(:calories_min) { -9223372036854775809 }
+    let(:calories_max) { 9223372036854775809 }
     let(:expiry_date) { Date.today }
     let(:created) { Time.now }
     let(:suger) { Float::MAX }
@@ -77,15 +79,15 @@ describe 'Neo4j::ActiveNode' do
     let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
     let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
     let(:local_time) { Neo4j::Driver::Types::LocalTime.new(Time.now) }
-    let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now) }
+    let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now.utc) }
 
     it 'should support types' do
-      IceCandy.create(name: name, calories: calories, expiry_date: expiry_date,
+      IceCandy.create(name: name, calories_min: calories_min, calories_max: calories_max, expiry_date: expiry_date,
                       make_date: make_date, created: created, suger: suger, ingredients: ingredients,
                       storage: storage, best_before: best_before, place: place, local_time: local_time,
                       local_datetime: local_datetime)
       candy = IceCandy.first
-      [:name, :calories, :expiry_date, :created, :suger, :ingredients, :storage, :best_before,
+      [:name, :calories_min, :calories_max, :expiry_date, :created, :suger, :ingredients, :storage, :best_before,
        :make_date, :local_time, :local_datetime].each do |property|
         expect(candy.send(property)).to eq(eval(property.to_s))
       end
