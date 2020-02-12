@@ -2,21 +2,17 @@ require "active_model/attribute_set"
 
 module Neo4j
   class AttributeSet < ActiveModel::AttributeSet
-    def initialize(attr_hash)
-      hashmap = Neo4j::LazyAttributeHash.new(attr_hash)
+    def initialize(attr_hash, attr_list)
+      hashmap = Neo4j::LazyAttributeHash.new(attr_hash, attr_list)
       super(hashmap)
     end
 
     def method_missing(name, *args)
-      attributes.send(name, *args)
-    end
-
-    def key?(name)
-      attributes.key?(name)
+      attributes.send(:materialize).send(name, *args)
     end
 
     def keys
-      attributes.send(:delegate_hash).keys
+      attributes.send(:materialize).keys
     end
   end
 end

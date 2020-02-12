@@ -66,7 +66,8 @@ module Neo4j::Shared
     # @private
     def _attribute_typecaster(attribute_name)
       type = _attribute_type(attribute_name)
-      caster = self.class.attributes.fetch_value(attribute_name.to_s).typecaster || Neo4j::Shared::TypeConverters.typecaster_for(type)
+      default_typecaster = self.class.attributes[attribute_name].typecaster
+      caster = default_typecaster || Neo4j::Shared::TypeConverters.typecaster_for(type)
       caster || fail(Neo4j::UnknownTypeConverterError, "Unable to cast to type #{type}")
     end
 

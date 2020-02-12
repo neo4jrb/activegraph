@@ -5,7 +5,7 @@ module Neo4j::ActiveNode
 
     def initialize(attributes = nil)
       super(attributes)
-      @attributes ||= Neo4j::AttributeSet.new(self.class.attributes_nil_hash)
+      @attributes ||= Neo4j::AttributeSet.new(self.class.attributes_nil_hash, self.class.attributes.keys)
     end
 
     module ClassMethods
