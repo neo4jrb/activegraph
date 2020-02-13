@@ -9,13 +9,25 @@ module Neo4j
       @materialized = false
       @delegate_hash = values
 
-      # initialize default attributes map with nil values
-      @default_attributes = attr_list.each_with_object({}) do |name, map|
-        map[name] = nil
-      end
+      init_default_attributes(attr_list)
     end
 
     private
+
+    def marshal_load(values)
+      initialize(values[4], values[3])
+    end
+
+    def init_default_attributes(attr_list)
+      if attr_list.is_a?(Hash)
+        @default_attributes = attr_list
+      else
+        # initialize default attributes map with nil values
+        @default_attributes = attr_list.each_with_object({}) do |name, map|
+          map[name] = nil
+        end
+      end
+    end
 
     # we are using with_cast_value here because at the moment casting is being managed by
     # Neo4j and not in ActiveModel
