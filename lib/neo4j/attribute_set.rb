@@ -16,7 +16,7 @@ module Neo4j
     end
 
     def respond_to_missing?(method, *)
-      attributes.send(:materialize).respond_to_missing?(method) || super
+      attributes.send(:materialize).respond_to?(method) || super
     end
 
     def keys
