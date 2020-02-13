@@ -1,4 +1,4 @@
-require "active_model/attribute_set"
+require 'active_model/attribute_set'
 
 module Neo4j
   class AttributeSet < ActiveModel::AttributeSet
@@ -8,7 +8,15 @@ module Neo4j
     end
 
     def method_missing(name, *args)
-      attributes.send(:materialize).send(name, *args)
+      if defined?(name)
+        attributes.send(:materialize).send(name, *args)
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method, *)
+      attributes.send(:materialize).respond_to_missing?(method) || super
     end
 
     def keys

@@ -1,4 +1,4 @@
-require "active_model/attribute_set"
+require 'active_model/attribute_set'
 
 module Neo4j
   class LazyAttributeHash < ActiveModel::LazyAttributeHash
@@ -9,7 +9,7 @@ module Neo4j
       @materialized = false
       @delegate_hash = values
 
-      init_default_attributes(attr_list)
+      @default_attributes = process_default_attributes(attr_list)
     end
 
     private
@@ -18,12 +18,12 @@ module Neo4j
       initialize(values[4], values[3])
     end
 
-    def init_default_attributes(attr_list)
+    def process_default_attributes(attr_list)
       if attr_list.is_a?(Hash)
-        @default_attributes = attr_list
+        attr_list
       else
         # initialize default attributes map with nil values
-        @default_attributes = attr_list.each_with_object({}) do |name, map|
+        attr_list.each_with_object({}) do |name, map|
           map[name] = nil
         end
       end

@@ -11,8 +11,8 @@ describe Neo4j::AttributeSet do
 
     it 'delegates method_missing to attribute Hash' do
       delegated_hash = attributes.instance_variable_get(:@attributes).send(:materialize)
-      expect(delegated_hash).to receive(:has_key?).with('name')
-      attributes.has_key?('name')
+      expect(delegated_hash).to receive(:key?).with('name')
+      attributes.key?('name')
     end
   end
 end
