@@ -39,8 +39,8 @@ module Neo4j::Shared
     #
     # @return [Object, nil] The attribute value before typecasting
     def attribute_before_type_cast(name)
-      @attributes ||= {}
-      @attributes[name.to_s]
+      @attributes ||= Neo4j::AttributeSet.new({}, self.class.attributes.keys)
+      @attributes.fetch_value(name.to_s)
     end
 
     private
