@@ -596,8 +596,13 @@ describe 'Neo4j::ActiveNode' do
       end
 
       context Time do
+        let(:person) do
+          Person.create(
+            'time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => '9', 'time(5i)' => '12', 'time(6i)' => '42', 'time(7s)' => '+00:00'
+          )
+        end
+
         it 'converts to Time' do
-          person = Person.create('time(1i)' => '1', 'time(2i)' => '1', 'time(3i)' => '1', 'time(4i)' => '9', 'time(5i)' => '12', 'time(6i)' => '42', 'time(7s)' => '+00:00')
           expect(person.time).to be_a(Time)
           expect(person.time.hour).to eq 9
           expect(person.time.utc.min).to eq 12

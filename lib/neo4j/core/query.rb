@@ -302,7 +302,7 @@ module Neo4j
           column = columns[0]
           query.map { |row| row[column] }
         else
-          query.map { |row| columns.map { |column| row[column] } }
+          query.map { |row| columns.map { |col| row[col] } }
         end
       end
 

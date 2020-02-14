@@ -21,7 +21,7 @@ describe Neo4j::RelWrapping do
     let_context type: :HAS_FOO do
       it { should be_a(HasFoo) }
 
-      let_context(properties: { 'bar' => 'baz', 'biz' => 1 }) do
+      let_context(properties: {'bar' => 'baz', 'biz' => 1}) do
         its(:bar) { should eq('baz') }
         its(:biz) { should eq(1) }
 

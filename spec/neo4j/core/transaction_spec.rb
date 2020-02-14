@@ -44,8 +44,8 @@ describe Neo4j::Transaction do
   end
 
   describe 'transactions' do
-    def create_object_by_id(id, tx)
-      tx.query('CREATE (t:Temporary {id: $id})', id: id)
+    def create_object_by_id(id, transaction)
+      transaction.query('CREATE (t:Temporary {id: $id})', id: id)
     end
 
     def get_object_by_id(id)
@@ -114,8 +114,8 @@ describe Neo4j::Transaction do
         subject.transaction do |tx|
           create_object_by_id(7, tx)
           expect do
-            subject.transaction do |tx|
-              create_object_by_id(8, tx)
+            subject.transaction do |t|
+              create_object_by_id(8, t)
               fail 'Failing transaction with error'
             end
           end.to raise_error 'Failing transaction with error'
@@ -160,7 +160,7 @@ describe Neo4j::Transaction do
         tx1.mark_failed
         tx3.close
         tx2.close
-        expect { tx1.close }.not_to change { data }
+        expect { tx1.close }.not_to change({ data })
         expect(data).to be_falsey
       end
 
@@ -173,7 +173,7 @@ describe Neo4j::Transaction do
         tx3.mark_failed
         tx3.close
         tx2.close
-        expect { tx1.close }.not_to change { data }
+        expect { tx1.close }.not_to change({ data })
         expect(data).to be_falsey
       end
     end
@@ -307,7 +307,7 @@ describe Neo4j::Transaction do
 
           @procs = {}
 
-          %i[Node Relationship].each do |core_class|
+          [:Node, :Relationship].each do |core_class|
             klass = Neo4j::Driver::Types.const_get(core_class)
             @procs[core_class] = klass.instance_variable_get(:@wrapper_callback)
             klass.clear_wrapper_callback
@@ -316,7 +316,7 @@ describe Neo4j::Transaction do
         end
 
         after do
-          %i[Node Relationship].each do |core_class|
+          [:Node, :Relationship].each do |core_class|
             Neo4j::Driver::Types.const_get(core_class).instance_variable_set(:@wrapper_callback, @procs[core_class])
           end
         end

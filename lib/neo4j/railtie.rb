@@ -62,7 +62,7 @@ module Neo4j
       options ||= {}
       register_neo4j_cypher_logging
 
-      Neo4j::ActiveBase.new_driver( url || path || default_session_path_or_url, options)
+      Neo4j::ActiveBase.new_driver(url || path || default_session_path_or_url, options)
     end
 
     def final_session_config!(neo4j_config)

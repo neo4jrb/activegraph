@@ -214,10 +214,11 @@ describe 'association dependent delete/destroy' do
         let(:rel_1) { MyRelClass2.create(from_node: city_1, to_node: bad_model_1) }
         let!(:rel_2) { MyRelClass2.create(from_node: city_1, to_node: bad_model_2) }
         let!(:rel_3) { MyRelClass2.create(from_node: city_2, to_node: bad_model_2) }
+
         it 'deletes only orphans' do
           rel_1.destroy
           expect { BadModel.find(bad_model_1.id) }.to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
-           expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model_2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
         end
       end
 

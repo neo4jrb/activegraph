@@ -7,7 +7,9 @@ describe Neo4j::ActiveRel::RelatedNode do
     Class.new do
       include Neo4j::Core::Node
 
-      def id; 1; end
+      def id
+        1
+      end
     end.new
   end
   let(:rel) { double('ActiveRel object') }

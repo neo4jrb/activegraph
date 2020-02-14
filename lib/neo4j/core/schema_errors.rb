@@ -1,11 +1,11 @@
 module Neo4j
   module Core
     module SchemaErrors
-      class ConstraintValidationFailedError < CypherError;
+      class ConstraintValidationFailedError < CypherError
       end
-      class ConstraintAlreadyExistsError < CypherError;
+      class ConstraintAlreadyExistsError < CypherError
       end
-      class IndexAlreadyExistsError < CypherError;
+      class IndexAlreadyExistsError < CypherError
       end
     end
   end

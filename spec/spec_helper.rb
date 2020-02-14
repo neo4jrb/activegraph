@@ -189,8 +189,6 @@ module FixingRSpecHelpers
 end
 
 server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
-server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
-server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
 
 Neo4j::ActiveBase.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
@@ -230,6 +228,6 @@ RSpec.configure do |config|
     allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
   end
 
-  # TODO marshalling java objects, is it necessary?
+  # TODO: marshalling java objects, is it necessary?
   config.filter_run_excluding :ffi_only if RUBY_PLATFORM =~ /java/
 end

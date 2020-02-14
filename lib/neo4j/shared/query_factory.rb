@@ -85,8 +85,8 @@ module Neo4j::Shared
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
       base_query.send(graph_object.create_method, query_string(create_props)).break
-        .set(identifier => set_props)
-        .params(params(create_props))
+                .set(identifier => set_props)
+                .params(params(create_props))
     end
 
     private
@@ -100,7 +100,7 @@ module Neo4j::Shared
     end
 
     def params(create_props)
-      unique? ? create_props.transform_keys { |key| scoped(key).to_sym } : { namespace.to_sym => create_props }
+      unique? ? create_props.transform_keys { |key| scoped(key).to_sym } : {namespace.to_sym => create_props}
     end
 
     def unique?

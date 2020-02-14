@@ -109,8 +109,7 @@ describe Neo4j::Core::Query do
       end
     end
 
-    # %i[uuid neo_id].each do |primary_key|
-      %i[neo_id].each do |primary_key|
+    [:uuid, :neo_id].each do |primary_key|
       describe "find_in_batches with #{primary_key}" do
         {
           1 => 5,
@@ -188,7 +187,7 @@ describe Neo4j::Core::Query do
   end
 
   def expects_cypher(cypher, params = {})
-    query = eval("Neo4j::Core::Query.new#{self.class.description}") # rubocop:disable Security/Eval
+    query = eval("Neo4j::Core::Query.new#{self.class.description}", binding, __FILE__, __LINE__) # rubocop:disable Security/Eval
     add_query_doc_line(cypher, params)
 
     expect(query.to_cypher).to eq(cypher)
@@ -856,7 +855,8 @@ describe Neo4j::Core::Query do
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age',
+                   setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}).on_create_set('o.age = 29')" do
@@ -878,7 +878,8 @@ describe Neo4j::Core::Query do
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age',
+                   setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}).on_match_set('o.age = 29')" do

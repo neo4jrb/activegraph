@@ -118,7 +118,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
         Rel3Class.new(from_node: f1, to_node: t1, score_3: 10).save
         Rel4Class.new(from_node: t2, to_node: f2, score_4: 10).save
         Rel3Class.new(from_node: f2, to_node: t1, score_3: 100).save
-        expect(f1.reload.rel_3).to be_nil 
+        expect(f1.reload.rel_3).to be_nil
         expect(f2.reload.rel_3.id).to eq(t1.id)
       end
     end
