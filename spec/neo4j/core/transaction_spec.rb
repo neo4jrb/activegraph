@@ -160,7 +160,7 @@ describe Neo4j::Transaction do
         tx1.mark_failed
         tx3.close
         tx2.close
-        expect { tx1.close }.not_to change({ data })
+        expect { tx1.close }.not_to(change { data })
         expect(data).to be_falsey
       end
 
@@ -173,7 +173,7 @@ describe Neo4j::Transaction do
         tx3.mark_failed
         tx3.close
         tx2.close
-        expect { tx1.close }.not_to change({ data })
+        expect { tx1.close }.not_to(change { data })
         expect(data).to be_falsey
       end
     end
