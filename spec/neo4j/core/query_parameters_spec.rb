@@ -25,7 +25,7 @@ describe Neo4j::Core::Query::Parameters do
 
   it 'allows you to add multiple params at the same time' do
     expect(parameters.add_params(foo: 1)).to eq([:foo])
-    expect(parameters.add_params(foo: 2, bar: 'baz')).to eq([:foo2, :bar])
+    expect(parameters.add_params(foo: 2, bar: 'baz')).to eq(%i[foo2 bar])
 
     expect(parameters.to_hash).to eq(foo: 1, foo2: 2, bar: 'baz')
   end

@@ -307,7 +307,7 @@ describe Neo4j::Transaction do
 
           @procs = {}
 
-          [:Node, :Relationship].each do |core_class|
+          %i[Node Relationship].each do |core_class|
             klass = Neo4j::Driver::Types.const_get(core_class)
             @procs[core_class] = klass.instance_variable_get(:@wrapper_callback)
             klass.clear_wrapper_callback
@@ -316,7 +316,7 @@ describe Neo4j::Transaction do
         end
 
         after do
-          [:Node, :Relationship].each do |core_class|
+          %i[Node Relationship].each do |core_class|
             Neo4j::Driver::Types.const_get(core_class).instance_variable_set(:@wrapper_callback, @procs[core_class])
           end
         end

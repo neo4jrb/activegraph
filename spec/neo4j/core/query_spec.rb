@@ -109,7 +109,7 @@ describe Neo4j::Core::Query do
       end
     end
 
-    [:uuid, :neo_id].each do |primary_key|
+    %i[uuid neo_id].each do |primary_key|
       describe "find_in_batches with #{primary_key}" do
         {
           1 => 5,

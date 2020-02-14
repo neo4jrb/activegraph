@@ -82,8 +82,12 @@ module Neo4j
     end
 
     def query(*args)
-      options = (args[1] ||= {})
-      options = (args[2] ||= {}) unless args[0].is_a?(::Neo4j::Core::Query)
+      options = if args[0].is_a?(::Neo4j::Core::Query)
+                  args[1] ||= {}
+                else
+                  args[1] ||= {}
+                  args[2] ||= {}
+                end
       options[:transaction] ||= self
 
       self.class.query(*args)
