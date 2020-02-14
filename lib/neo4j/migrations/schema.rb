@@ -46,7 +46,7 @@ module Neo4j
         end
 
         def description(row)
-          "INDEX FOR (n:#{row.labelsOrTypes.first}) ON (#{row.properties.map{ |prop| "n.#{prop}" }.join(', ')})"
+          "INDEX FOR (n:#{row.labelsOrTypes.first}) ON (#{row.properties.map { |prop| "n.#{prop}" }.join(', ')})"
         end
 
         def drop_and_create_queries(existing, specified, remove_missing)

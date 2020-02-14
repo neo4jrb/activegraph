@@ -64,10 +64,7 @@ describe Neo4j::ActiveNode::Validations do
         o = OtherClazz.new('name' => '')
         expect(o.save).to be true
 
-        allow(OtherClazz) \
-        .to receive(:first) \
-        .with(name: '') \
-        .and_return(o)
+        allow(OtherClazz).to receive(:first).with(name: '').and_return(o)
 
         o2 = OtherClazz.new('name' => '')
         expect(o2).not_to have_error_on(:name)
