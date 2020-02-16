@@ -1,9 +1,9 @@
 describe Neo4j::ActiveRel::Property do
-  let(:session) { double('Session') }
+  let(:driver) { double('Driver') }
 
   before do
-    @session = double('Mock Session')
-    allow(clazz).to receive(:neo4j_session).and_return(session)
+    @driver = double('Mock Driver')
+    allow(clazz).to receive(:neo4j_driver).and_return(driver)
   end
 
   let(:clazz) do

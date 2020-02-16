@@ -21,8 +21,8 @@ module Neo4j
       # Creates a neo4j constraint on a property
       # See http://docs.neo4j.org/chunked/stable/query-constraints.html
       # @example
-      #   label = Neo4j::Label.create(:person, session)
-      #   label.create_constraint(:name, {type: :unique}, session)
+      #   label = Neo4j::Label.create(:person, driver)
+      #   label.create_constraint(:name, {type: :unique}, driver)
       #
       def create_constraint(property, constraints)
         cypher = case constraints[:type]
@@ -41,9 +41,9 @@ module Neo4j
       # Drops a neo4j constraint on a property
       # See http://docs.neo4j.org/chunked/stable/query-constraints.html
       # @example
-      #   label = Neo4j::Label.create(:person, session)
-      #   label.create_constraint(:name, {type: :unique}, session)
-      #   label.drop_constraint(:name, {type: :unique}, session)
+      #   label = Neo4j::Label.create(:person, driver)
+      #   label.create_constraint(:name, {type: :unique}, driver)
+      #   label.drop_constraint(:name, {type: :unique}, driver)
       #
       def drop_constraint(property, constraint)
         cypher = case constraint[:type]
@@ -97,8 +97,8 @@ module Neo4j
 
       private
 
-      # Store schema threads on the session so that we can easily wait for all
-      # threads on a session regardless of label
+      # Store schema threads on the driver so that we can easily wait for all
+      # threads on a driver regardless of label
       def schema_threads
         self.class.schema_threads
       end
@@ -134,7 +134,7 @@ module Neo4j
 
         def wait_for_schema_changes
           schema_threads.map(&:join)
-          set_schema_threads(session, [])
+          set_schema_threads(driver, [])
         end
 
         def schema_threads

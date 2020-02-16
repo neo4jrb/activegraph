@@ -68,7 +68,7 @@ module Neo4j
       end
 
       def initialize(options = {})
-        @session = options[:session]
+        @driver = options[:driver]
 
         @options = options
         @clauses = []
@@ -374,7 +374,7 @@ module Neo4j
       end
 
       def &(other)
-        self.class.new(session: @session).tap do |new_query|
+        self.class.new(driver: @driver).tap do |new_query|
           new_query.options = options.merge(other.options)
           new_query.clauses = clauses + other.clauses
         end.params(other._params)
@@ -396,7 +396,7 @@ module Neo4j
 
       protected
 
-      attr_accessor :session, :options, :_params
+      attr_accessor :driver, :options, :_params
 
       def add_clauses(clauses)
         @clauses += clauses

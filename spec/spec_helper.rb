@@ -201,12 +201,12 @@ RSpec.configure do |config|
   config.include Neo4jEntityFindingHelpers
   config.extend DRYSpec::Helpers
 
-  # Setup the current session
+  # Setup the current driver
   config.before(:suite) do
   end
 
   config.after(:suite) do
-    # Ability to close session?
+    # Ability to close driver?
   end
 
   config.before(:each) do

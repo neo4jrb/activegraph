@@ -15,7 +15,7 @@ describe 'Labels' do
         :some_label
       end
 
-      def self.neo4j_session
+      def self.neo4j_driver
         current_driver
       end
 

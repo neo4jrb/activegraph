@@ -23,9 +23,9 @@ module Neo4j
       end
 
       def query
-        # `nil` sessions are just a workaround until
-        # we phase out `Query` objects containing sessions
-        Neo4j::Core::Query.new(session: nil)
+        # `nil` drivers are just a workaround until
+        # we phase out `Query` objects containing drivers
+        Neo4j::Core::Query.new(driver: nil)
       end
     end
   end

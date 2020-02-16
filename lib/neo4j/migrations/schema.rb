@@ -2,28 +2,28 @@ module Neo4j
   module Migrations
     module Schema
       class << self
-        def fetch_schema_data(session)
-          {constraints: fetch_constraint_descriptions(session).sort,
-           indexes: fetch_index_descriptions(session).sort}
+        def fetch_schema_data(driver)
+          {constraints: fetch_constraint_descriptions(driver).sort,
+           indexes: fetch_index_descriptions(driver).sort}
         end
 
-        def synchronize_schema_data(session, schema_data, remove_missing)
+        def synchronize_schema_data(driver, schema_data, remove_missing)
           queries = []
-          queries += drop_and_create_queries(fetch_constraint_descriptions(session), schema_data[:constraints], remove_missing)
-          queries += drop_and_create_queries(fetch_index_descriptions(session), schema_data[:indexes], remove_missing)
-          session.queries do
+          queries += drop_and_create_queries(fetch_constraint_descriptions(driver), schema_data[:constraints], remove_missing)
+          queries += drop_and_create_queries(fetch_index_descriptions(driver), schema_data[:indexes], remove_missing)
+          driver.queries do
             queries.each { |query| append query }
           end
         end
 
         private
 
-        def fetch_constraint_descriptions(session)
-          session.query('CALL db.constraints()').map(&:description)
+        def fetch_constraint_descriptions(driver)
+          driver.query('CALL db.constraints()').map(&:description)
         end
 
-        def fetch_index_descriptions(session)
-          result = session.query('CALL db.indexes()')
+        def fetch_index_descriptions(driver)
+          result = driver.query('CALL db.indexes()')
           if result.columns.include?(:description)
             v3_indexes(result)
           else

@@ -545,7 +545,7 @@ module Neo4j::ActiveNode
         query_proxy = previous_query_proxy || default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new(association_target_class(name),
                                                  associations[name],
-                                                 {session: neo4j_session,
+                                                 {driver: neo4j_driver,
                                                   query_proxy: query_proxy,
                                                   context: "#{query_proxy.context || self.name}##{name}",
                                                   optional: query_proxy.optional?,
@@ -578,7 +578,7 @@ module Neo4j::ActiveNode
 
       def default_association_query_proxy
         Neo4j::ActiveNode::Query::QueryProxy.new("::#{self.name}".constantize, nil,
-                                                 session: neo4j_session, query_proxy: nil, context: self.name.to_s)
+                                                 driver: neo4j_driver, query_proxy: nil, context: self.name.to_s)
       end
 
       def build_association(macro, direction, name, options)

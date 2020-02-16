@@ -1,5 +1,5 @@
 describe Neo4j::ActiveNode::Query do
-  let(:session) { double('Session') }
+  let(:driver) { double('Driver') }
 
   before(:all) do
     @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
@@ -15,7 +15,7 @@ describe Neo4j::ActiveNode::Query do
         'Person'
       end
 
-      def self.neo4j_session
+      def self.neo4j_driver
         current_driver
       end
     end

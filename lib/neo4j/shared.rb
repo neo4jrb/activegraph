@@ -10,10 +10,10 @@ module Neo4j
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
-      # TODO: Deprecate neo4j_session_name(name)
+      # TODO: Deprecate neo4j_driver_name(name)
 
       # remove?
-      def neo4j_session
+      def neo4j_driver
         Neo4j::ActiveBase.current_driver
       end
 
@@ -23,7 +23,7 @@ module Neo4j
       end
 
       # This should be used everywhere.  Should make it easy
-      # to support a session-per-model system
+      # to support a driver-per-model system
       def neo4j_query(*args)
         Neo4j::ActiveBase.query(*args)
       end
