@@ -31,7 +31,7 @@ module Neo4j
               result = []
               if arg.is_a?(Hash)
                 arg.each do |key, value|
-                  if model && model.association?(key)
+                  if model&.association?(key)
                     result += for_association(key, value, "n#{node_num}", model)
                     node_num += 1
                   else

@@ -95,7 +95,7 @@ module Neo4j::Shared
 
       result != false
     rescue => e
-      current_transaction.mark_failed if current_transaction
+      current_transaction&.mark_failed
       raise e
     ensure
       @_create_or_updating = nil

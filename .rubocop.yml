@@ -9,6 +9,7 @@ inherit_from: .rubocop_todo.yml
 AllCops:
   DisplayCopNames: true
   DisplayStyleGuide: true
+  TargetRubyVersion: 2.5
 
 
 # Cop supports --auto-correct.

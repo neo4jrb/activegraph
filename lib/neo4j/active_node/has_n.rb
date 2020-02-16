@@ -174,7 +174,7 @@ module Neo4j::ActiveNode
         when *CACHED_RESULT_METHODS
           @cached_result
         else
-          if @cached_result && @cached_result.respond_to?(method_name)
+          if @cached_result&.respond_to?(method_name)
             @cached_result
           elsif @query_proxy.respond_to?(method_name)
             @query_proxy
@@ -238,7 +238,7 @@ module Neo4j::ActiveNode
       reverse_assoc = self.class.associations.find do |_key, assoc|
         association.inverse_of?(assoc) || assoc.inverse_of?(association)
       end
-      reverse_assoc && reverse_assoc.last
+      reverse_assoc&.last
     end
 
     def delete_reverse_has_one_active_rel(active_rel, direction, other_node)

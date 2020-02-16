@@ -42,7 +42,7 @@ module Neo4j
 
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain.  Executed in the database, callbacks will not be run.
         def delete_all_rels
-          return unless start_object && start_object._persisted_obj
+          return unless start_object&._persisted_obj
           self.query.delete(rel_var).exec
         end
 

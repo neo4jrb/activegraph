@@ -158,7 +158,7 @@ module Neo4j::ActiveNode
       def load_entity(id)
         query = query_base_for(id, :n).return(:n)
         result = neo4j_query(query).first
-        result && result.n
+        result&.n
       end
 
       def query_base_for(neo_id, var = :n)

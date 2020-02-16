@@ -22,10 +22,10 @@ module Neo4j
         tx = Neo4j::Transaction.new
         yield tx
       rescue Exception => e # rubocop:disable Lint/RescueException
-        tx.mark_failed unless tx.nil?
+        tx&.mark_failed
         raise e
       ensure
-        tx.close unless tx.nil?
+        tx&.close
       end
 
       def root
@@ -45,8 +45,8 @@ module Neo4j
       @driver_tx = @driver_session.begin_transaction
     rescue StandardError => e
       self.stack = []
-      @driver_tx.close if @driver_tx
-      @driver_session.close if @driver_session
+      @driver_tx&.close
+      @driver_session&.close
       raise e
     end
 

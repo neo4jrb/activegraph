@@ -245,7 +245,7 @@ module Neo4j
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
         def method_missing(method_name, *args, &block)
-          if @model && @model.respond_to?(method_name)
+          if @model&.respond_to?(method_name)
             scoping { @model.public_send(method_name, *args, &block) }
           else
             super
@@ -253,7 +253,7 @@ module Neo4j
         end
 
         def respond_to_missing?(method_name, include_all = false)
-          (@model && @model.respond_to?(method_name, include_all)) || super
+          @model&.respond_to?(method_name, include_all) || super
         end
 
         def optional?
@@ -270,7 +270,7 @@ module Neo4j
         end
 
         def unpersisted_start_object?
-          @start_object && @start_object.new_record?
+          @start_object&.new_record?
         end
 
         protected
@@ -324,7 +324,7 @@ module Neo4j
         end
 
         def _association_arrow(properties = {}, create = false)
-          @association && @association.arrow_cypher(@rel_var, properties, create, false, @rel_length)
+          @association&.arrow_cypher(@rel_var, properties, create, false, @rel_length)
         end
 
         def _chain_level

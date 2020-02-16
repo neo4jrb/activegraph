@@ -44,7 +44,7 @@ module Neo4j
       app.config.neo4j.skip_migration_check = true if Rails.env.test?
 
       neo4j_config = ActiveSupport::OrderedOptions.new
-      app.config.neo4j.each { |k, v| neo4j_config[k] = v } if app.config.neo4j
+      app.config.neo4j&.each { |k, v| neo4j_config[k] = v }
 
       Neo4j::Config.configuration.merge!(neo4j_config.to_h)
 

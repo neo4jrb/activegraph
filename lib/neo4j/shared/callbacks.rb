@@ -26,10 +26,10 @@ module Neo4j
       rescue
         @_deleted = false
         @attributes = @attributes.dup
-        tx.mark_failed if tx
+        tx&.mark_failed
         raise
       ensure
-        tx.close if tx
+        tx&.close
       end
 
       def touch #:nodoc:

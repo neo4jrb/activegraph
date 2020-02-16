@@ -125,7 +125,7 @@ module Neo4j
         end
 
         def relationship_class
-          @relationship_class ||= @relationship_class_name && @relationship_class_name.constantize
+          @relationship_class ||= @relationship_class_name&.constantize
         end
 
         def unique?
@@ -180,11 +180,11 @@ module Neo4j
         private
 
         def apply_vars_from_options(options)
-          @relationship_class_name = options[:rel_class] && options[:rel_class].to_s
-          @relationship_type = options[:type] && options[:type].to_sym
+          @relationship_class_name = options[:rel_class]&.to_s
+          @relationship_type = options[:type]&.to_sym
 
           @model_class = options[:model_class]
-          @origin = options[:origin] && options[:origin].to_sym
+          @origin = options[:origin]&.to_sym
           @dependent = options[:dependent].try(:to_sym)
           @unique = options[:unique]
         end

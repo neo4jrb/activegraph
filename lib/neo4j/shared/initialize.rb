@@ -40,7 +40,7 @@ module Neo4j::Shared
       if changed_attributes.frozen?
         @attributes_changed_by_setter = ActiveSupport::HashWithIndifferentAccess.new
       else
-        changed_attributes && changed_attributes.clear
+        changed_attributes&.clear
       end
     end
 
