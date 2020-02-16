@@ -33,7 +33,7 @@ module Neo4j
         # @option options [String, Symbol] :rel_var Same as above but pertaining to a relationship identifier
         # @option options [Range, Integer, Symbol, Hash] :rel_length A Range, a Integer, a Hash or a Symbol to indicate the variable-length/fixed-length
         #   qualifier of the relationship. See http://neo4jrb.readthedocs.org/en/latest/Querying.html#variable-length-relationships.
-        # @option options [Neo4j::Session] :session The session to be used for this query
+        # @option options [Neo4j::Driver] :driver The driver to be used for this query
         # @option options [Neo4j::ActiveNode] :source_object The node instance at the start of the QueryProxy chain
         # @option options [QueryProxy] :query_proxy An existing QueryProxy chain upon which this new object should be built
         #
@@ -317,9 +317,9 @@ module Neo4j
           "result_#{(association || model).try(:name)}#{index}".downcase.tr(':', '').to_sym
         end
 
-        def _session
-          (@session || (@model && @model.neo4j_session)).tap do |session|
-            fail 'No session found!' if session.nil?
+        def _driver
+          (@driver || (@model && @model.neo4j_driver)).tap do |driver|
+            fail 'No driver found!' if driver.nil?
           end
         end
 
@@ -357,9 +357,9 @@ module Neo4j
         private
 
         def instance_vars_from_options!(options)
-          @node_var, @session, @source_object, @starting_query, @optional,
+          @node_var, @driver, @source_object, @starting_query, @optional,
               @start_object, @query_proxy, @chain_level, @association_labels,
-              @rel_length = options.values_at(:node, :session, :source_object, :starting_query, :optional,
+              @rel_length = options.values_at(:node, :driver, :source_object, :starting_query, :optional,
                                               :start_object, :query_proxy, :chain_level, :association_labels, :rel_length)
         end
 

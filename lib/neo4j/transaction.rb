@@ -16,7 +16,7 @@ module Neo4j
       # Runs the given block in a new transaction.
       # @param [Boolean] run_in_tx if true a new transaction will not be created, instead if will simply yield to the given block
       # @@yield [Neo4j::Transaction::Instance]
-      def run(driver, run_in_tx)
+      def run(_driver, run_in_tx)
         return yield(nil) unless run_in_tx
 
         tx = Neo4j::Transaction.new

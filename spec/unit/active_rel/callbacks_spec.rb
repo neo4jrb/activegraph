@@ -4,7 +4,7 @@ describe Neo4j::ActiveRel::Callbacks do
       Object.send(:remove_const, s)
     end
   end
-  let(:session) { double('Session') }
+  let(:driver) { double('Driver') }
   let(:node1) { double('Node1') }
   let(:node2) { double('Node2') }
 
@@ -24,8 +24,7 @@ describe Neo4j::ActiveRel::Callbacks do
     let(:rel) { CallbackBar.new }
 
     before do
-      @session = double('Mock Session')
-      allow(CallbackBar).to receive(:neo4j_session).and_return(session)
+      allow(CallbackBar).to receive(:neo4j_driver).and_return(driver)
 
       allow_any_instance_of(CallbackBar).to receive(:_persisted_obj).and_return(nil)
       allow_any_instance_of(CallbackBar).to receive_message_chain('errors.full_messages').and_return([])

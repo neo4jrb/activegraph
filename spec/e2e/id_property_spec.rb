@@ -567,7 +567,7 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(node.id).to eq(node.neo_id)
     end
 
-    context 'when a session is not started' do
+    context 'when a driver is not started' do
       before do
         stub_active_node_class('Executive') do
           id_property :my_id, on: :my_method

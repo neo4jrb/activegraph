@@ -97,7 +97,7 @@ describe Neo4j::Core::Query do
   end
 
   describe 'batch finding' do
-    let!(:session) { test_driver_adaptor(test_bolt_url) }
+    let!(:driver) { test_driver_adaptor(test_bolt_url) }
     let(:query_object) { Neo4j::Core::Query.new }
 
     before(:each) do

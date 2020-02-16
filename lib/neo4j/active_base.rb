@@ -9,17 +9,17 @@ module Neo4j
     class << self
       # private?
       def current_driver
-        (@driver ||= establish_session).tap do |session|
-          fail 'No session defined!' if session.nil?
+        (@driver ||= establish_driver).tap do |driver|
+          fail 'No driver defined!' if driver.nil?
         end
       end
 
-      def on_establish_session(&block)
-        @establish_session_block = block
+      def on_establish_driver(&block)
+        @establish_driver_block = block
       end
 
-      def establish_session
-        @establish_session_block.call if @establish_session_block
+      def establish_driver
+        @establish_driver_block.call if @establish_driver_block
       end
 
       def new_driver(url, options = {})
@@ -55,7 +55,7 @@ module Neo4j
 
       def new_query(options = {})
         validate_model_schema!
-        Neo4j::Core::Query.new({session: current_driver}.merge(options))
+        Neo4j::Core::Query.new({driver: current_driver}.merge(options))
       end
 
       def magic_query(*args)

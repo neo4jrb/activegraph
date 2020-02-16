@@ -7,7 +7,7 @@ require 'neo4j/core/driver'
 module Neo4j
   class Railtie < ::Rails::Railtie
     def empty_config
-      ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.session = ActiveSupport::OrderedOptions.new }
+      ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.driver = ActiveSupport::OrderedOptions.new }
     end
 
     config.neo4j = empty_config
@@ -48,7 +48,7 @@ module Neo4j
 
       Neo4j::Config.configuration.merge!(neo4j_config.to_h)
 
-      Neo4j::ActiveBase.on_establish_session { setup! neo4j_config }
+      Neo4j::ActiveBase.on_establish_driver { setup! neo4j_config }
 
       Neo4j::Config[:logger] ||= Rails.logger
 
@@ -58,18 +58,18 @@ module Neo4j
     end
 
     def setup!(neo4j_config = empty_config)
-      url, path, options = final_session_config!(neo4j_config).values_at(:url, :path, :options)
+      url, path, options = final_driver_config!(neo4j_config).values_at(:url, :path, :options)
       options ||= {}
       register_neo4j_cypher_logging
 
-      Neo4j::ActiveBase.new_driver( url || path || default_session_path_or_url, options)
+      Neo4j::ActiveBase.new_driver( url || path || default_driver_path_or_url, options)
     end
 
-    def final_session_config!(neo4j_config)
-      (neo4j_config[:session].empty? ? yaml_config_data : neo4j_config[:session]).dup
+    def final_driver_config!(neo4j_config)
+      (neo4j_config[:driver].empty? ? yaml_config_data : neo4j_config[:driver]).dup
     end
 
-    def default_session_path_or_url
+    def default_driver_path_or_url
       ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'bolt://localhost:7474'
     end
 

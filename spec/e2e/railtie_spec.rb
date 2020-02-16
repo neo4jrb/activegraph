@@ -12,11 +12,11 @@ module Rails
     end
 
     describe '#setup!' do
-      let(:session_path) {}
+      let(:driver_path) {}
       let(:cfg) do
         ActiveSupport::OrderedOptions.new.tap do |c|
-          c.session = ActiveSupport::OrderedOptions.new
-          c.session.path = session_path if session_path
+          c.driver = ActiveSupport::OrderedOptions.new
+          c.driver.path = driver_path if driver_path
         end
       end
 
