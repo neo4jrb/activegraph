@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 describe Neo4j::AttributeSet do
-  let(:attr_hash) {{halley: 1986}}
-  let(:attr_list) {[:halley, :icarus_year]}
+  let(:attr_hash) { {halley: 1986} }
+  let(:attr_list) { [:halley, :icarus_year] }
   subject { Neo4j::AttributeSet.new(attr_hash, attr_list) }
 
   describe '#method_missing' do
@@ -12,13 +14,13 @@ describe Neo4j::AttributeSet do
     end
 
     it 'delegates keyword arguments to attribute Hash' do
-      expect(delegated_hash).to receive(:merge).with({icarus_year: 1566})
-      subject.merge({icarus_year: 1566})
+      expect(delegated_hash).to receive(:merge).with(icarus_year: 1566)
+      subject.merge(icarus_year: 1566)
     end
 
     it 'delegates block to attribute Hash' do
       called = false
-      block = -> (_) { called = true }
+      block = ->(_) { called = true }
       expect(delegated_hash).to receive(:fetch_values).and_call_original
       subject.fetch_values(false, &block)
       expect(called).to be true
