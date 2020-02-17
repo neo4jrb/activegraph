@@ -7,9 +7,9 @@ module Neo4j
       super(hashmap)
     end
 
-    def method_missing(name, *args)
+    def method_missing(name, *args, **kwargs, &block)
       if defined?(name)
-        attributes.send(:materialize).send(name, *args)
+        attributes.send(:materialize).send(name, *args, **kwargs, &block)
       else
         super
       end
