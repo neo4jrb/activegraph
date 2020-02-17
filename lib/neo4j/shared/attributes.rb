@@ -77,14 +77,15 @@ module Neo4j::Shared
 
     # Read an attribute from the attributes hash
     def attribute(name)
-      @attributes ||= {}
-      @attributes[name]
+      @attributes ||= Neo4j::AttributeSet.new({}, self.class.attributes.keys)
+      @attributes.fetch_value(name.to_s)
     end
 
     # Write an attribute to the attributes hash
     def attribute=(name, value)
-      @attributes ||= {}
-      @attributes[name] = value
+      @attributes ||= Neo4j::AttributeSet.new({}, self.class.attributes.keys)
+      @attributes.write_cast_value(name, value)
+      value
     end
 
     # Maps all attributes using the given block

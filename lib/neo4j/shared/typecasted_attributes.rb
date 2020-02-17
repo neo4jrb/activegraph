@@ -39,8 +39,8 @@ module Neo4j::Shared
     #
     # @return [Object, nil] The attribute value before typecasting
     def attribute_before_type_cast(name)
-      @attributes ||= {}
-      @attributes[name.to_s]
+      @attributes ||= Neo4j::AttributeSet.new({}, self.class.attributes.keys)
+      @attributes.fetch_value(name.to_s)
     end
 
     private
@@ -66,7 +66,8 @@ module Neo4j::Shared
     # @private
     def _attribute_typecaster(attribute_name)
       type = _attribute_type(attribute_name)
-      caster = self.class.attributes[attribute_name].typecaster || Neo4j::Shared::TypeConverters.typecaster_for(type)
+      default_typecaster = self.class.attributes[attribute_name].typecaster
+      caster = default_typecaster || Neo4j::Shared::TypeConverters.typecaster_for(type)
       caster || fail(Neo4j::UnknownTypeConverterError, "Unable to cast to type #{type}")
     end
 

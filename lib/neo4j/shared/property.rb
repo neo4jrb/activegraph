@@ -28,6 +28,7 @@ module Neo4j::Shared
     end
 
     def initialize(attributes = nil)
+      @attributes ||= Neo4j::AttributeSet.new({}, self.class.attributes.keys)
       attributes = process_attributes(attributes)
       modded_attributes = inject_defaults!(attributes)
       validate_attributes!(modded_attributes)

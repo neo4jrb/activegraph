@@ -12,16 +12,17 @@ module Neo4j::Shared
     private
 
     def convert_and_assign_attributes(properties)
-      @attributes ||= Hash[self.class.attributes_nil_hash]
+      @attributes ||= Neo4j::AttributeSet.new(self.class.attributes_nil_hash, self.class.attributes.keys)
       stringify_attributes!(@attributes, properties)
       self.default_properties = properties if respond_to?(:default_properties=)
       self.class.declared_properties.convert_properties_to(self, :ruby, @attributes)
+      @attributes
     end
 
     def stringify_attributes!(attr, properties)
       properties.each_pair do |k, v|
         key = self.class.declared_properties.string_key(k)
-        attr[key.freeze] = v
+        attr.write_cast_value(key.freeze, v)
       end
     end
 
