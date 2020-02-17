@@ -24,8 +24,7 @@ module Neo4j
     end
 
     def ==(other)
-      return self.to_hash == other unless other.is_a?(Neo4j::AttributeSet)
-      super
+      other.is_a?(Neo4j::AttributeSet) ? super : to_hash == other
     end
   end
 end
