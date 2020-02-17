@@ -23,16 +23,9 @@ module Neo4j::Shared
     end
 
     describe '#typecaster_for' do
-      it 'returns BigDecimalTypecaster for BigDecimal' do
-        expect(model.typecaster_for(BigDecimal)).to eq TypeConverters::BigDecimalConverter
-      end
 
       it 'returns BooleanTypecaster for Boolean' do
         expect(model.typecaster_for(Neo4j::Shared::Boolean)).to eq TypeConverters::BooleanConverter
-      end
-
-      it 'returns DateTypecaster for Date' do
-        expect(model.typecaster_for(Date)).to eq TypeConverters::DateConverter
       end
 
       it 'returns DateTypecaster for Date' do

@@ -4,14 +4,6 @@ describe Neo4j::Shared::TypeConverters do
       expect(Neo4j::Shared::TypeConverters::CONVERTERS[DateTime]).to eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
     end
 
-    it 'has converters for Time' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Time]).to eq(Neo4j::Shared::TypeConverters::TimeConverter)
-    end
-
-    it 'has converters for Date' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Date]).to eq(Neo4j::Shared::TypeConverters::DateConverter)
-    end
-
     it 'has converters for JSON' do
       expect(Neo4j::Shared::TypeConverters::CONVERTERS[JSON]).to eq(Neo4j::Shared::TypeConverters::JSONConverter)
     end
@@ -76,58 +68,6 @@ describe Neo4j::Shared::TypeConverters do
       [db_value, ruby_value].each do |i|
         expect(i).to be_a(Float)
         expect(i).to eq 1.0
-      end
-    end
-  end
-
-  describe 'BigDecimal' do
-    subject { Neo4j::Shared::TypeConverters::BigDecimalConverter }
-
-    context 'from Rational' do
-      let(:r) { Rational(1) }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-        expect(subject.to_db(r)).to eq('1.0')
-        expect(subject.to_db(r)).not_to eq('1.1')
-      end
-    end
-
-    context 'from float' do
-      let(:r) { 1.0 }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-      end
-    end
-
-    context 'from String' do
-      let(:r) { '1.0' }
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-      end
-    end
-
-    context 'from BidDecimal' do
-      let(:r) { BigDecimal('1.0') }
-
-      it 'is not converted' do
-        expect(subject.converted?(r)).to be false
-      end
-
-      it 'translates' do
-        expect(subject.to_db(r)).to be_a(String)
-        expect(subject.to_db(r)).to eq('1.0')
-      end
-    end
-
-    describe 'to_ruby' do
-      let(:r) { '1.0' }
-
-      it 'translates' do
-        expect(subject.to_ruby(r)).to be_a(BigDecimal)
-        expect(subject.to_ruby(r)).to eq(BigDecimal('1.0'))
       end
     end
   end
@@ -355,34 +295,6 @@ describe Neo4j::Shared::TypeConverters do
       expect(db_value.class).to eq String
       expect(ruby_value.class).to eq Hash
       expect(ruby_value[:neo4j]).to eq 'http://www.neo4j.org'
-    end
-  end
-
-  describe Neo4j::Shared::TypeConverters::DateConverter do
-    subject { Neo4j::Shared::TypeConverters::DateConverter }
-
-    let(:now) { Time.at(1_352_538_487).utc.to_date }
-
-    it 'translate from and to database' do
-      db_value = Neo4j::Shared::TypeConverters::DateConverter.to_db(now)
-      ruby_value = Neo4j::Shared::TypeConverters::DateConverter.to_ruby(db_value)
-      expect(ruby_value.class).to eq(Date)
-      expect(ruby_value.to_s).to eq(now.to_s)
-    end
-  end
-
-
-  describe Neo4j::Shared::TypeConverters::TimeConverter do
-    subject { Neo4j::Shared::TypeConverters::TimeConverter }
-
-    let(:now) { Time.now }
-
-    it 'translate from and to database' do
-      db_value = Neo4j::Shared::TypeConverters::TimeConverter.to_db(now)
-      ruby_value = Neo4j::Shared::TypeConverters::TimeConverter.to_ruby(db_value)
-
-      expect(ruby_value.class).to eq(Time)
-      expect(ruby_value.to_s).to eq(now.to_s)
     end
   end
 

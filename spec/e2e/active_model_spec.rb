@@ -45,9 +45,57 @@ describe 'Neo4j::ActiveNode' do
       # has_n(:ingredients).to(Ingredient)
       validates_presence_of :flavour
     end
+
+    create_index(:IceCandy, :name, type: :exact)
+    stub_active_node_class('IceCandy') do
+      property :name, type: String
+      property :calories_max, type: Integer
+      property :calories_min, type: Integer
+      property :suger, type: Float
+      property :ingredients, type: Hash
+      property :created, type: Time
+      property :expiry_date, type: Date
+      property :make_date, type: Neo4j::Driver::Types::OffsetTime
+      property :storage, type: Neo4j::Driver::Types::Bytes
+      property :best_before, type: ActiveSupport::Duration
+      property :place, type: Neo4j::Driver::Types::Point
+      property :local_time, type: Neo4j::Driver::Types::LocalTime
+      property :local_datetime, type: Neo4j::Driver::Types::LocalDateTime
+    end
   end
 
   subject { IceLolly.new }
+
+  context 'Default data types by driver' do
+    let(:name) { 'Mango Candy' }
+    let(:calories_min) { -9223372036854775809 }
+    let(:calories_max) { 9223372036854775809 }
+    let(:expiry_date) { Date.today }
+    let(:created) { Time.now }
+    let(:suger) { Float::MAX }
+    let(:ingredients) { { suger: 20, water: 50 } }
+    let(:storage) { Neo4j::Driver::Types::Bytes.new([1, 2, 3].pack('C*')) }
+    let(:best_before) { 6.months }
+    let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
+    let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
+    let(:local_time) { Neo4j::Driver::Types::LocalTime.new(Time.now) }
+    let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now.utc) }
+
+    it 'should support types' do
+      IceCandy.create(name: name, calories_min: calories_min, calories_max: calories_max, expiry_date: expiry_date,
+                      make_date: make_date, created: created, suger: suger, ingredients: ingredients,
+                      storage: storage, best_before: best_before, place: place, local_time: local_time,
+                      local_datetime: local_datetime)
+      candy = IceCandy.first
+      [:name, :calories_min, :calories_max, :expiry_date, :created, :suger, :ingredients, :storage, :best_before,
+       :make_date, :local_time, :local_datetime].each do |property|
+        expect(candy.send(property)).to eq(eval(property.to_s))
+      end
+      expect(candy.place).to be_a(Neo4j::Driver::Types::Point)
+      expect(candy.place.x).to eq(10)
+      expect(candy.place.y).to eq(5)
+    end
+  end
 
   context 'when valid' do
     before :each do

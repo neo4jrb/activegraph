@@ -11,6 +11,9 @@ module Neo4j::Shared
 
     attr_reader :_persisted_obj
 
+    NEO4J_DRIVER_DATA_TYPES = [Date, Time, Hash, Neo4j::Driver::Types::Bytes, ActiveSupport::Duration, Neo4j::Driver::Types::Point,
+                               Neo4j::Driver::Types::OffsetTime, Neo4j::Driver::Types::LocalTime, Neo4j::Driver::Types::LocalDateTime]
+
     # TODO: Set @attribute correctly using class ActiveModel::Attribute, and after that
     # remove mutations_from_database and other ActiveModel::Dirty overrided methods
     def mutations_from_database
@@ -213,7 +216,11 @@ module Neo4j::Shared
         define_attribute_methods([name]) unless attribute_names.include?(name)
         attributes[name.to_s] = declared_properties[name]
         define_method("#{name}=") do |value|
-          typecast_value = typecast_attribute(_attribute_typecaster(name), value)
+          typecast_value = if NEO4J_DRIVER_DATA_TYPES.include?(_attribute_type(name))
+                             value
+                           else
+                             typecast_attribute(_attribute_typecaster(name), value)
+                           end
           send("#{name}_will_change!") unless typecast_value == read_attribute(name)
           super(value)
         end
