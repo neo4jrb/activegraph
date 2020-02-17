@@ -181,7 +181,7 @@ module Neo4j
 
         def apply_vars_from_options(options)
           @relationship_class_name = options[:rel_class]&.to_s
-          @relationship_type = options[:type]&.to_sym
+          @relationship_type = options[:type] && options[:type].to_sym
 
           @model_class = options[:model_class]
           @origin = options[:origin]&.to_sym
