@@ -1,6 +1,6 @@
-describe ActiveGraph::ActiveNode do
+describe ActiveGraph::Node do
   before(:each) do
-    stub_active_node_class('Person') do
+    stub_node_class('Person') do
       include ActiveGraph::UndeclaredProperties
       property :name, type: String
     end

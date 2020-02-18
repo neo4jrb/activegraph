@@ -5,12 +5,12 @@ describe 'migration tasks' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class('User') do
+    stub_node_class('User') do
       property :name
       has_many :out, :songs, model_class: :Song, type: 'songs'
     end
 
-    stub_active_node_class('Song') do
+    stub_node_class('Song') do
       property :name
 
       has_many :in, :owners, model_class: :User, origin: :songs
@@ -21,19 +21,19 @@ describe 'migration tasks' do
       end
     end
 
-    stub_active_rel_class('FirstRelClass') do
+    stub_relationship_class('FirstRelClass') do
       from_class false
       to_class false
       type 'songs'
     end
 
-    stub_active_rel_class('SecondRelClass') do
+    stub_relationship_class('SecondRelClass') do
       from_class false
       to_class false
       type 'singers'
     end
 
-    stub_active_rel_class('ThirdRelClass') do
+    stub_relationship_class('ThirdRelClass') do
       from_class false
       to_class false
       type 'singers'

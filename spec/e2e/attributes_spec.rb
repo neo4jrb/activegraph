@@ -1,6 +1,6 @@
-describe ActiveGraph::ActiveNode do
+describe ActiveGraph::Node do
   before do
-    stub_active_node_class('SimpleClass') do
+    stub_node_class('SimpleClass') do
       property :name
     end
   end

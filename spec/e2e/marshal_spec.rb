@@ -1,7 +1,7 @@
 describe ActiveGraph::Shared::Marshal, :ffi_only do
-  describe 'ActiveNode' do
+  describe 'Node' do
     before do
-      stub_active_node_class('Parent')
+      stub_node_class('Parent')
 
       stub_named_class('Child', Parent) do
         property :foo
@@ -24,11 +24,11 @@ describe ActiveGraph::Shared::Marshal, :ffi_only do
     end
   end
 
-  describe 'ActiveRel' do
+  describe 'Relationship' do
     before do
-      stub_active_node_class('Person')
+      stub_node_class('Person')
 
-      stub_active_rel_class('HasParent') do
+      stub_relationship_class('HasParent') do
         from_class :Person
         to_class :Person
 

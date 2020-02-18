@@ -22,11 +22,11 @@ module Neo4jSpecHelpers
   end
 
   def new_query
-    ActiveGraph::ActiveBase.new_query
+    ActiveGraph::Base.new_query
   end
 
   def current_driver
-    ActiveGraph::ActiveBase.current_driver
+    ActiveGraph::Base.current_driver
   end
 
   def neo4j_query(*args)

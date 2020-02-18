@@ -14,18 +14,18 @@ module ActiveGraph
 
     if defined?(ActiveSupport::Reloader)
       ActiveSupport::Reloader.to_prepare do
-        ActiveGraph::ActiveNode::Labels::Reloading.reload_models!
+        ActiveGraph::Node::Labels::Reloading.reload_models!
       end
     elsif const_defined?(:ActionDispatch)
       ActionDispatch::Reloader.to_prepare do
-        ActiveGraph::ActiveNode::Labels::Reloading.reload_models!
+        ActiveGraph::Node::Labels::Reloading.reload_models!
       end
     end
 
     # Rescue responses similar to ActiveRecord.
     config.action_dispatch.rescue_responses.merge!(
       'ActiveGraph::RecordNotFound' => :not_found,
-      'ActiveGraph::ActiveNode::Labels::RecordNotFound' => :not_found
+      'ActiveGraph::Node::Labels::RecordNotFound' => :not_found
     )
 
     # Add ActiveModel translations to the I18n load_path
@@ -48,7 +48,7 @@ module ActiveGraph
 
       ActiveGraph::Config.configuration.merge!(neo4j_config.to_h)
 
-      ActiveGraph::ActiveBase.on_establish_driver { setup! neo4j_config }
+      ActiveGraph::Base.on_establish_driver { setup! neo4j_config }
 
       ActiveGraph::Config[:logger] ||= Rails.logger
 
@@ -62,7 +62,7 @@ module ActiveGraph
       options ||= {}
       register_neo4j_cypher_logging
 
-      ActiveGraph::ActiveBase.new_driver( url || path || default_driver_path_or_url, options)
+      ActiveGraph::Base.new_driver( url || path || default_driver_path_or_url, options)
     end
 
     def final_driver_config!(neo4j_config)

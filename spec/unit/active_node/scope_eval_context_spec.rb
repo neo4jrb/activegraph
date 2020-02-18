@@ -1,4 +1,4 @@
-describe ActiveGraph::ActiveNode::Scope::ScopeEvalContext do
+describe ActiveGraph::Node::Scope::ScopeEvalContext do
   describe 'method missing' do
     let(:query_proxy) { double('QueryProxy', query: double) }
     subject { described_class.new(nil, query_proxy) }

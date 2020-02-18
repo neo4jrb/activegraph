@@ -4,13 +4,13 @@ describe ActiveGraph::ModelSchema do
   before do
     create_index :User, :name, type: :exact
 
-    stub_active_node_class('User') do
+    stub_node_class('User') do
       property :username, constraint: :unique
       property :name, index: :exact
       enum role: [:none, :staff, :admin]
     end
 
-    stub_active_node_class('Book') do
+    stub_node_class('Book') do
       id_property :isbn
     end
   end

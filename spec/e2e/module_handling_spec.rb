@@ -2,7 +2,7 @@ describe 'Module handling from config: :module_handling option' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class('Clazz')
+    stub_node_class('Clazz')
   end
 
   before do
@@ -76,7 +76,7 @@ describe 'Module handling from config: :module_handling option' do
     before do
       ActiveGraph::Config[:module_handling] = :demodulize
     end
-    let!(:cache) { ActiveGraph::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
+    let!(:cache) { ActiveGraph::Node::Labels::MODELS_FOR_LABELS_CACHE }
 
     it 'saves the map of label to class correctly when labels do not match class' do
       expect(cache).to be_empty
@@ -87,14 +87,14 @@ describe 'Module handling from config: :module_handling option' do
     end
   end
 
-  describe 'ActiveRel' do
+  describe 'Relationship' do
     let(:test_config) do
       proc do |config_option|
         ActiveGraph::Config[:module_handling] = config_option
-        # ActiveRel types are misbehaving when using stub_const, will have to fix later
+        # Relationship types are misbehaving when using stub_const, will have to fix later
         module ModuleTest
           class RelClass
-            include ActiveGraph::ActiveRel
+            include ActiveGraph::Relationship
           end
         end
       end

@@ -2,18 +2,18 @@ describe 'wrapped nodes in transactions' do
   before(:each) do
     clear_model_memory_caches
 
-    stub_active_node_class('Student') do
+    stub_node_class('Student') do
       property :name
 
       has_many :out, :teachers, model_class: 'Teacher', rel_class: 'StudentTeacher'
     end
 
-    stub_active_node_class('Teacher') do
+    stub_node_class('Teacher') do
       property :name
       has_many :in, :students, model_class: 'Student', rel_class: 'StudentTeacher'
     end
 
-    stub_active_rel_class('StudentTeacher') do
+    stub_relationship_class('StudentTeacher') do
       from_class :Student
       to_class :Teacher
       type 'teacher'
@@ -28,7 +28,7 @@ describe 'wrapped nodes in transactions' do
     Student.create(name: 'John')
     Teacher.create(name: 'Mr Jones')
     begin
-      tx = ActiveGraph::ActiveBase.new_transaction
+      tx = ActiveGraph::Base.new_transaction
       @john = Student.first
       @jones = Teacher.first
     ensure
@@ -61,7 +61,7 @@ describe 'wrapped nodes in transactions' do
 
     it 'will load rels within a tranaction' do
       begin
-        tx = ActiveGraph::ActiveBase.new_transaction
+        tx = ActiveGraph::Base.new_transaction
         retrieved_rel = @john.teachers.each_rel do |r|
           expect(r).to be_a(StudentTeacher)
         end
@@ -74,7 +74,7 @@ describe 'wrapped nodes in transactions' do
     it 'does not create an additional relationship after load then save' do
       starting_count = @john.teachers.rels.count
       begin
-        tx = ActiveGraph::ActiveBase.new_transaction
+        tx = ActiveGraph::Base.new_transaction
         @john.teachers.each_rel do |r|
           r.appreciation = 9001
           r.save

@@ -261,27 +261,27 @@ In jRuby you can access the data in server mode as above.  If you want to run th
 
 Embedded mode means that Neo4j is running inside your jRuby process.  This allows for direct access to the Neo4j Java APIs for faster and more direct querying.
 
-Using the ``neo4j`` gem (``ActiveNode`` and ``ActiveRel``) without Rails
+Using the ``neo4j`` gem (``Node`` and ``Relationship``) without Rails
 ````````````````````````````````````````````````````````````````````````
 
-To define your own session for the ``neo4j`` gem you create a ``ActiveGraph::Core::CypherSession`` object and establish it as the current session for the ``neo4j`` gem with the ``ActiveBase`` module (this is done automatically in Rails):
+To define your own session for the ``neo4j`` gem you create a ``ActiveGraph::Core::CypherSession`` object and establish it as the current session for the ``neo4j`` gem with the ``Base`` module (this is done automatically in Rails):
 
 .. code-block:: ruby
 
   require 'active_graph/core/cypher_session/adaptors/http'
   neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
-  ActiveGraph::ActiveBase.on_establish_session { ActiveGraph::Core::CypherSession.new(neo4j_adaptor) }
+  ActiveGraph::Base.on_establish_session { ActiveGraph::Core::CypherSession.new(neo4j_adaptor) }
 
 You could instead use the following, but ``on_establish_session`` will establish a new session for each thread for thread-safety and thus the above is recommended in general unless you know what you are doing:
 
 .. code-block:: ruby
 
-  ActiveGraph::ActiveBase.current_session = ActiveGraph::Core::CypherSession.new(neo4j_adaptor)
+  ActiveGraph::Base.current_session = ActiveGraph::Core::CypherSession.new(neo4j_adaptor)
 
 What if I'm integrating with a pre-existing Neo4j database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When trying to get the ``neo4j`` gem to integrate with a pre-existing Neo4j database instance (common in cases of migrating data from a legacy SQL database into a Neo4j-powered rails app), remember that every ``ActiveNode`` model is required to have an ID property with a ``unique`` constraint upon it, and that unique ID property will default to ``uuid`` unless you override it to use a different ID property.
+When trying to get the ``neo4j`` gem to integrate with a pre-existing Neo4j database instance (common in cases of migrating data from a legacy SQL database into a Neo4j-powered rails app), remember that every ``Node`` model is required to have an ID property with a ``unique`` constraint upon it, and that unique ID property will default to ``uuid`` unless you override it to use a different ID property.
 
 This commonly leads to getting a ``ActiveGraph::DeprecatedSchemaDefinitionError`` in Rails when attempting to access a node populated into a Neo4j database directly via Cypher (i.e. when Rails didn't create the node itself). To solve or avoid this problem, be certain to define and constrain as unique a uuid property (or whatever other property you want Rails to treat as the unique ID property) in Cypher when loading the legacy data or use the methods discussed in :doc:`Unique IDs </UniqueIDs>`.
 

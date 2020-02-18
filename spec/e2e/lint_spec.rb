@@ -1,6 +1,6 @@
 describe 'ActiveModel::Lint' do
   class LintClass
-    include ActiveGraph::ActiveNode
+    include ActiveGraph::Node
   end
 
   let(:clazz) { LintClass }

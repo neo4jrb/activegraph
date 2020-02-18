@@ -24,7 +24,7 @@ module ActiveGraph
       end
 
       def initialize_all_models!
-        models = ActiveGraph::ActiveNode.loaded_classes
+        models = ActiveGraph::Node.loaded_classes
         models.map(&:ensure_id_property_info!)
       end
     end

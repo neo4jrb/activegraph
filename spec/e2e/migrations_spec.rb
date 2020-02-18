@@ -7,7 +7,7 @@ module ActiveGraph
         create_constraint :'ActiveGraph::Migrations::SchemaMigration', :migration_id, type: :unique
 
         create_constraint :User, :name, type: :unique
-        stub_active_node_class('User') do
+        stub_node_class('User') do
           property :name
         end
 
@@ -269,7 +269,7 @@ module ActiveGraph
 
         describe 'transactional behavior in migrations' do
           before do
-            stub_active_node_class('Contact') do
+            stub_node_class('Contact') do
               property :phone
             end
 

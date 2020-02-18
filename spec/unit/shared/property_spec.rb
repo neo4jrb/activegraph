@@ -1,5 +1,5 @@
 describe ActiveGraph::Shared::Property do
-  before { stub_named_class('SharedPropertyTest') { include ActiveGraph::ActiveNode::Property } }
+  before { stub_named_class('SharedPropertyTest') { include ActiveGraph::Node::Property } }
 
   describe ':property class method' do
     it 'raises an error when passing illegal properties' do
@@ -151,7 +151,7 @@ describe ActiveGraph::Shared::Property do
       end
     end
 
-    before { stub_active_node_class('CustomTypeTest') }
+    before { stub_node_class('CustomTypeTest') }
     let(:instance)  { CustomTypeTest.new }
     let(:range)     { 1..3 }
 
@@ -184,7 +184,7 @@ describe ActiveGraph::Shared::Property do
     end
   end
 
-  describe ActiveGraph::ActiveNode do
+  describe ActiveGraph::Node do
     before(:each) do
       # This serializer adds a text when the data is saved on the db,
       # and removes it when deserializing
@@ -214,7 +214,7 @@ describe ActiveGraph::Shared::Property do
         end
       end)
 
-      stub_active_node_class('MyData') do
+      stub_node_class('MyData') do
         property :polite_string
         property :happy_string
 

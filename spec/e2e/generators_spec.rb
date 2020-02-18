@@ -36,7 +36,7 @@ describe 'Generators' do
     before do
       app = double
       allow(app).to receive(:eager_load!) do
-        stub_active_node_class('Person') do
+        stub_node_class('Person') do
           property :name, index: :exact
         end
       end

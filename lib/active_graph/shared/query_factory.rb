@@ -36,7 +36,7 @@ module ActiveGraph::Shared
     end
 
     def base_query
-      @base_query || ActiveGraph::ActiveBase.new_query
+      @base_query || ActiveGraph::Base.new_query
     end
 
     protected

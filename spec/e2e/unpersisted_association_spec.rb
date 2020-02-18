@@ -10,13 +10,13 @@ describe 'association creation' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class 'Student' do
+    stub_node_class 'Student' do
       property :name
       has_many :out, :lessons, type: 'ENROLLED_IN'
       has_one :out, :favorite_class, type: 'FAVORITE_CLASS', model_class: 'Lesson'
     end
 
-    stub_active_node_class 'Lesson' do
+    stub_node_class 'Lesson' do
       property :subject
       validates_presence_of :subject
       has_many :in, :students, origin: :lessons

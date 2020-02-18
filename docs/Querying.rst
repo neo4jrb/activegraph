@@ -10,15 +10,15 @@ If you are using the ``neo4j-core`` gem, querying is as simple as calling the ``
 
   neo4j_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
 
-Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``ActiveGraph::ActiveBase.current_session``.  So you could make the above query with:
+Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``ActiveGraph::Base.current_session``.  So you could make the above query with:
 
 .. code-block:: ruby
 
-  ActiveGraph::ActiveBase.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
+  ActiveGraph::Base.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
 
-Most of the time, though, using the ``neo4j`` gem involves using the ``ActiveNode`` and ``ActiveRel`` APIs as described below.
+Most of the time, though, using the ``neo4j`` gem involves using the ``Node`` and ``Relationship`` APIs as described below.
 
-ActiveNode
+Node
 ----------
 
 Simple Query Methods
@@ -51,7 +51,7 @@ Like in ActiveRecord you can build queries via method chaining.  This can start 
 
 In the case of the association calls, the scope becomes a class-level representation of the association's model so far.  So for example if I were to call ``post.comments`` I would end up with a representation of nodes from the ``Comment`` model, but only those which are related to the ``post`` object via the ``comments`` association.
 
-At this point it should be mentioned that what associations return isn't an ``Array`` but in fact an ``AssociationProxy``.  ``AssociationProxy`` is ``Enumerable`` so you can still iterate over it as a collection.  This allows for the method chaining to build queries, but it also enables :ref:`eager loading <active_node-eager_loading>` of associations
+At this point it should be mentioned that what associations return isn't an ``Array`` but in fact an ``AssociationProxy``.  ``AssociationProxy`` is ``Enumerable`` so you can still iterate over it as a collection.  This allows for the method chaining to build queries, but it also enables :ref:`eager loading <node-eager_loading>` of associations
 
 If if you call a method such as ``where``, you will end up with a ``QueryProxy``.  Similar to an ``AssociationProxy``, a ``QueryProxy`` represents an enumerable query which hasn't yet been executed and which you can call filtering and sorting methods on as well as chaining further associations.
 
@@ -110,7 +110,7 @@ Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relat
 Branching
 ^^^^^^^^^
 
-When making association chains with ``ActiveNode`` you can use the ``branch`` method to go down one path before jumping back to continue where you started from.  For example:
+When making association chains with ``Node`` you can use the ``branch`` method to go down one path before jumping back to continue where you started from.  For example:
 
 .. code-block:: ruby
 
@@ -259,7 +259,7 @@ The ``neo4j-core`` gem provides a ``Query`` class which can be used for building
 
 .. code-block:: ruby
 
-  ActiveGraph::ActiveBase.new_query # Get a new Query object
+  ActiveGraph::Base.new_query # Get a new Query object
 
   # Get a Query object based on a scope
   Student.query_as(:s) # For a

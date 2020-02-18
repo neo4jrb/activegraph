@@ -1,15 +1,15 @@
-describe ActiveGraph::ActiveNode::Persistence do
+describe ActiveGraph::Node::Persistence do
   let(:node) { double('a persisted node', exist?: true) }
 
   let(:clazz) do
     Class.new do
       include ActiveGraph::Shared
       include ActiveGraph::Shared::Identity
-      include ActiveGraph::ActiveNode::Query
-      include ActiveGraph::ActiveNode::Persistence
-      include ActiveGraph::ActiveNode::Unpersisted
-      include ActiveGraph::ActiveNode::HasN
-      include ActiveGraph::ActiveNode::Property
+      include ActiveGraph::Node::Query
+      include ActiveGraph::Node::Persistence
+      include ActiveGraph::Node::Unpersisted
+      include ActiveGraph::Node::HasN
+      include ActiveGraph::Node::Property
 
       property :name
       property :age, type: Integer
@@ -61,7 +61,7 @@ describe ActiveGraph::ActiveNode::Persistence do
   describe 'props_for_create' do
     let(:node) { clazz.new }
     before do
-      clazz.send(:include, ActiveGraph::ActiveNode::IdProperty)
+      clazz.send(:include, ActiveGraph::Node::IdProperty)
       clazz.id_property :uuid, auto: :uuid, constraint: false
     end
 

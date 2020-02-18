@@ -31,26 +31,26 @@ Neo4j.rb
 Neo4j.rb consists of the `neo4j` and `neo4j-core` gems.
 
 neo4j
-  Provides ``ActiveNode`` and ``ActiveRel`` modules for object modeling.  Introduces *Model* and *Association* concepts (see below).  Depends on ``neo4j-core`` and thus both are available when ``neo4j`` is used
+  Provides ``Node`` and ``Relationship`` modules for object modeling.  Introduces *Model* and *Association* concepts (see below).  Depends on ``neo4j-core`` and thus both are available when ``neo4j`` is used
 
 neo4j-core
   Provides low-level connectivity, transactions, and response object wrapping.  Includes ``Query`` class for generating Cypher queries with Ruby method chaining.
 
 Model
-  A Ruby class including either the ``ActiveGraph::ActiveNode`` module (for modeling nodes) or the ``ActiveGraph::ActiveRel`` module (for modeling relationships) from the ``neo4j`` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
+  A Ruby class including either the ``ActiveGraph::Node`` module (for modeling nodes) or the ``ActiveGraph::Relationship`` module (for modeling relationships) from the ``neo4j`` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
 
 Association
-  Defined on an ``ActiveNode`` model.  Defines either a ``has_one`` or ``has_many`` relationship to a model.  A higher level abstraction of a **Relationship**
+  Defined on an ``Node`` model.  Defines either a ``has_one`` or ``has_many`` relationship to a model.  A higher level abstraction of a **Relationship**
 
 Code Examples
 -------------
 
 With Neo4j.rb, you can use either high-level abstractions for convenience or low level APIs for flexibility.
 
-ActiveNode
+Node
 ~~~~~~~~~~
 
-ActiveNode provides an Object Graph Model (OGM) for abstracting Neo4j concepts with an ``ActiveRecord``-like API:
+Node provides an Object Graph Model (OGM) for abstracting Neo4j concepts with an ``ActiveRecord``-like API:
 
 .. code-block:: ruby
 

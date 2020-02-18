@@ -1,4 +1,4 @@
-describe ActiveGraph::ActiveNode::IdProperty do
+describe ActiveGraph::Node::IdProperty do
   before(:all) do
     ActiveGraph::Config.delete(:id_property)
     ActiveGraph::Config.delete(:id_property_type)
@@ -13,7 +13,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
         expect do
-          stub_active_node_class('Unique') do
+          stub_node_class('Unique') do
             id_property :something, :bla
           end
         end.to raise_error(/Expected a Hash/)
@@ -21,7 +21,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
       it 'raise for id_property :something, bla: 42' do
         expect do
-          stub_active_node_class('Unique') do
+          stub_node_class('Unique') do
             id_property :something, bla: 42
           end
         end.to raise_error(/Illegal value/)
@@ -32,7 +32,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'when no id_property' do
     let!(:clazz) do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         property :name
       end
     end
@@ -65,7 +65,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
       let_config(:id_property_type_value, :uuid)
 
       let!(:clazz) do
-        stub_active_node_class('Clazz')
+        stub_node_class('Clazz')
       end
 
       it 'will set the id_property' do
@@ -80,7 +80,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
     let_config(:id_property, :neo_id)
 
     before do
-      stub_active_node_class('NeoIdTest')
+      stub_node_class('NeoIdTest')
     end
 
     it 'it will find node by neo_id' do
@@ -91,7 +91,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'id_property :myid' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :myid
       end
     end
@@ -199,7 +199,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :my_id, on: :foobar
 
         def foobar
@@ -263,7 +263,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
       property_name = id_property_name
       property_options = id_property_options
-      stub_active_node_class('Clazz', false) do
+      stub_node_class('Clazz', false) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
       property_name = subclass_id_property_name
@@ -363,7 +363,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :my_uuid, auto: :uuid
       end
     end
@@ -423,7 +423,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'id_property :neo_id' do
     before do
-      stub_active_node_class('NeoIdTest', false) do
+      stub_node_class('NeoIdTest', false) do
         id_property :neo_id
       end
     end
@@ -520,7 +520,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
   describe 'inheritance' do
     before do
-      stub_active_node_class('Teacher') do
+      stub_node_class('Teacher') do
         id_property :my_id, on: :my_method
 
         def my_method
@@ -530,19 +530,19 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
       stub_named_class('Substitute', Teacher)
 
-      stub_active_node_class('Vehicle') do
+      stub_node_class('Vehicle') do
         id_property :my_id, auto: :uuid
       end
 
       stub_named_class('Car', Vehicle)
 
-      stub_active_node_class('Fruit') do
+      stub_node_class('Fruit') do
         id_property :my_id
       end
 
       stub_named_class('Apple', Fruit)
 
-      stub_active_node_class('Sport') do
+      stub_node_class('Sport') do
         id_property :neo_id
       end
 
@@ -569,7 +569,7 @@ describe ActiveGraph::ActiveNode::IdProperty do
 
     context 'when a driver is not started' do
       before do
-        stub_active_node_class('Executive') do
+        stub_node_class('Executive') do
           id_property :my_id, on: :my_method
 
           def my_method

@@ -1,4 +1,4 @@
-describe ActiveGraph::ActiveRel::Property do
+describe ActiveGraph::Relationship::Property do
   let(:driver) { double('Driver') }
 
   before do
@@ -12,8 +12,8 @@ describe ActiveGraph::ActiveRel::Property do
         'Clazz'
       end
 
-      include ActiveGraph::ActiveRel::Property
-      include ActiveGraph::ActiveRel::Types
+      include ActiveGraph::Relationship::Property
+      include ActiveGraph::Relationship::Types
     end
   end
 

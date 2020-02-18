@@ -14,7 +14,7 @@ The `cancancan-neo4j gem <https://github.com/CanCanCommunity/cancancan-neo4j>`_ 
 neo4j-paperclip
 ---------------
 
-The `neo4jrb-paperclip <https://github.com/l4u/neo4jrb-paperclip>`_ gem allows easy use of the ``paperclip`` gem in ``ActiveNode`` and ``ActiveRel`` models.
+The `neo4jrb-paperclip <https://github.com/l4u/neo4jrb-paperclip>`_ gem allows easy use of the ``paperclip`` gem in ``Node`` and ``Relationship`` models.
 
 neo4jrb_spatial
 ---------------
@@ -24,4 +24,4 @@ The `neo4jrb_spatial <https://github.com/neo4jrb/neo4jrb_spatial>`_ gem add the 
 neo4j-rspec
 -----------
 
-The `neo4j-rspec <https://github.com/sineed/neo4j-rspec>`_ gem adds RSpec matchers for easier testing of ``ActiveNode`` and ``ActiveRel`` models.
+The `neo4j-rspec <https://github.com/sineed/neo4j-rspec>`_ gem adds RSpec matchers for easier testing of ``Node`` and ``Relationship`` models.

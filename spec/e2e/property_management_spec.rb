@@ -64,7 +64,7 @@ describe 'declared property classes' do
   describe ActiveGraph::Shared::DeclaredProperties do
     before do
       clazz = Class.new do
-        include ActiveGraph::ActiveNode
+        include ActiveGraph::Node
         property :foo
         property :bar, type: String, default: 'foo'
         property :qux, type: String, default: proc { "QUX-#{SecureRandom.hex(16)}" }
@@ -115,7 +115,7 @@ describe 'declared property classes' do
     describe 'inheritance' do
       before do
         clazz = Class.new do
-          include ActiveGraph::ActiveNode
+          include ActiveGraph::Node
           property :foo
           property :bar, type: String, default: 'foo'
         end
@@ -123,7 +123,7 @@ describe 'declared property classes' do
         stub_const('MyModel', clazz)
 
         clazz = Class.new(MyModel) do
-          include ActiveGraph::ActiveNode
+          include ActiveGraph::Node
         end
 
         stub_const('MyInheritedClass', clazz)

@@ -1,27 +1,27 @@
-ActiveNode
+Node
 ==========
 
-ActiveNode is the ActiveRecord replacement module for Rails. Its syntax should be familiar for ActiveRecord users but has some unique qualities.
+Node is the ActiveRecord replacement module for Rails. Its syntax should be familiar for ActiveRecord users but has some unique qualities.
 
-To use ActiveNode, include ActiveGraph::ActiveNode in a class.
+To use Node, include ActiveGraph::Node in a class.
 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
     end
 
 Properties
 ----------
 
-All properties for ActiveGraph::ActiveNode objects must be declared (unlike neo4j-core nodes). Properties are declared using the property method which is the same as attribute from the active_attr gem.
+All properties for ActiveGraph::Node objects must be declared (unlike neo4j-core nodes). Properties are declared using the property method which is the same as attribute from the active_attr gem.
 
 Example:
 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
       property :title
       property :text, default: 'bla bla bla'
       property :score, type: Integer, default: 0
@@ -49,14 +49,14 @@ See the Properties section for additional information.
 Labels
 ~~~~~~
 
-By default ``ActiveNode`` takes your model class' name and uses it directly as the Neo4j label for the nodes it represents.  This even includes using the module namespace of the class.  That is, the class  ``MyClass`` in the ``MyModule`` module will have the label ``MyModule::MyClass``.  To change this behavior, see the :term:`module_handling` configuration variable.
+By default ``Node`` takes your model class' name and uses it directly as the Neo4j label for the nodes it represents.  This even includes using the module namespace of the class.  That is, the class  ``MyClass`` in the ``MyModule`` module will have the label ``MyModule::MyClass``.  To change this behavior, see the :term:`module_handling` configuration variable.
 
-Additionally you can change the name of a particular ``ActiveNode`` by using ``mapped_label_name`` like so:
+Additionally you can change the name of a particular ``Node`` by using ``mapped_label_name`` like so:
 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       self.mapped_label_name = 'BlogPost'
     end
@@ -68,7 +68,7 @@ To declare a index on a constraint on a property, you should create a migration.
 
 .. note::
 
-  In previous versions of ``ActiveNode`` indexes and constraints were defined on properties directly on the models and were automatically created.  This turned out to be not safe, and migrations are now required to create indexes and migrations.
+  In previous versions of ``Node`` indexes and constraints were defined on properties directly on the models and were automatically created.  This turned out to be not safe, and migrations are now required to create indexes and migrations.
 
 Labels
 ~~~~~~
@@ -78,7 +78,7 @@ The class name maps directly to the label.  In the following case both the class
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
     end
 
 If you want to specify a different label for your class you can use ``mapped_label_name``:
@@ -86,7 +86,7 @@ If you want to specify a different label for your class you can use ``mapped_lab
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       self.mapped_label_name = 'BlogPost'
     end
@@ -96,7 +96,7 @@ If you would like to use multiple labels you can use class inheritance.  In the 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
     end
 
     class Article < Post
@@ -112,7 +112,7 @@ Pass a property name as a symbol to the serialize method if you want to save JSO
 .. code-block:: ruby
 
     class Student
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       property :links
 
@@ -136,7 +136,7 @@ You can declare special properties that maps an integer value in the database wi
 .. code-block:: ruby
 
     class Media
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       enum type: [:image, :video, :unknown]
     end
@@ -193,7 +193,7 @@ By default, every ``enum`` property will require you to add an associated index 
 .. code-block:: ruby
 
     class Media
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       enum type: [:image, :video, :unknown], _index: false
     end
@@ -203,7 +203,7 @@ Sometimes it is desirable to have a default value for an ``enum`` property.  To 
 .. code-block:: ruby
 
     class Media
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       enum type: [:image, :video, :unknown], _default: :video
     end
@@ -213,7 +213,7 @@ By default, enum setters are `case insensitive` (in the example below, ``Media.c
 .. code-block:: ruby
 
     class Media
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       enum type: [:image, :video, :unknown], _case_sensitive: false
     end
@@ -223,13 +223,13 @@ By default, enum setters are `case insensitive` (in the example below, ``Media.c
 Scopes
 ------
 
-Scopes in ``ActiveNode`` are a way of defining a subset of nodes for a particular ``ActiveNode`` model.  This could be as simple as:
+Scopes in ``Node`` are a way of defining a subset of nodes for a particular ``Node`` model.  This could be as simple as:
 
 
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       scope :minors, -> { where(age: 0..17) }
     end
@@ -239,7 +239,7 @@ This allows you chain a description of the defined set of nodes which can make y
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       scope :eligible, -> { where_not(age: 0..17).where(completed_form: true) }
     end
@@ -256,7 +256,7 @@ While that's useful in of itself, sometimes you want to be able to create more d
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       scope :around_age_of, -> (age) { where(age: (age - 5..age + 5)) }
     end
@@ -271,7 +271,7 @@ All of the examples so far have used the Ruby API for automatically generating C
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       scope :non_teenagers, -> { where("#{identity}.age < 13 OR #{identity}.age >= 18") }
     end
@@ -288,7 +288,7 @@ Finally, the ``scope`` method just gives us a convenient way of having a method 
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       def self.average_age
         all(:person).pluck('avg(person.age)').first
@@ -304,7 +304,7 @@ To implement a more complicated scope with a class method you simply need to ret
 Wrapping
 --------
 
-When loading a node from the database there is a process to determine which ``ActiveNode`` model to choose for wrapping the node.  If nothing is configured on your part then when a node is created labels will be saved representing all of the classes in the hierarchy.
+When loading a node from the database there is a process to determine which ``Node`` model to choose for wrapping the node.  If nothing is configured on your part then when a node is created labels will be saved representing all of the classes in the hierarchy.
 
 That is, if you have a ``Teacher`` class inheriting from a ``Person`` model, then creating a ``Person`` object will create a node in the database with a ``Person`` label, but creating a ``Teacher`` object will create a node with both the ``Teacher`` and ``Person`` labels.
 
@@ -330,7 +330,7 @@ created_at, updated_at
 .. code-block:: ruby
 
     class Blog
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       include ActiveGraph::Timestamps # will give model created_at and updated_at timestamps
       include ActiveGraph::Timestamps::Created # will give model created_at timestamp
@@ -353,24 +353,24 @@ Unique IDs are automatically created for all nodes using SecureRandom::uuid. See
 Associations
 ------------
 
-``has_many`` and ``has_one`` associations can also be defined on ``ActiveNode`` models to make querying and creating relationships easier.
+``has_many`` and ``has_one`` associations can also be defined on ``Node`` models to make querying and creating relationships easier.
 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
       has_many :in, :comments, origin: :post
       has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Comment
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
       has_one :out, :post, type: :post
       has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
       has_many :in, :posts, origin: :author
       has_many :in, :comments, origin: :author
 
@@ -437,7 +437,7 @@ This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :Mo
 .. code-block:: ruby
 
     class Person
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       # Match all incoming relationship types
       has_many :in, :written_things, type: :WROTE, model_class: [:Post, :Comment]
@@ -446,8 +446,8 @@ This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :Mo
 You can't perform standard association chains on a polymorphic association. For example, while you `can` call ``post.comments.author.written_things``, you `cannot` call
 ``post.comments.author.written_things.post.comments`` (an exception will be raised). In this example, the return of ``.written_things`` can be either a ``Post`` object or a ``Comment`` object, any method you called
 on an association made up of them both could have a different meaning for the ``Post`` object vs the ``Comment`` object. So how can you execute ``post.comments.author.written_things.post.comments``?
-This is where ``.query_as`` and ``.proxy_as`` come to the rescue! While ``ActiveNode`` doesn't know how to handle the ``.post`` call on ``.written_things``,
-you `know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help ``ActiveNode`` out, convert the `AssociationProxy`` object returned by ``post.comments.author.written_things`` into a ``Query`` object with ``.query_as()``, then manually specify the path of ``.post``. Like so:
+This is where ``.query_as`` and ``.proxy_as`` come to the rescue! While ``Node`` doesn't know how to handle the ``.post`` call on ``.written_things``,
+you `know` that the path from the return of ``.written_things`` to ``Post`` nodes is ``(written_thing)-[:post]->(post:Post)``. To help ``Node`` out, convert the `AssociationProxy`` object returned by ``post.comments.author.written_things`` into a ``Query`` object with ``.query_as()``, then manually specify the path of ``.post``. Like so:
 
 .. code-block:: ruby
 
@@ -462,7 +462,7 @@ For example, to get ``post.comments.author.written_things.post.comments`` we cou
 
     post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)").match("(post)<-[:post]-(comment:Comment)").pluck(:comment)
 
-But this isn't ideal. It would be nice to make use of ``ActiveNode``'s association chains to complete our query. We `know` that the return of ``post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)")``
+But this isn't ideal. It would be nice to make use of ``Node``'s association chains to complete our query. We `know` that the return of ``post.comments.author.written_things.query_as(:written_thing).match("(written_thing)-[:post]->(post:Post)")``
 is a ``Post`` object, after all. To allow for association chains in this circumstance, ``.proxy_as()`` comes to the rescue! If we `know` that a ``Query`` will return a specific model class,
 ``proxy_as`` allows us to tell Neo4jrb this, and begin association chaining from that point. For example
 
@@ -472,7 +472,7 @@ is a ``Post`` object, after all. To allow for association chains in this circums
 
 .. seealso::
 
-    #query_as http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/Query/QueryProxy#query_as-instance_method
+    #query_as http://www.rubydoc.info/gems/neo4j/Neo4j/Node/Query/QueryProxy#query_as-instance_method
     and
     #proxy_as http://www.rubydoc.info/gems/neo4j/Neo4j/Core/Query#proxy_as-instance_method
 
@@ -484,7 +484,7 @@ Similar to ActiveRecord, you can specify four ``dependent`` options when declari
 .. code-block:: ruby
 
     class Route
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
       has_many :out, :stops, type: :STOPPING_AT, dependent: :delete_orphans
     end
 
@@ -508,14 +508,14 @@ The two orphan-destruction options are unique to Neo4j.rb. As an example of when
 
 
 .. seealso::
-  #has_many http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/HasN/ClassMethods#has_many-instance_method
+  #has_many http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_many-instance_method
   and
-  #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/ActiveNode/HasN/ClassMethods#has_one-instance_method
+  #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_one-instance_method
 
 Association Options
 ~~~~~~~~~~~~~~~~~~~~~~
 
-By default, when you call an association ``ActiveNode`` will add the ``model_class`` labels to the query (as a filter). For example:
+By default, when you call an association ``Node`` will add the ``model_class`` labels to the query (as a filter). For example:
 
 .. code-block:: ruby
 
@@ -554,13 +554,13 @@ Instead of ``true``, you can give one of three different options:
 * ``:all``, which will include all set properties in rel creation. This means that if a new relationship will be created unless all nodes, type, direction, and rel properties are matched.
 * ``{on: [keys]}`` will use the keys given to determine whether to create a new rel and the remaining properties will be set afterwards.
 
-.. _active_node-eager_loading:
+.. _node-eager_loading:
 
 
 Eager Loading
 ~~~~~~~~~~~~~
 
-ActiveNode supports eager loading of associations in two ways.  The first way is transparent.  When you do the following:
+Node supports eager loading of associations in two ways.  The first way is transparent.  When you do the following:
 
 .. code-block:: ruby
 
@@ -580,7 +580,7 @@ Only three Cypher queries will be made:
 
 While three queries isn't ideal, it is better than the naive approach of one query for every call to an object's association (Thanks to `DataMapper <http://datamapper.org/why.html>`_ for the inspiration).
 
-For those times when you need to load all of your data with one Cypher query, however, you can do the following to give `ActiveNode` a hint:
+For those times when you need to load all of your data with one Cypher query, however, you can do the following to give `Node` a hint:
 
 .. code-block:: ruby
 
@@ -592,7 +592,7 @@ For those times when you need to load all of your data with one Cypher query, ho
     end
   end
 
-All that we did here was add ``.with_associations(:tags, :comments)``.  In addition to getting all of the blog posts, this will generate a Cypher query which uses the Cypher `COLLECT()` function to efficiently roll-up all of the associated objects.  `ActiveNode` then automatically structures them into a nested set of `ActiveNode` objects for you.
+All that we did here was add ``.with_associations(:tags, :comments)``.  In addition to getting all of the blog posts, this will generate a Cypher query which uses the Cypher `COLLECT()` function to efficiently roll-up all of the associated objects.  `Node` then automatically structures them into a nested set of `Node` objects for you.
 
 You can also use ``with_associations`` with multiple levels like:
 

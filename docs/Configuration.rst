@@ -28,9 +28,9 @@ Variables
   **class_name_property**
     **Default:** ``:_classname``
 
-    Which property should be used to determine the ``ActiveNode`` class to wrap the node in
+    Which property should be used to determine the ``Node`` class to wrap the node in
 
-    If there is no value for this property on a node the node`s labels will be used to determine the ``ActiveNode`` class
+    If there is no value for this property on a node the node`s labels will be used to determine the ``Node`` class
 
     .. seealso:: :ref:`activenode-wrapping`
 
@@ -44,21 +44,21 @@ Variables
   **include_root_in_json**
     **Default:** ``true``
 
-    When serializing ``ActiveNode`` and ``ActiveRel`` objects, should there be a root in the JSON of the model name.
+    When serializing ``Node`` and ``Relationship`` objects, should there be a root in the JSON of the model name.
 
     .. seealso:: http://api.rubyonrails.org/classes/ActiveModel/Serializers/JSON.html
 
   **logger**
     **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
-    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``ActiveNode`` and ``ActiveRel`` modules).
+    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``Node`` and ``Relationship`` modules).
 
   **module_handling**
     **Default:** ``:none``
 
     **Available values:** ``:demodulize``, ``:none``, ``proc``
 
-    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of an ``ActiveNode`` model name to the node label or an ``ActiveRel`` model to the relationship type, so `MyModule::MyClass` results in a label with the same name.
+    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of an ``Node`` model name to the node label or an ``Relationship`` model to the relationship type, so `MyModule::MyClass` results in a label with the same name.
 
     The `:demodulize` option uses ActiveSupport's method of the same name to strip off modules. If you use a `proc`, it will the class name as an argument and you should return a string that modifies it as you see fit.
 
@@ -70,7 +70,7 @@ Variables
   **record_timestamps**
     **Default:** ``false``
 
-    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
+    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all Node and Relationship models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
 
   **skip_migration_check**
     **Default:** ``false``
@@ -89,7 +89,7 @@ Variables
 
     **Available values:** ``:upcase``, ``:downcase``, ``:legacy``, ``:none``
 
-    Determines how relationship types for ``ActiveRel`` models are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an ``ActiveRel`` model of ``HasPost`` then the relationship type in the database will be ``HAS_POST``
+    Determines how relationship types for ``Relationship`` models are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an ``Relationship`` model of ``HasPost`` then the relationship type in the database will be ``HAS_POST``
 
     ``:legacy``
       Causes the type to be downcased and preceded by a `#`

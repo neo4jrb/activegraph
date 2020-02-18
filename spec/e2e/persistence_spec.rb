@@ -1,11 +1,11 @@
-describe ActiveGraph::ActiveNode do
+describe ActiveGraph::Node do
   before(:each) do
-    stub_active_node_class('Person') do
+    stub_node_class('Person') do
       property :name, type: String
       property :age, type: Integer
     end
 
-    stub_active_node_class('WithValidations') do
+    stub_node_class('WithValidations') do
       attr_accessor :callback_fired
 
       property :name
@@ -62,7 +62,7 @@ describe ActiveGraph::ActiveNode do
     end
   end
 
-  # moved from unit/active_node/persistence_spec.rb
+  # moved from unit/node/persistence_spec.rb
   describe 'save' do
     it 'creates a new node if not persisted before' do
       p = Person.new
@@ -117,7 +117,7 @@ describe ActiveGraph::ActiveNode do
     context 'with validations' do
       it 'raises an error with invalid params' do
         with_validations = WithValidations.new
-        expect { with_validations.save! }.to raise_error(ActiveGraph::ActiveNode::Persistence::RecordInvalidError)
+        expect { with_validations.save! }.to raise_error(ActiveGraph::Node::Persistence::RecordInvalidError)
       end
     end
   end
@@ -151,7 +151,7 @@ describe ActiveGraph::ActiveNode do
     it 'does not update it if it is not valid' do
       expect do
         person.update_attribute!(:name, nil)
-      end.to raise_error(ActiveGraph::ActiveNode::Persistence::RecordInvalidError)
+      end.to raise_error(ActiveGraph::Node::Persistence::RecordInvalidError)
 
       expect(get_value_from_db(person, :name)).to eq('Jim')
     end
@@ -175,7 +175,7 @@ describe ActiveGraph::ActiveNode do
 
   describe '#update_db_propert(y|ies)' do
     before do
-      stub_active_node_class('UpdateWithValidations') do
+      stub_node_class('UpdateWithValidations') do
         attr_accessor :callback_fired
 
         property :name
@@ -283,19 +283,19 @@ describe ActiveGraph::ActiveNode do
 
   describe 'associations and mass-assignment' do
     before do
-      stub_active_node_class('MyModel') do
+      stub_node_class('MyModel') do
         validates_presence_of :friend
 
         has_one :out, :friend, type: :FRIENDS_WITH, model_class: :FriendModel
       end
 
-      stub_active_node_class('FriendModel')
+      stub_node_class('FriendModel')
     end
 
     describe 'class method #create!' do
       context 'association validation fails' do
         it 'raises an error' do
-          expect { MyModel.create! }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
+          expect { MyModel.create! }.to raise_error ActiveGraph::Node::Persistence::RecordInvalidError, "Friend can't be blank"
         end
 
         it 'does not create the rel' do
@@ -315,7 +315,7 @@ describe ActiveGraph::ActiveNode do
     describe 'instance #save!' do
       context 'association validation fails' do
         it 'raises an error' do
-          expect { MyModel.new.save! }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
+          expect { MyModel.new.save! }.to raise_error ActiveGraph::Node::Persistence::RecordInvalidError, "Friend can't be blank"
         end
       end
 
@@ -330,12 +330,12 @@ describe ActiveGraph::ActiveNode do
   end
 end
 
-describe ActiveGraph::ActiveRel do
+describe ActiveGraph::Relationship do
   before do
-    stub_active_node_class('Person') do
+    stub_node_class('Person') do
       property :name
     end
-    stub_active_rel_class('FriendsWith') do
+    stub_relationship_class('FriendsWith') do
       from_class false
       to_class false
       property :level

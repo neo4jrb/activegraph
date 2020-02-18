@@ -3,10 +3,10 @@ describe 'Labels' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class('TestClass')
+    stub_node_class('TestClass')
 
     create_index :IndexedTestClass, :name, type: :exact
-    stub_active_node_class('IndexedTestClass') do
+    stub_node_class('IndexedTestClass') do
       property :name
     end
 
@@ -19,15 +19,15 @@ describe 'Labels' do
         current_driver
       end
 
-      extend ActiveGraph::ActiveNode::Query::ClassMethods
-      extend ActiveGraph::ActiveNode::Labels::ClassMethods
+      extend ActiveGraph::Node::Query::ClassMethods
+      extend ActiveGraph::Node::Labels::ClassMethods
     end
 
-    stub_active_node_class('SomeLabelClass') do
+    stub_node_class('SomeLabelClass') do
       include SomeLabelMixin
     end
 
-    stub_active_node_class('RelationTestClass') do
+    stub_node_class('RelationTestClass') do
       has_one :in, :test_class, type: nil
     end
   end
@@ -128,18 +128,18 @@ describe 'Labels' do
 
       it 'raises an error if no results match' do
         expect { IndexedTestClass.find_by!(name: 'foo') }
-          .to raise_error(ActiveGraph::ActiveNode::Labels::RecordNotFound) { |e| expect(e.model).to eq 'IndexedTestClass' }
+          .to raise_error(ActiveGraph::Node::Labels::RecordNotFound) { |e| expect(e.model).to eq 'IndexedTestClass' }
       end
     end
   end
 
   describe 'first and last' do
     before do
-      stub_active_node_class('FirstLastTestClass') do
+      stub_node_class('FirstLastTestClass') do
         property :name
       end
 
-      stub_active_node_class('EmptyTestClass')
+      stub_node_class('EmptyTestClass')
 
       @jasmine = FirstLastTestClass.create(name: 'jasmine')
       @middle = FirstLastTestClass.create

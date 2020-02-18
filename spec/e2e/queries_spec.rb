@@ -1,10 +1,10 @@
-describe 'ActiveGraph::ActiveNode#find' do
+describe 'ActiveGraph::Node#find' do
   before do
     clear_model_memory_caches
   end
 
   let(:clazz) do
-    stub_active_node_class('Clazz') do
+    stub_node_class('Clazz') do
       property :name
     end
   end
@@ -20,20 +20,20 @@ describe 'ActiveGraph::ActiveNode#find' do
 end
 
 
-describe 'ActiveGraph::ActiveNode#all' do
+describe 'ActiveGraph::Node#all' do
   before do
     clear_model_memory_caches
   end
 
   before do
-    stub_active_node_class('ClazzA') do
+    stub_node_class('ClazzA') do
       property :name
       property :score, type: Integer
 
       has_one :out, :knows, type: nil, model_class: false
     end
 
-    stub_active_node_class('ClazzB') do
+    stub_node_class('ClazzB') do
       property :name
       property :score, type: Integer
 

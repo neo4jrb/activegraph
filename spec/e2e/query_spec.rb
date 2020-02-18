@@ -9,13 +9,13 @@ describe 'Query API' do
   let(:student_interests_association_options) { {} }
 
   before(:each) do
-    stub_active_node_class('Interest') do
+    stub_node_class('Interest') do
       property :name
 
       has_many :both, :interested, type: nil, model_class: false
     end
 
-    stub_active_node_class('Lesson') do
+    stub_node_class('Lesson') do
       property :subject
       property :level
 
@@ -36,7 +36,7 @@ describe 'Query API' do
     end
 
     scoped_interests_options = student_interests_association_options # Grrr
-    stub_active_node_class('Student') do
+    stub_node_class('Student') do
       property :name
       property :age, type: Integer
 
@@ -51,7 +51,7 @@ describe 'Query API' do
       has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
     end
 
-    stub_active_rel_class('IsEnrolledFor') do
+    stub_relationship_class('IsEnrolledFor') do
       from_class :Student
       to_class :Lesson
       type 'is_enrolled_for'
@@ -59,7 +59,7 @@ describe 'Query API' do
       property :grade, type: Integer
     end
 
-    stub_active_node_class('Teacher') do
+    stub_node_class('Teacher') do
       property :name
       property :age, type: Integer
       property :status, default: 'active'
@@ -101,7 +101,7 @@ describe 'Query API' do
   describe 'association validation' do
     before(:each) do
       %w(Foo Bar).each do |const|
-        stub_active_node_class(const)
+        stub_node_class(const)
       end
     end
 
@@ -172,7 +172,7 @@ describe 'Query API' do
 
     it 'evaluates `all` lazily' do
       result = Teacher.all
-      expect(result).to be_a(ActiveGraph::ActiveNode::Query::QueryProxy)
+      expect(result).to be_a(ActiveGraph::Node::Query::QueryProxy)
       expect(result.size).to eq(2)
       expect(result).to include(samuels)
       expect(result).to include(othmar)
@@ -216,7 +216,7 @@ describe 'Query API' do
         after { expect(Teacher.count).to eq 1 }
 
         before(:each) do
-          stub_active_node_class('TeacherFoo')
+          stub_node_class('TeacherFoo')
           stub_named_class('Substitute', TeacherFoo)
         end
 
@@ -311,7 +311,7 @@ describe 'Query API' do
 
         context 'custom id property method' do
           before do
-            stub_active_node_class('CustomTeacher') do
+            stub_node_class('CustomTeacher') do
               id_property :custom_uuid, on: :custom_prop_method
               property :name
 
@@ -487,9 +487,9 @@ describe 'Query API' do
 
     describe 'multiple labels' do
       before(:each) do
-        stub_active_node_class('GitHub')
+        stub_node_class('GitHub')
 
-        stub_active_node_class('StackOverflow')
+        stub_node_class('StackOverflow')
 
         stub_named_class('GitHubUser', GitHub) do
           self.mapped_label_name = 'User'

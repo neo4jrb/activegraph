@@ -1,6 +1,6 @@
-describe ActiveGraph::ActiveNode::Initialize do
+describe ActiveGraph::Node::Initialize do
   before do
-    stub_active_node_class('MyModel') do
+    stub_node_class('MyModel') do
       property :name, type: String
     end
   end

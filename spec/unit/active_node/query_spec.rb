@@ -1,12 +1,12 @@
-describe ActiveGraph::ActiveNode::Query do
+describe ActiveGraph::Node::Query do
   let(:driver) { double('Driver') }
 
   before(:all) do
-    @prev_wrapped_classes = ActiveGraph::ActiveNode::Labels._wrapped_classes
-    ActiveGraph::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = ActiveGraph::Node::Labels._wrapped_classes
+    ActiveGraph::Node::Labels._wrapped_classes.clear
 
     @class_a = Class.new do
-      include ActiveGraph::ActiveNode::Query
+      include ActiveGraph::Node::Query
       def neo_id
         8724
       end
@@ -23,7 +23,7 @@ describe ActiveGraph::ActiveNode::Query do
 
   after(:all) do
     # restore
-    ActiveGraph::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    ActiveGraph::Node::Labels._wrapped_classes.concat(@prev_wrapped_classes)
   end
 
   describe '.query_as' do

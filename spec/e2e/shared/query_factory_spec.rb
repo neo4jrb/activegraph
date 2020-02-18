@@ -1,16 +1,16 @@
 describe ActiveGraph::Shared::QueryFactory do
   let!(:factory_from_class) do
-    stub_active_node_class('FactoryFromClass') do
+    stub_node_class('FactoryFromClass') do
       property :name
     end
   end
 
   before do
-    stub_active_node_class('FactoryToClass') do
+    stub_node_class('FactoryToClass') do
       property :name
     end
 
-    stub_active_rel_class('FactoryRelClass') do
+    stub_relationship_class('FactoryRelClass') do
       from_class 'FactoryFromClass'
       to_class 'FactoryToClass'
       property :score
@@ -47,7 +47,7 @@ describe ActiveGraph::Shared::QueryFactory do
 
       context 'with multiple labels' do
         before do
-          stub_named_class('FromSubclass', factory_from_class { include ActiveGraph::ActiveNode })
+          stub_named_class('FromSubclass', factory_from_class { include ActiveGraph::Node })
           FromSubclass.property :other_prop
         end
 

@@ -21,7 +21,7 @@ module ActiveGraph
         if self.class.id_property_name
           send(self.class.id_property_name)
         else
-          # ActiveRel
+          # Relationship
           neo_id
         end
       end

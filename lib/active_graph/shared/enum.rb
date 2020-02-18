@@ -13,7 +13,7 @@ module ActiveGraph::Shared
       #
       # @example Base example
       #   class Media
-      #     include ActiveGraph::ActiveNode
+      #     include ActiveGraph::Node
       #     enum type: [:image, :video, :unknown]
       #   end
       #   Media.types # => { :images => 0, :video => 1, :unknown => 2 }

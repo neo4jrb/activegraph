@@ -1,12 +1,12 @@
 Properties
 ==========
 
-In classes that mixin the ``ActiveGraph::ActiveNode`` or ``ActiveGraph::ActiveRel`` modules, properties must be declared using the ``property`` class method. It requires a single argument, a symbol that will correspond with the getter and setter as well as the property in the database.
+In classes that mixin the ``ActiveGraph::Node`` or ``ActiveGraph::Relationship`` modules, properties must be declared using the ``property`` class method. It requires a single argument, a symbol that will correspond with the getter and setter as well as the property in the database.
 
 .. code-block:: ruby
 
     class Post
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       property :title
     end
@@ -23,7 +23,7 @@ In practice, you can put it all together like this:
 .. code-block:: ruby
 
   class Post
-    include ActiveGraph::ActiveNode
+    include ActiveGraph::Node
 
     property :title, type: String, default: 'This ia new post'
     property :links
@@ -36,7 +36,7 @@ You will now be able to set the ``title`` property through mass-assignment (``Po
 Validations
 -----------
 
-The ``ActiveNode`` and ``ActiveRel`` modules in the ``neo4j`` gem are based off of ``ActiveModel``.  Because of this you can use any validations defined by ``ActiveModel`` as well as create your own in the same style.  For the best documentation on validations, see the `Active Record Validations <http://guides.rubyonrails.org/active_record_validations.html>`_ page.  The ``neo4j`` gem isn't based off of ``ActiveRecord`` aside from being inspired by it, but they both use ``ActiveModel`` under the covers.
+The ``Node`` and ``Relationship`` modules in the ``neo4j`` gem are based off of ``ActiveModel``.  Because of this you can use any validations defined by ``ActiveModel`` as well as create your own in the same style.  For the best documentation on validations, see the `Active Record Validations <http://guides.rubyonrails.org/active_record_validations.html>`_ page.  The ``neo4j`` gem isn't based off of ``ActiveRecord`` aside from being inspired by it, but they both use ``ActiveModel`` under the covers.
 
 One validation to note in particular is ``validates_uniqueness_of``.  Whereas most validations work only on the model in memory, this validation requires connecting to the database.  The ``neo4j`` gem implements it's own version of ``validates_uniqueness_of`` for Neo4j.
 
@@ -49,7 +49,7 @@ Neo4j, being schemaless as far as the database is concerned, does not require th
 .. code-block:: ruby
 
   class Post
-    include ActiveGraph::ActiveNode
+    include ActiveGraph::Node
     include ActiveGraph::UndeclaredProperties
 
     property :title
@@ -82,7 +82,7 @@ Declaring a type is not necessary and, in some cases, is better for performance.
 .. code-block:: ruby
 
   class Post
-    include ActiveGraph::ActiveNode
+    include ActiveGraph::Node
 
     property :score, type: Integer
     property :created_at, type: DateTime

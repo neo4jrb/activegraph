@@ -45,9 +45,9 @@ In Ruby:
   neo4j_session.query('MATCH (n) DETACH DELETE n')
 
   # When using the `neo4j` gem:
-  ActiveGraph::ActiveBase.current_session.query('MATCH (n) DETACH DELETE n')
+  ActiveGraph::Base.current_session.query('MATCH (n) DETACH DELETE n')
 
-If you are using ``ActiveNode`` and/or ``ActiveRel`` from the ``neo4j`` gem you will no doubt have ``SchemaMigration`` nodes in the database.  If you delete these nodes the gem will complain that your migrations haven't been run.  To get around this you could modify the query to exclude those nodes:
+If you are using ``Node`` and/or ``Relationship`` from the ``neo4j`` gem you will no doubt have ``SchemaMigration`` nodes in the database.  If you delete these nodes the gem will complain that your migrations haven't been run.  To get around this you could modify the query to exclude those nodes:
 
 .. code-block:: cypher
 
@@ -92,7 +92,7 @@ If you are using RSpec you can perform tests in a transaction as you would using
   
   # For the `neo4j` gem
   config.around do |example|
-    ActiveGraph::ActiveBase.run_transaction do |tx|
+    ActiveGraph::Base.run_transaction do |tx|
       example.run
       tx.mark_failed
     end

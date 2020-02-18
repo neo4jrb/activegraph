@@ -1,4 +1,4 @@
-module ActiveGraph::ActiveNode
+module ActiveGraph::Node
   describe NodeListFormatter do
     let(:max_elements) { 5 }
 

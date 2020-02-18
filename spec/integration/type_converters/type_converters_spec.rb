@@ -252,7 +252,7 @@ describe ActiveGraph::Shared::TypeConverters do
 
     context 'various type combinations' do
       before do
-        stub_active_node_class('JsonData') do
+        stub_node_class('JsonData') do
           property :serialized_property
           serialize :serialized_property
         end

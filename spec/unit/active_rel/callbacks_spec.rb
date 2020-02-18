@@ -1,4 +1,4 @@
-describe ActiveGraph::ActiveRel::Callbacks do
+describe ActiveGraph::Relationship::Callbacks do
   after(:all) do
     [:CallbackBar, :CallbackFoo].each do |s|
       Object.send(:remove_const, s)
@@ -17,7 +17,7 @@ describe ActiveGraph::ActiveRel::Callbacks do
   end
 
   class CallbackBar < CallbackFoo
-    include ActiveGraph::ActiveRel::Callbacks
+    include ActiveGraph::Relationship::Callbacks
   end
 
   describe 'save' do
@@ -33,13 +33,13 @@ describe ActiveGraph::ActiveRel::Callbacks do
     it 'raises an error if unpersisted and outbound is not valid' do
       allow_any_instance_of(CallbackBar).to receive_message_chain('to_node.neo_id')
       allow_any_instance_of(CallbackBar).to receive_message_chain('from_node').and_return(nil)
-      expect { rel.save }.to raise_error(ActiveGraph::ActiveRel::Persistence::RelInvalidError)
+      expect { rel.save }.to raise_error(ActiveGraph::Relationship::Persistence::RelInvalidError)
     end
 
     it 'raises an error if unpersisted and inbound is not valid' do
       allow_any_instance_of(CallbackBar).to receive_message_chain('from_node.neo_id')
       allow_any_instance_of(CallbackBar).to receive_message_chain('to_node').and_return(nil)
-      expect { rel.save }.to raise_error(ActiveGraph::ActiveRel::Persistence::RelInvalidError)
+      expect { rel.save }.to raise_error(ActiveGraph::Relationship::Persistence::RelInvalidError)
     end
 
     it 'does not raise an error if inbound and outbound are valid' do

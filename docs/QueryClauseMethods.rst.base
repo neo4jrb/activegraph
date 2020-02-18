@@ -6,7 +6,7 @@ The ``ActiveGraph::Core::Query`` class from the `neo4j-core` gem defines a DSL w
 .. code-block:: ruby
 
   a_session.query
-  # The current session for `ActiveNode` / `ActiveRel` in the `neo4j` gem can be retrieved with `ActiveGraph::ActiveBase.current_session`
+  # The current session for `Node` / `Relationship` in the `neo4j` gem can be retrieved with `ActiveGraph::Base.current_session`
 
 Advantages of using the `Query` class include:
 

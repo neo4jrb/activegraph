@@ -1,6 +1,6 @@
 module ActiveGraph::Shared
   # The DeclaredPropertyuManager holds details about objects created as a result of calling the #property
-  # class method on a class that includes ActiveGraph::ActiveNode or ActiveGraph::ActiveRel. There are many options
+  # class method on a class that includes ActiveGraph::Node or ActiveGraph::Relationship. There are many options
   # that are referenced frequently, particularly during load and save, so this provides easy access and
   # a way of separating behavior from the general Active{obj} modules.
   #
@@ -11,7 +11,7 @@ module ActiveGraph::Shared
     attr_reader :klass
     delegate :each, :each_pair, :each_key, :each_value, to: :registered_properties
 
-    # Each class that includes ActiveGraph::ActiveNode or ActiveGraph::ActiveRel gets one instance of this class.
+    # Each class that includes ActiveGraph::Node or ActiveGraph::Relationship gets one instance of this class.
     # @param [#declared_properties] klass An object that has the #declared_properties method.
     def initialize(klass)
       @klass = klass
@@ -26,7 +26,7 @@ module ActiveGraph::Shared
     end
 
     # @param [ActiveGraph::Shared::DeclaredProperty] property An instance of DeclaredProperty, created as the result of calling
-    # #property on an ActiveNode or ActiveRel class. The DeclaredProperty has specifics about the property, but registration
+    # #property on an Node or Relationship class. The DeclaredProperty has specifics about the property, but registration
     # makes the management object aware of it. This is necessary for type conversion, defaults, and inclusion in the nil and string hashes.
     def register(property)
       @_attributes_nil_hash = nil
@@ -48,7 +48,7 @@ module ActiveGraph::Shared
       registered_properties[key].constraint!(type)
     end
 
-    # The :default option in ActiveGraph::ActiveNode#property class method allows for setting a default value instead of
+    # The :default option in ActiveGraph::Node#property class method allows for setting a default value instead of
     # nil on declared properties. This holds those values.
     def declared_property_defaults
       @_default_property_values ||= {}

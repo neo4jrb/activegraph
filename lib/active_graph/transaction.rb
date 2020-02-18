@@ -41,7 +41,7 @@ module ActiveGraph
       self.class.initialized_stack << self
       @root = stack.first
       return unless root?
-      @driver_session = ActiveBase.current_driver.driver.session(Neo4j::Driver::AccessMode::WRITE)
+      @driver_session = Base.current_driver.driver.session(Neo4j::Driver::AccessMode::WRITE)
       @driver_tx = @driver_session.begin_transaction
     rescue StandardError => e
       self.stack = []

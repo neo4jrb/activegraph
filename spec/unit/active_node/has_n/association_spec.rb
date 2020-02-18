@@ -1,16 +1,16 @@
 class Default
 end
 
-describe ActiveGraph::ActiveNode::HasN::Association do
+describe ActiveGraph::Node::HasN::Association do
   let(:options) { {type: nil} }
   let(:name) { :default }
   let(:direction) { :out }
 
   let(:association) do
-    ActiveGraph::ActiveNode::HasN::Association.new(type, direction, name, options)
+    ActiveGraph::Node::HasN::Association.new(type, direction, name, options)
   end
 
-  before { stub_active_node_class('Default') }
+  before { stub_node_class('Default') }
 
   subject do
     association
@@ -288,7 +288,7 @@ describe ActiveGraph::ActiveNode::HasN::Association do
 
         context 'specified as class' do
           before(:each) do
-            stub_const 'Fizzl', Class.new { include ActiveGraph::ActiveNode }
+            stub_const 'Fizzl', Class.new { include ActiveGraph::Node }
           end
 
           let(:options) { {type: :foo, model_class: 'Fizzl'} }
@@ -304,7 +304,7 @@ describe ActiveGraph::ActiveNode::HasN::Association do
                        def self.name
                          'TheRel'
                        end
-                       include ActiveGraph::ActiveRel
+                       include ActiveGraph::Relationship
                        from_class :any
                      end)
         end
@@ -322,7 +322,7 @@ describe ActiveGraph::ActiveNode::HasN::Association do
         context 'targeting a specific class' do
           context 'outbound' do
             before(:each) do
-              stub_const 'Fizzl', Class.new { include ActiveGraph::ActiveNode }
+              stub_const 'Fizzl', Class.new { include ActiveGraph::Node }
               TheRel.to_class(:Fizzl)
             end
 
@@ -333,7 +333,7 @@ describe ActiveGraph::ActiveNode::HasN::Association do
             let(:direction) { :in }
 
             before(:each) do
-              stub_const 'Buzz', Class.new { include ActiveGraph::ActiveNode }
+              stub_const 'Buzz', Class.new { include ActiveGraph::Node }
               TheRel.from_class(:Buzz)
             end
 
@@ -352,17 +352,17 @@ describe ActiveGraph::ActiveNode::HasN::Association do
         it { expect { subject }.to raise_error ArgumentError, /Could not find class.*BadClass/ }
       end
 
-      context 'target_class_names defines class which exists, but is not ActiveNode' do
+      context 'target_class_names defines class which exists, but is not Node' do
         let(:options) { {type: nil, model_class: 'Integer'} }
 
         context 'with invalid target class name' do
-          it { expect { subject }.to raise_error ArgumentError, /Integer.* is not an ActiveNode model/ }
+          it { expect { subject }.to raise_error ArgumentError, /Integer.* is not an Node model/ }
         end
       end
     end
 
     describe 'origin_type' do
-      let(:start) { ActiveGraph::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
+      let(:start) { ActiveGraph::Node::HasN::Association.new(:has_many, :in, 'name') }
       let(:myclass) { double('another activenode class') }
       let(:myassoc) { double('an association object') }
       let(:assoc_details) { double('the result of calling :associations', relationship_type: 'MyRel') }
@@ -433,7 +433,7 @@ describe ActiveGraph::ActiveNode::HasN::Association do
     describe 'refresh_model_class!' do
       context 'with model class set' do
         before do
-          stub_active_node_class('MyModel')
+          stub_node_class('MyModel')
           association.instance_variable_set(:@model_class, 'MyModel')
         end
 

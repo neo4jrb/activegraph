@@ -14,8 +14,8 @@ module ActiveGraph
         fail ArgumentError, "#{context} #{INVALID_CLASS_ARGUMENT_ERROR} (was #{class_argument.inspect})"
       end
 
-      def active_node_model?(class_constant)
-        class_constant.included_modules.include?(ActiveGraph::ActiveNode)
+      def node_model?(class_constant)
+        class_constant.included_modules.include?(ActiveGraph::Node)
       end
 
       def constantize_argument(class_argument)
@@ -26,8 +26,8 @@ module ActiveGraph
           class_argument.map(&method(:constantize_argument))
         else
           class_argument.to_s.constantize.tap do |class_constant|
-            if !active_node_model?(class_constant)
-              fail ArgumentError, "#{class_constant} is not an ActiveNode model"
+            if !node_model?(class_constant)
+              fail ArgumentError, "#{class_constant} is not an Node model"
             end
           end
         end

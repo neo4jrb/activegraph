@@ -28,7 +28,7 @@ module ActiveGraph
     end
 
     def query(*args)
-      ActiveGraph::ActiveBase.current_driver.query(*args)
+      ActiveGraph::Base.current_driver.query(*args)
     end
 
     class AddIdProperty < ActiveGraph::Migration
@@ -55,11 +55,11 @@ module ActiveGraph
       end
 
       def query(*args)
-        ActiveBase.magic_query(*args)
+        Base.magic_query(*args)
       end
 
       def execute(*args)
-        ActiveBase.query(*args)
+        Base.query(*args)
       end
 
       def setup
@@ -96,7 +96,7 @@ MESSAGE
       # end
 
       # def idless_count(label, id_property)
-      #  ActiveGraph::ActiveBase.new_query.match(n: label).where("NOT EXISTS(n.#{id_property})").pluck('COUNT(n) AS ids').first
+      #  ActiveGraph::Base.new_query.match(n: label).where("NOT EXISTS(n.#{id_property})").pluck('COUNT(n) AS ids').first
       # end
 
       # def print_status(last_time_taken, max_per_batch, nodes_left)
@@ -113,9 +113,9 @@ MESSAGE
 
 
       # def id_batch_set(label, id_property, new_ids, count)
-      #  tx = ActiveGraph::ActiveBase.new_transaction
+      #  tx = ActiveGraph::Base.new_transaction
 
-      #  ActiveGraph::ActiveBase.current_driver.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
+      #  ActiveGraph::Base.current_driver.query("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
       #    with COLLECT(n) as nodes, #{new_ids} as ids
       #    FOREACH(i in range(0,#{count - 1})|
       #      FOREACH(node in [nodes[i]]|

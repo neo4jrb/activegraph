@@ -72,12 +72,12 @@ Given our schema, we could write the following Cypher to accomplish this:
       size(sources) AS sources_count
     ORDER BY score DESC
 
-Now let's see how we could write this using ActiveNode syntax in a ``User`` Ruby class.
+Now let's see how we could write this using Node syntax in a ``User`` Ruby class.
 
 .. code-block:: ruby
 
     class User
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       property :id, type: Integer
 
@@ -111,7 +111,7 @@ This assumes we have a ``Page`` class like the following:
 .. code-block:: ruby
 
     class Page
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       property name, type: String
 

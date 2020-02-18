@@ -5,7 +5,7 @@ shared_examples_for 'uncreatable model' do
     end
 
     it 'should raise an exception on #create!' do
-      expect { subject.class.create!(subject.attributes) }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError
+      expect { subject.class.create!(subject.attributes) }.to raise_error ActiveGraph::Node::Persistence::RecordInvalidError
     end
   end
 end

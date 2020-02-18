@@ -53,7 +53,7 @@ shared_examples_for 'timestamped model' do
 
       context 'with missing updated_at' do
         before do
-          ActiveGraph::ActiveBase.run_transaction do
+          ActiveGraph::Base.run_transaction do
             query = 'MATCH (n) WHERE ID(n) = $neo_id REMOVE n.updated_at'
             neo_id = subject._persisted_obj.neo_id
             ActiveGraph::Transaction.query(query, neo_id: neo_id)

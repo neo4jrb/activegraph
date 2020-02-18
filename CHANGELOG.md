@@ -43,7 +43,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
-- Reverse has_one relationships with ActiveRel (thanks @amitsuryavanshi / #1560)
+- Reverse has_one relationships with Relationship (thanks @amitsuryavanshi / #1560)
 
 ## [9.5.0] 2019-06-17
 
@@ -141,7 +141,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
-- Fixed issue with `ActiveRel.find` for when the ID isn't there (thanks @lshimokawa / WARNING: Use of `ActiveRel.find` is NOT recommended, see #1482)
+- Fixed issue with `Relationship.find` for when the ID isn't there (thanks @lshimokawa / WARNING: Use of `Relationship.find` is NOT recommended, see #1482)
 
 ## [9.1.3] 2018-02-01
 
@@ -211,7 +211,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- By default, `enum` values are now case-insensitive (but there are local and global `_case_sensitive` options [see the docs](http://neo4jrb.readthedocs.io/en/9.0.x/ActiveNode.html#enums)) (thanks @thefliik / see #1419)
+- By default, `enum` values are now case-insensitive (but there are local and global `_case_sensitive` options [see the docs](http://neo4jrb.readthedocs.io/en/9.0.x/Node.html#enums)) (thanks @thefliik / see #1419)
 
 ## [8.3.4] 2017-10-16
 
@@ -293,7 +293,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- `ActiveRel` `.first` / `.last` aren't dependable for ordering in Neo4j enterprise, so fixed test (be aware that using `.first` / `.last` are not recommended in `ActiveRel`) (see #1396 / thanks @klobuczek)
+- `Relationship` `.first` / `.last` aren't dependable for ordering in Neo4j enterprise, so fixed test (be aware that using `.first` / `.last` are not recommended in `Relationship`) (see #1396 / thanks @klobuczek)
 - Labels for models are now returned alphabetically (see #1396 / thanks @klobuczek)
 - JSON serialization is fixed for `String` and objects in general which respond to `to_json` (see #1397 / thanks @leviwilson)
 
@@ -377,7 +377,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fix issue where an association (which hasn't been accessed) is accessed from an ActiveNode callback
+- Fix issue where an association (which hasn't been accessed) is accessed from an Node callback
 
 ## [8.0.9] 2017-03-15
 
@@ -551,11 +551,11 @@ NO CHANGES FROM 8.0.0.rc.4
 
 ### Changed
 
-- `ActiveNode#destroy` and `ActiveRel#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
+- `Node#destroy` and `Relationship#destroy` now return the object in question rather than `true` to be compatible with `ActiveRecord` (see #1254)
 
 ### Fixed
 
-- Bugs with using `neo_id` as `ActiveNode` `id_property` (thanks klobuczek / see #1274)
+- Bugs with using `neo_id` as `Node` `id_property` (thanks klobuczek / see #1274)
 
 ## [8.0.0.alpha.3]
 
@@ -626,7 +626,7 @@ NO CHANGES FROM 8.0.0.rc.4
 
 ### Fixed
 
-- During ActiveRel create, node and rel property values formatted like Cypher props (`{val}`) were interpreted as props, causing errors.
+- During Relationship create, node and rel property values formatted like Cypher props (`{val}`) were interpreted as props, causing errors.
 
 ## [7.2.0] - 08-23-2016
 
@@ -735,7 +735,7 @@ NO CHANGES FROM 8.0.0.rc.4
 
 ### Fixed
 
-- A bug/inconsistency between ActiveNode's class method `create` and instance `save` led to faulty validation of associations in some cases.
+- A bug/inconsistency between Node's class method `create` and instance `save` led to faulty validation of associations in some cases.
 
 ## [7.0.3] - 04-28-2016
 
@@ -813,18 +813,18 @@ No changes from `rc.7`
 ### Added
 
 - A number of modules and unit tests were moved directly from the ActiveAttr gem, which is no longer being maintained.
-- `ActiveNode` models now respond to `update_all` (thanks ProGM / #1113)
+- `Node` models now respond to `update_all` (thanks ProGM / #1113)
 - Association chains now respond to `update_all` and `update_all_rels` (thanks ProGM / #1113)
 - Rails will now rescue all `Neo4j::RecordNotFound` errors with a 404 status code by default
 - A clone of [ActiveRecord::Enum](http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html) API. See docs for details. (thanks ProGM / #1129)
 - Added #branch method to `QueryProxy` to allow for easy branching of matches in association chains (thanks ProGM / #1147 / #1143)
-- The `.match` method on ActiveNode model class has changed to allow a second argument which takes `on_create`, `on_match`, and `set` keys.  These allow you to define attribute values for the Cypher `MERGE` in the different cases (thanks leviwilson / see #1123)
+- The `.match` method on Node model class has changed to allow a second argument which takes `on_create`, `on_match`, and `set` keys.  These allow you to define attribute values for the Cypher `MERGE` in the different cases (thanks leviwilson / see #1123)
 
 ### Removed
 
 - All external [ActiveAttr](https://github.com/cgriego/active_attr) dependencies.
 - All `call` class methods from Type Converters. Use `to_ruby` instead.
-- `Neo4j::ActiveNode::Labels::InvalidQueryError`, since it's unused.
+- `Neo4j::Node::Labels::InvalidQueryError`, since it's unused.
 
 ## [6.1.12] - 05-27-2016
 
@@ -860,7 +860,7 @@ No changes from `rc.7`
 
 ### Fixed
 
-- Bug related to creating subclassed nodes alongside rels in ActiveRel. (#1135. Thanks, brucek!)
+- Bug related to creating subclassed nodes alongside rels in Relationship. (#1135. Thanks, brucek!)
 
 ## [6.1.6] - 2016-02-03
 
@@ -884,7 +884,7 @@ No changes from `rc.7`
 
 ### Fixed
 
-- Issue where `ActiveRel.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
+- Issue where `Relationship.create` would not work with `RelatedNode` (`rel.from_node`) instances (Thanks, djvs #1107)
 
 ## [6.1.2] - 2016-01-19
 
@@ -902,20 +902,20 @@ No changes from `rc.7`
 
 ### Changed
 
-- When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- When a `model_class` is specified on an association which is not an Node model, an error is raised
 - The `model_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, nil, false, or an Array of Symbols/Strings)
 - The `rel_class` option on associations can no longer be a `Class` constant (should be a String, Symbol, or nil)
 - The `from_class` and `to_class` arguments can no longer be a `Class` constant (should be a String, Symbol, :any, or false)
-- ActiveNode and ActiveRel models can now be marshaled (thanks to jhoffner for the suggestion in #1093)
+- Node and Relationship models can now be marshaled (thanks to jhoffner for the suggestion in #1093)
 
 ### Fixed
 
-- Inheritance of properties in ActiveRel is fixed (see #1080)
+- Inheritance of properties in Relationship is fixed (see #1080)
 
 ### Added
 
 - `config/neo4j.yml` now renders with an ERB step (thanks to mrstif via #1060)
-- `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of ActiveNode and ActiveRel (thanks to ProGM in #1074)
+- `#increment`, `#increment!` and `#concurrent_increment!` methods added to instances of Node and Relationship (thanks to ProGM in #1074)
 
 ## [6.0.9] - 05-27-2016
 
@@ -951,7 +951,7 @@ No changes from `rc.7`
 
 ### Fixed
 
-- When a `model_class` is specified on an association which is not an ActiveNode model, an error is raised
+- When a `model_class` is specified on an association which is not an Node model, an error is raised
 
 ## [6.0.3] - 12-18-2015
 
@@ -1002,38 +1002,38 @@ This release contains no changes since the last alpha. Below are all modificatio
 ### Changed
 
 - `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
-- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
+- `Relationship#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
 - `#<<` and `#create` methods on associations now create with the `rel_class` when available so that validations/callbacks/defaults are all used as expected
 - Allow calling of `#method=` methods via model `new` method `Hash` argument
 - Remove uniqueness validation for `id_property` because we already have Neo4j constraints
 - Improved eager loading when no with_associations is specified (see #905)
 - Change size and length so that they match expected Ruby / ActiveRecord behavior (see http://stackoverflow.com/questions/6083219/activerecord-size-vs-count and #875)
-- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- Refactoring around indexing and constraints in `Neo4j::Node`. The public interfaces are unchanged.
 - `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
 - Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
-- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- `rel_where` will now use Relationship classes for type conversion, when possible.
 - Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
 - Removed the ability to set both an exact index and unique constraint on the same property in a model. Unique constraints also provide exact indexes.
-- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Deprecated all methods in Relationship's Query module except for those that allow finding by id.
 - Return `true` on successful `#save!` calls (Thanks to jmdeldin)
 
 ### Added
 
-- Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.
-- Alternate `ActiveRel` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
-- `ActiveRel` `create` actions can now handle unpersisted nodes.
+- Optional three-argument signature for `Relationship#create` and `#create!`, just like `initialize`.
+- Alternate `Relationship` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
+- `Relationship` `create` actions can now handle unpersisted nodes.
 - `rel_order` method for association chaining
 - Support `config/neo4j.yaml`
 - Look for ENV variables for Neo4j URL / path for Rails apps
 - New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
 - A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
 - Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
-- Support for Array arguments to ActiveRel's `from_class` and `to_class`.
+- Support for Array arguments to Relationship's `from_class` and `to_class`.
 
 ### Fixed
 
 - Regression RE: properties being overwritten with their defaults on save in alpha.10.
-- Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
+- Long properties in `Node`/`Relationship` `#inspect` are truncated
 - Property defaults are set initially when an instance of a model is loaded, then checked again before save to ensure `valid?` works.
 - `QueryProxy` was not converting Boolean properties correctly
 - Certain actions that were intended as once-in-the-app's-lifetime events, notably schema operations, will only occur immediately upon the first session's establishment.
@@ -1047,10 +1047,10 @@ This release contains no changes since the last alpha. Below are all modificatio
 
 ### Changed
 - `_classname` property has been completely removed, officially dropping support for Neo4j < 2.1.5.
-- `ActiveRel#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
+- `Relationship#creates_unique` and the `:unique` Association option take arguments to control how the query is built. See https://github.com/neo4jrb/neo4j/pull/1038.
 
 ### Added
-- Optional three-argument signature for `ActiveRel#create` and `#create!`, just like `initialize`.
+- Optional three-argument signature for `Relationship#create` and `#create!`, just like `initialize`.
 
 ## [6.0.0.alpha.11] - 11-3-2015
 
@@ -1062,16 +1062,16 @@ This release contains no changes since the last alpha. Below are all modificatio
 - Allow calling of `#method=` methods via model `new` method `Hash` argument
 
 ### Added
-- Alternate `ActiveRel` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
+- Alternate `Relationship` init syntax: `RelClass.new(from_node, to_node, args)`. This is optional, so giving a single hash with props with or without nodes is still possible.
 
 ## [6.0.0.alpha.10] - 11-2-2015
 
 ### Fixed
-- Long properties in `ActiveNode`/`ActiveRel` `#inspect` are truncated
+- Long properties in `Node`/`Relationship` `#inspect` are truncated
 - Property defaults are set initially when an instance of a model is loaded, then checked again before save to ensure `valid?` works.
 
 ### Added
-- `ActiveRel` `create` actions can now handle unpersisted nodes.
+- `Relationship` `create` actions can now handle unpersisted nodes.
 
 ## [6.0.0.alpha.9] - 10-27-2015
 
@@ -1128,13 +1128,13 @@ This release contains no changes since the last alpha. Below are all modificatio
 
 ### Changed
 
-- Refactoring around indexing and constraints in `Neo4j::ActiveNode`. The public interfaces are unchanged.
+- Refactoring around indexing and constraints in `Neo4j::Node`. The public interfaces are unchanged.
 - `Neo4j::Shared::DeclaredPropertyManager` was renamed `Neo4j::Shared::DeclaredProperties`. All methods referencing the old name were updated to reflect this.
 - Methods that were using `Neo4j::Session#on_session_available` were updated to reflect the upstream change to `on_next_session_available`.
-- `rel_where` will now use ActiveRel classes for type conversion, when possible.
+- `rel_where` will now use Relationship classes for type conversion, when possible.
 - Converters will look for a `converted?` method to determine whether an object is of the appropriate type for the database. This allows converters to be responsible for multiple types, if required.
 - Removed the ability to set both an exact index and unique constraint on the same property in a model. Unique constraints also provide exact indexes.
-- Deprecated all methods in ActiveRel's Query module except for those that allow finding by id.
+- Deprecated all methods in Relationship's Query module except for those that allow finding by id.
 - Return `true` on successful `#save!` calls (Thanks to jmdeldin)
 
 ### Added
@@ -1142,7 +1142,7 @@ This release contains no changes since the last alpha. Below are all modificatio
 - New classes for schema operations, predictably called `Neo4j::Schema::Operation` and subclasses `UniqueConstraintOperation` and `ExactIndexOperation`. These provide methods to aid in the additional, removal, and presence checking of indexes and constraints.
 - A few methods were added to `Neo4j::Shared::DeclaredProperties` to make it easier to work with. In particular, `[key]` acts as a shortcut for `DeclaredProperties#registered_properties`.
 - Type Converters were added for String, Integer, Fixnum, BigDecimal, and Boolean to provide type conversion for these objects in QueryProxy.
-- Support for Array arguments to ActiveRel's `from_class` and `to_class`.
+- Support for Array arguments to Relationship's `from_class` and `to_class`.
 
 ### Fixed
 
@@ -1164,7 +1164,7 @@ This release contains no changes since the last alpha. Below are all modificatio
 ## [5.2.12] - 10-25-2015
 
 ### Fixed
-- Fix the `#touch` method for `ActiveNode` and `ActiveRel`
+- Fix the `#touch` method for `Node` and `Relationship`
 
 ## [5.2.11] - 10-18-2015
 
@@ -1179,7 +1179,7 @@ This release contains no changes since the last alpha. Below are all modificatio
 ## [5.2.9] - 09-30-2015
 
 ### Fixed
-- Better error message for `ActiveRel` creation when from_node|to_node is not persisted
+- Better error message for `Relationship` creation when from_node|to_node is not persisted
 
 ## [5.2.8] - 09-30-2015
 
@@ -1211,7 +1211,7 @@ This release contains no changes since the last alpha. Below are all modificatio
 - Default values of Boolean properties were not being set when `default: false`
 - `props_for_update` was using String keys instead of Symbols, like `props_for_update`
 - `props_for_create` and `props_for_update` were not adding default property values to the hash.
-- ActiveNode's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
+- Node's `merge` and `find_or_create` methods were not setting default values of declared properties when `ON CREATE` was triggered. The code now uses `props_for_create`.
 
 ## [5.2.3] - 09-07-2015
 
@@ -1235,7 +1235,7 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 
 ### Added
 - `props_for_persistence`, `props_for_create`, `props_for_update` instance methods for all nodes and rels. Each returns a hash with properties appropriate for sending to the database in a Cypher query to create or update an object.
-- Added `record_timestamps` configuration do default all `ActiveNode` and `ActiveRel` models to have `created_at` and `updated_at` timestamps (from #939, thanks @rebecca-eakins)
+- Added `record_timestamps` configuration do default all `Node` and `Relationship` models to have `created_at` and `updated_at` timestamps (from #939, thanks @rebecca-eakins)
 - Added `timestamp_type` configuration to specify how timestamps should be stored (from #939, thanks @rebecca-eakins)
 
 ### Changed
@@ -1262,17 +1262,17 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 ## [5.1.0.rc.3] - 08-17-2015
 
 ### Fixed
-- Associations defined in ActiveNode models will delegate `unique?` to the model set in `rel_class`. This makes it easier for the rel class to act as the single source of truth for relationship behavior.
+- Associations defined in Node models will delegate `unique?` to the model set in `rel_class`. This makes it easier for the rel class to act as the single source of truth for relationship behavior.
 
 ### Added
-- ActiveRel: `#{related_node}_neo_id` instance methods to match CypherRelationship. Works with start/from and end/to.
-- ActiveRel: `type` now has a new alias, `rel_type`. You might recognize this from the `(Cypher|Embedded)Relationship` class and ActiveNode association option.
+- Relationship: `#{related_node}_neo_id` instance methods to match CypherRelationship. Works with start/from and end/to.
+- Relationship: `type` now has a new alias, `rel_type`. You might recognize this from the `(Cypher|Embedded)Relationship` class and Node association option.
 - Contributing to the gem? Rejoice, for it now supports [Dotenv](https://github.com/bkeepers/dotenv).
 
 ## [5.1.0.rc.2] - 08-16-2015
 
 ### Added
-- Ability to use `#where_not` method on `ActiveNode` / `QueryProxy`
+- Ability to use `#where_not` method on `Node` / `QueryProxy`
 
 ## [5.1.0.rc.1] - 08-14-2015
 
@@ -1288,13 +1288,13 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 - Support formatted cypher queries for easy reading by humans via the `pretty_logged_cypher_queries` configuration variable
 - Ability to query for just IDs on associations
 - On `QueryProxy` objects you can now use an `:id` key in `where` and `find_by` methods to refer to the property from `id_property` (`uuid` by default)
-- Added `ActiveRel.creates_unique` and deprecated `ActiveRel.creates_unique_rel`
-- Added #inspect method to ActiveRel to show Cypher-style representation of from node, to node, and relationship type
-- Added `Neo4j::Timestamps`, `Neo4j::Timestamps::Created`, and `Neo4j::Timestamps::Updated` mixins to add timestamp properties to `ActiveNode` or `ActiveRel` classes
+- Added `Relationship.creates_unique` and deprecated `Relationship.creates_unique_rel`
+- Added #inspect method to Relationship to show Cypher-style representation of from node, to node, and relationship type
+- Added `Neo4j::Timestamps`, `Neo4j::Timestamps::Created`, and `Neo4j::Timestamps::Updated` mixins to add timestamp properties to `Node` or `Relationship` classes
 
 ### Changed
 
-- Methods related to ActiveNode's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
+- Methods related to Node's IdProperty module were refactored to improve performance and simplify the API. Existing `default_properties` methods were reworked to reflect their use as-implemented: storage for a single default property, not multiple.
 - Implementation adjustments that improve node and rel initialization speed, particularly when loading large numbers of objects from the database.
 
 ## [5.0.15] - 08-12-2015
@@ -1370,7 +1370,7 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 
 ### Changed
 - Moved `#with_associations` method from `AssociationProxy` to `QueryProxy` so that all `QueryProxy` chains can benefit from it.
-- Added `_active_record_destroyed_behavior` semi-hidden configuration variable so that behavior for `ActiveNode#destroyed?` and `ActiveRel#destroyed?` can be changed to upcoming 6.0.0 behavior (matching ActiveRecord) where the database is not accessed.
+- Added `_active_record_destroyed_behavior` semi-hidden configuration variable so that behavior for `Node#destroyed?` and `Relationship#destroyed?` can be changed to upcoming 6.0.0 behavior (matching ActiveRecord) where the database is not accessed.
 
 ## [5.0.2] - 2015-06-30
 
@@ -1383,18 +1383,18 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 ## [5.0.1] - 2015-06-23
 
 ### Fixed
-- Longstanding bug that would prevent association changes (`<<` and ActiveRel.create) in Rails after `reload!` had been called, see https://github.com/neo4jrb/neo4j/pull/839
-- ActiveNode#inspect wasn't displaying the id_property
+- Longstanding bug that would prevent association changes (`<<` and Relationship.create) in Rails after `reload!` had been called, see https://github.com/neo4jrb/neo4j/pull/839
+- Node#inspect wasn't displaying the id_property
 - Default property values and magic typecasting not being inherited correctly
 
 ### Changed
-- In the absense of a `model_class` key, associations defined in ActiveNode models will use `from_/to_class` defined in `rel_class` to find destination. (Huge thanks to @olance, #838)
-- ActiveRel's DSL was made a bit friendlier by making the `type`, `from_class` and `to_class` methods return their set values when called without arguments.
-- Reworked ActiveRel's wrapper to behave more like ActiveNode's, removing some duplicate methods and moving others to Neo4j::Shared, resulting in a big performance boost when returning large numbers of rels.
+- In the absense of a `model_class` key, associations defined in Node models will use `from_/to_class` defined in `rel_class` to find destination. (Huge thanks to @olance, #838)
+- Relationship's DSL was made a bit friendlier by making the `type`, `from_class` and `to_class` methods return their set values when called without arguments.
+- Reworked Relationship's wrapper to behave more like Node's, removing some duplicate methods and moving others to Neo4j::Shared, resulting in a big performance boost when returning large numbers of rels.
 - Updated gemspec to require neo4j-core 5.0.1+
 
 ### Added
-- ActiveRel was given `find_or_create_by`, usable across single associations.
+- Relationship was given `find_or_create_by`, usable across single associations.
 
 ## [5.0.0] - 2015-06-18
 
@@ -1421,7 +1421,7 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 
 ### Changed
 - Ruby 2.0.0 now required (>= 2.2.1 is recommended)
-- All `ActiveNode` associations now require either a `type`, `origin`, or `rel_class` option.  Only one is allowed
+- All `Node` associations now require either a `type`, `origin`, or `rel_class` option.  Only one is allowed
 - Defining associations will fail if unknown options are used (#796)
 - `Model#find` fails if no node found (`Model#find_by` available when `nil` result desired) (#799)
 - `#find_or_create` and `#merge` model class methods have been added
@@ -1436,7 +1436,7 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 - `#count` when called after `#limit` will be performed within the bounds of limit specified
 
 ### Added
-- Eager Loading is now supported!  See: [http://neo4jrb.readthedocs.org/en/latest/ActiveNode.html#eager-loading]
+- Eager Loading is now supported!  See: [http://neo4jrb.readthedocs.org/en/latest/Node.html#eager-loading]
 - Associations now return `AssociationProxy` objects (which are `Enumerable`) which have convenient `#inspect` methods for cleaner viewing in the Ruby console
 - `model_class` key on associations now supports an Array (#589)
 - When using `all` inside of a class method an argument for the node name can now be passed in (#737)
@@ -1449,7 +1449,7 @@ Added bugfixes from 5.1.4 and 5.1.5 that were missed in earlier 5.2.x releases:
 **Changes above this point should conform to [http://keepachangelog.com/]**
 
 ## [4.1.2]
-- Fixes two bugs related to inheritance: one regarding ActiveRel classes and relationship types, the other regarding ActiveNode primary_key properties not being set when a model is loaded prior to Neo4j session.
+- Fixes two bugs related to inheritance: one regarding Relationship classes and relationship types, the other regarding Node primary_key properties not being set when a model is loaded prior to Neo4j session.
 
 ## [4.1.1]
 - Switches use of Fixnum to Integer to improve 32-bit support
@@ -1459,7 +1459,7 @@ This release includes many performance fixes and new features. The most notable:
 - Huge stylist cleanup/refactoring by Brian on the entire gem by Brian armed with Rubocop. See http://neo4jrb.io/blog/2014/12/29/stay-out-of-trouble.html.
 - Every node create, update, and destroy is now wrapped in a transaction. See http://neo4jrb.io/blog/2015/01/06/transactions_everywhere.html.
 - New `dependent` options for associations: `:delete`, `:destroy`, `:delete_orphans`, `:destroy_orphans`. See http://neo4jrb.io/blog/2015/01/07/association_dependent_options.html.
-- New `unique: true` option for associations, `creates_unique_rel` class method for ActiveRel. Both of these will result in relationship creation Cypher using "CREATE UNIQUE" instead of "CREATE".
+- New `unique: true` option for associations, `creates_unique_rel` class method for Relationship. Both of these will result in relationship creation Cypher using "CREATE UNIQUE" instead of "CREATE".
 - Fixed an n+1 query issue during node creation and update.
 - Dieter simplified some code related to frozen attributes. See https://github.com/neo4jrb/neo4j/pull/655.
 We now have a new website online at http://neo4jrb.io! Keep an eye on it for news and blogs related to this and other projects.
@@ -1468,9 +1468,9 @@ We now have a new website online at http://neo4jrb.io! Keep an eye on it for new
 - Change neo4j-core dependency from 3.1.0 to 4.0.0.
 
 ## [4.0.0.rc.4]
-- _classname property is disabled by default for ActiveRel! It had been disabled for ActiveNode, this just evens the score.
+- _classname property is disabled by default for Relationship! It had been disabled for Node, this just evens the score.
 - Fixes a bug to create better `result` labels in Cypher.
-- Made the `delete_all` and `destroy_all` ActiveNode class methods consistent with their ActiveRecord counterparts. `destroy_all` previously performed its deletes in Cypher but it should have been returning nodes to Ruby and calling `destroy`. `delete_all` didn't exist at all.
+- Made the `delete_all` and `destroy_all` Node class methods consistent with their ActiveRecord counterparts. `destroy_all` previously performed its deletes in Cypher but it should have been returning nodes to Ruby and calling `destroy`. `delete_all` didn't exist at all.
 
 ## [4.0.0.rc.3]
 Released minutes after rc.2 to catch one late addition!
@@ -1489,8 +1489,8 @@ This release builds on features introduced in the first RC. We are releasing thi
 This release introduces API changes that may be considered breaking under certain conditions. See See https://github.com/neo4jrb/neo4j/wiki/Neo4j.rb-v4-Introduction.
 Please use https://github.com/neo4jrb/neo4j/issues for support regarding this update! You can also reach us on Twitter: @neo4jrb (Brian) and @subvertallmedia (Chris).
 - Default behavior changed: relationship types default to all caps, no prepending of "#". This behavior can be changed.
-- ActiveRel models no longer require explicit calling of `type`. When missing, the model will infer a type using the class name following the same rules used to determine automatic relationship types from ActiveNode models.
-- _classname properties will not be added automatically if you are using a version Neo4j >= 2.1.5. Instead, models are found using labels or relationship type. This is a potentially breaking change, particularly where ActiveRel is concerned. See the link at the beginning of this message for the steps required to work around this.
+- Relationship models no longer require explicit calling of `type`. When missing, the model will infer a type using the class name following the same rules used to determine automatic relationship types from Node models.
+- _classname properties will not be added automatically if you are using a version Neo4j >= 2.1.5. Instead, models are found using labels or relationship type. This is a potentially breaking change, particularly where Relationship is concerned. See the link at the beginning of this message for the steps required to work around this.
 - Query scopes are now chainable! Call `all` at the start of your scope or method to take advantage of this.
 - Changes required for Neo4j 2.2.
 - Support for custom typecasters.
@@ -1511,7 +1511,7 @@ Please use https://github.com/neo4jrb/neo4j/issues for support regarding this up
 - Gemspec has been updated to require neo4j-core 3.0.5
 - Added `find_in_batches`
 - Pagination has been updated to allow better ordering. Relaunch of neo4j-will_paginate as neo4j-will_paginate_redux is imminent!
-- Everything is better: `create`'s handling of blocks, better behavior from `count`, better ActiveRel from_class/to_class checks, better handling of rel_class strings, and more
+- Everything is better: `create`'s handling of blocks, better behavior from `count`, better Relationship from_class/to_class checks, better handling of rel_class strings, and more
 - Added a new find_or_create_by class method
 
 Big thanks to new contributors Miha Rekar and Michael Perez! Also check out or Github issues, where we're discussing changes for 3.1.0. https://github.com/neo4jrb/neo4j/issues
@@ -1520,10 +1520,10 @@ Big thanks to new contributors Miha Rekar and Michael Perez! Also check out or G
 - "Model#all" now evaluates lazily, models no longer include Enumerable
 - Faster, more efficient uniqueness validations
 - Adjusted many common queries to use params, will improve performance
-- ActiveRel fixes: create uses Core Query instead of Core's `rels` method, `{ classname: #{_classname} }` no longer inserted into every query, find related node IDs without loading the nodes
+- Relationship fixes: create uses Core Query instead of Core's `rels` method, `{ classname: #{_classname} }` no longer inserted into every query, find related node IDs without loading the nodes
 - Allow inheritance when checking model class on a relation (Andrew Jones)
 - Provided migrations will use Rake.original_dir instead of Rails.env to provide better compatibility with frameworks other than Rails
-- rel_class option in ActiveNode models will now accept string of a model name
+- rel_class option in Node models will now accept string of a model name
 - Additional bug fixes
 
 ## [3.0.1]
@@ -1563,7 +1563,7 @@ insert the _classname property which is used for performance)
 - Bug fixes
 
 ## [3.0.0.alpha.10]
-- ActiveRel support, see Wiki pages (chris #393)
+- Relationship support, see Wiki pages (chris #393)
 
 ## [3.0.0.alpha.9]
 - Complete rewrite of the query api, see wiki page (#406, chris, brian)
@@ -1586,7 +1586,7 @@ insert the _classname property which is used for performance)
 - Bug fix uniqueness-validator (#356 from JohnKellyFerguson)
 - Many improvements, like update_attributes and validation while impl orm_adapter, Brian Underwood
 - Impl orm_adapter API for neo4j so it can be used from for example devise, Brian Underwood (#355)
-- Fix of inheritance of Neo4j::ActiveNode (#307)
+- Fix of inheritance of Neo4j::Node (#307)
 - Expose add_label, and remove_label (#335)
 - Fixed auto loading of classes bug, (#349)
 - Bumped neo4j-core, 3.0.0.alpha.16

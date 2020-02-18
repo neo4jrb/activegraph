@@ -1,6 +1,6 @@
 module ActiveGraph::Shared
   # This module controls changes to relationship type based on ActiveGraph::Config.transform_rel_type.
-  # It's used whenever a rel type is automatically determined based on ActiveRel model name or
+  # It's used whenever a rel type is automatically determined based on Relationship model name or
   # association type.
   module RelTypeConverters
     def decorated_rel_type(type)
@@ -8,7 +8,7 @@ module ActiveGraph::Shared
     end
 
     class << self
-      # Determines how relationship types should look when inferred based on association or ActiveRel model name.
+      # Determines how relationship types should look when inferred based on association or Relationship model name.
       # With the exception of `:none`, all options will call `underscore`, so `ThisClass` becomes `this_class`, with capitalization
       # determined by the specific option passed.
       # Valid options:

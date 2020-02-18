@@ -1,6 +1,6 @@
 module AutoLoadTest
   class MyWrapperClass
-    include ActiveGraph::ActiveNode
+    include ActiveGraph::Node
     property :some_prop
   end
 end

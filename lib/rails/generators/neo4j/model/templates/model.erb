@@ -1,5 +1,5 @@
 class <%= class_name %> <%= parent? ? "#{options[:parent].classify}" : "" %>
-  include ActiveGraph::ActiveNode
+  include ActiveGraph::Node
 <% attributes.reject(&:reference?).each do |attribute| -%>
   property :<%= attribute.name %><%= ", type: #{attribute.type_class}" unless attribute.type_class == 'any' %><%= "\n  " + index_fragment if index_fragment = index_fragment(attribute.name) %>
 <% end -%>

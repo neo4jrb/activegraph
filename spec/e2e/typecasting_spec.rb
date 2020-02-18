@@ -26,7 +26,7 @@ describe 'custom type conversion' do
       include ActiveGraph::Shared::Typecaster
     end
 
-    stub_active_node_class('RangeConvertPerson') do
+    stub_node_class('RangeConvertPerson') do
       property :my_range, type: Range
     end
   end

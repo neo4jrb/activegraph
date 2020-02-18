@@ -9,7 +9,7 @@ module ActiveGraph
 
       included do
         include ActiveModel::Validations::Callbacks
-        # after_find is triggered by the `find` method defined in lib/neo4j/active_node/id_property.rb
+        # after_find is triggered by the `find` method defined in lib/neo4j/node/id_property.rb
         define_model_callbacks :initialize, :find, only: :after
         define_model_callbacks :create_commit, :update_commit, :destroy_commit, only: :after
         define_model_callbacks :save, :create, :update, :destroy, :touch
@@ -20,7 +20,7 @@ module ActiveGraph
       end
 
       def destroy #:nodoc:
-        tx = ActiveGraph::ActiveBase.new_transaction
+        tx = ActiveGraph::Base.new_transaction
         tx.root.after_commit { run_callbacks(:destroy_commit) {} }
         run_callbacks(:destroy) { super }
       rescue

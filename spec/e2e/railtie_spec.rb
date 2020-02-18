@@ -6,9 +6,9 @@ module Rails
 
 
     around(:each) do |example|
-      main_spec_driver = ActiveGraph::ActiveBase.current_driver
+      main_spec_driver = ActiveGraph::Base.current_driver
       example.run
-      ActiveGraph::ActiveBase.driver = main_spec_driver
+      ActiveGraph::Base.driver = main_spec_driver
     end
 
     describe '#setup!' do
@@ -24,7 +24,7 @@ module Rails
 
       context 'no errors' do
         before do
-          stub_const('ActiveGraph::ActiveBase', spy('ActiveGraph::ActiveBase'))
+          stub_const('ActiveGraph::Base', spy('ActiveGraph::Base'))
 
           expect do
             ActiveGraph::Railtie.setup!(cfg)
@@ -34,8 +34,8 @@ module Rails
         context 'NEO4J_URL is bolt' do
           let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
 
-          it 'calls ActiveGraph::ActiveBase' do
-            expect(ActiveGraph::ActiveBase).to have_received(:new_driver).with('bolt://localhost:7472', {})
+          it 'calls ActiveGraph::Base' do
+            expect(ActiveGraph::Base).to have_received(:new_driver).with('bolt://localhost:7472', {})
           end
         end
       end

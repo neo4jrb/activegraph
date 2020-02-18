@@ -86,12 +86,12 @@ end
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
-  ActiveGraph::ActiveRel::Types::WRAPPED_CLASSES.clear
-  ActiveGraph::ActiveNode::Labels::WRAPPED_CLASSES.clear
-  ActiveGraph::ActiveNode::Labels.clear_wrapped_models
+  ActiveGraph::Relationship::Types::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels.clear_wrapped_models
 end
 
-def delete_db(executor = ActiveGraph::ActiveBase)
+def delete_db(executor = ActiveGraph::Base)
   executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
@@ -103,12 +103,12 @@ end
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_active_node_class(class_name, with_constraint = true, &block)
-    stub_const class_name, active_node_class(class_name, with_constraint, &block)
+  def stub_node_class(class_name, with_constraint = true, &block)
+    stub_const class_name, node_class(class_name, with_constraint, &block)
   end
 
-  def stub_active_rel_class(class_name, &block)
-    stub_const class_name, active_rel_class(class_name, &block)
+  def stub_relationship_class(class_name, &block)
+    stub_const class_name, relationship_class(class_name, &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
@@ -116,9 +116,9 @@ module ActiveNodeRelStubHelpers
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
-  def active_node_class(class_name, with_constraint = true, &block)
+  def node_class(class_name, with_constraint = true, &block)
     named_class(class_name) do
-      include ActiveGraph::ActiveNode
+      include ActiveGraph::Node
 
       module_eval(&block) if block
     end.tap { |model| create_id_property_constraint(model, with_constraint) }
@@ -130,9 +130,9 @@ module ActiveNodeRelStubHelpers
     create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
   end
 
-  def active_rel_class(class_name, &block)
+  def relationship_class(class_name, &block)
     named_class(class_name) do
-      include ActiveGraph::ActiveRel
+      include ActiveGraph::Relationship
 
       module_eval(&block) if block
     end
@@ -158,12 +158,12 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_constraint(label_name, property, options = {})
-    ActiveGraph::ActiveBase.label_object(label_name).create_constraint(property, options)
+    ActiveGraph::Base.label_object(label_name).create_constraint(property, options)
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
-    ActiveGraph::ActiveBase.label_object(label_name).create_index(property, options)
+    ActiveGraph::Base.label_object(label_name).create_index(property, options)
     ActiveGraph::ModelSchema.reload_models_data!
   end
 end
@@ -190,7 +190,7 @@ end
 
 server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 
-ActiveGraph::ActiveBase.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
+ActiveGraph::Base.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 
@@ -213,7 +213,7 @@ RSpec.configure do |config|
     ActiveGraph::ModelSchema::MODEL_INDEXES.clear
     ActiveGraph::ModelSchema::MODEL_CONSTRAINTS.clear
     ActiveGraph::ModelSchema::REQUIRED_INDEXES.clear
-    ActiveGraph::ActiveNode.loaded_classes.clear
+    ActiveGraph::Node.loaded_classes.clear
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
@@ -224,8 +224,8 @@ RSpec.configure do |config|
   config.before(:each) do
     delete_db
     delete_schema
-    @active_base_logger = spy('ActiveBase logger')
-    allow(ActiveGraph::ActiveBase).to receive(:logger).and_return(@active_base_logger)
+    @base_logger = spy('Base logger')
+    allow(ActiveGraph::Base).to receive(:logger).and_return(@base_logger)
   end
 
   # TODO marshalling java objects, is it necessary?

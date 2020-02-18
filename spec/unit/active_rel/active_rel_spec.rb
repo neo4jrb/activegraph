@@ -1,11 +1,11 @@
-describe ActiveGraph::ActiveRel do
+describe ActiveGraph::Relationship do
   let(:clazz) do
     Class.new do
       def self.name
         'Clazz'
       end
 
-      include ActiveGraph::ActiveRel
+      include ActiveGraph::Relationship
     end
   end
 

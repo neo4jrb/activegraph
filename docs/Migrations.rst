@@ -5,7 +5,7 @@ Neo4j does not have a set schema like relational databases, but sometimes change
 
 .. note::
 
-  If you are new to Neo4j, note that properties on nodes and relationships are not defined ahead of time.  Properties can be added and removed on the fly, and so adding a ``property`` to your ``ActiveNode`` or ``ActiveRel`` model is sufficient to start storing data.  No migration is needed to add properties, but if you remove a property from your model you may want a migration to cleanup the data (by using the ``remove_property``, for example).
+  If you are new to Neo4j, note that properties on nodes and relationships are not defined ahead of time.  Properties can be added and removed on the fly, and so adding a ``property`` to your ``Node`` or ``Relationship`` model is sufficient to start storing data.  No migration is needed to add properties, but if you remove a property from your model you may want a migration to cleanup the data (by using the ``remove_property``, for example).
 
 .. note::
 

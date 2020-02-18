@@ -1,4 +1,4 @@
-describe ActiveGraph::ActiveNode::Validations do
+describe ActiveGraph::Node::Validations do
   let(:node) { double('a persisted node') }
   before(:each) { allow_any_instance_of(clazz).to receive(:_persisted_obj).and_return(nil) }
 
@@ -6,12 +6,12 @@ describe ActiveGraph::ActiveNode::Validations do
     Class.new do
       include ActiveGraph::Shared
       include ActiveGraph::Shared::Identity
-      include ActiveGraph::ActiveNode::Query
-      include ActiveGraph::ActiveNode::Persistence
-      include ActiveGraph::ActiveNode::Unpersisted
-      include ActiveGraph::ActiveNode::HasN
-      include ActiveGraph::ActiveNode::Property
-      include ActiveGraph::ActiveNode::Validations
+      include ActiveGraph::Node::Query
+      include ActiveGraph::Node::Persistence
+      include ActiveGraph::Node::Unpersisted
+      include ActiveGraph::Node::HasN
+      include ActiveGraph::Node::Property
+      include ActiveGraph::Node::Validations
 
       property :name
       property :age, type: Integer

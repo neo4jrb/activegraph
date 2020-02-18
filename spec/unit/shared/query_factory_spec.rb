@@ -2,9 +2,9 @@ module ActiveGraph
   module Shared
     describe QueryFactory do
       before do
-        stub_active_node_class('NodeClass') {}
+        stub_node_class('NodeClass') {}
 
-        stub_active_rel_class('RelClass') do
+        stub_relationship_class('RelClass') do
           from_class false
           to_class false
         end
@@ -13,18 +13,18 @@ module ActiveGraph
       describe '.factory_for' do
         subject { described_class.factory_for(graph_obj) }
 
-        context 'with ActiveRel' do
+        context 'with Relationship' do
           let(:graph_obj) { RelClass.new }
           it { is_expected.to eq RelQueryFactory }
         end
 
-        context 'with ActiveNode' do
+        context 'with Node' do
           let(:graph_obj) { NodeClass.new }
           it { is_expected.to eq NodeQueryFactory }
         end
 
         context 'with RelatedNode' do
-          let(:graph_obj) { ActiveGraph::ActiveRel::RelatedNode.new(NodeClass.new) }
+          let(:graph_obj) { ActiveGraph::Relationship::RelatedNode.new(NodeClass.new) }
           it { is_expected.to eq NodeQueryFactory }
         end
 

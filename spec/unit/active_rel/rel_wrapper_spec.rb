@@ -10,9 +10,9 @@ describe ActiveGraph::RelWrapping do
 
   it { should eq(rel) }
 
-  context 'HasFoo ActiveRel class defined' do
+  context 'HasFoo Relationship class defined' do
     before do
-      stub_active_rel_class('HasFoo') do
+      stub_relationship_class('HasFoo') do
         property :bar
         property :biz
       end

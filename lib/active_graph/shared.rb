@@ -14,22 +14,22 @@ module ActiveGraph
 
       # remove?
       def neo4j_driver
-        ActiveGraph::ActiveBase.current_driver
+        ActiveGraph::Base.current_driver
       end
 
       # remove?
       def current_transaction
-        ActiveGraph::ActiveBase.current_transaction
+        ActiveGraph::Base.current_transaction
       end
 
       # This should be used everywhere.  Should make it easy
       # to support a driver-per-model system
       def neo4j_query(*args)
-        ActiveGraph::ActiveBase.query(*args)
+        ActiveGraph::Base.query(*args)
       end
 
       def new_query
-        ActiveGraph::ActiveBase.new_query
+        ActiveGraph::Base.new_query
       end
     end
 

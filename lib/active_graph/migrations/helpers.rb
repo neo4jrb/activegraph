@@ -50,7 +50,7 @@ module ActiveGraph
       end
 
       def execute(string, params = {})
-        ActiveBase.query(string, params).to_a
+        ActiveGraph::Base.query(string, params).to_a
       end
 
       def say_with_time(message)
@@ -67,7 +67,7 @@ module ActiveGraph
       end
 
       def query(*args)
-        ActiveBase.new_query(*args)
+        ActiveGraph::Base.new_query(*args)
       end
 
       protected

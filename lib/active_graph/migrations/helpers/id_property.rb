@@ -27,7 +27,7 @@ module ActiveGraph
         end
 
         def id_batch_set(label, id_property, new_ids, count)
-          tx = ActiveBase.new_transaction
+          tx = ActiveGraph::Base.new_transaction
 
           execute("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
             with COLLECT(n) as nodes, #{new_ids} as ids

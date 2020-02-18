@@ -89,7 +89,7 @@ module ActiveGraph::Shared
       @_create_or_updating = true
       apply_default_values
       result = _persisted_obj ? update_model : create_model
-      current_transaction = ActiveGraph::ActiveBase.current_transaction
+      current_transaction = ActiveGraph::Base.current_transaction
 
       current_transaction.mark_failed if result == false && current_transaction
 
@@ -229,7 +229,7 @@ module ActiveGraph::Shared
 
     module ClassMethods
       def run_transaction(run_in_tx = true)
-        ActiveGraph::ActiveBase.run_transaction(run_in_tx) { |tx| yield tx }
+        ActiveGraph::Base.run_transaction(run_in_tx) { |tx| yield tx }
       end
     end
 

@@ -1,9 +1,9 @@
-describe ActiveGraph::ActiveNode do
+describe ActiveGraph::Node do
   before(:each) do
     create_index :StoredFile, :type, type: :exact
     create_index :StoredFile, :size, type: :exact
     create_index :StoredFile, :flag, type: :exact
-    stub_active_node_class('StoredFile') do
+    stub_node_class('StoredFile') do
       enum type: [:unknown, :image, :video], _default: :unknown
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
       enum flag: [:clean, :dangerous], _suffix: true
@@ -12,11 +12,11 @@ describe ActiveGraph::ActiveNode do
       has_one :in, :uploader, rel_class: :UploaderRel
     end
 
-    stub_active_node_class('User') do
+    stub_node_class('User') do
       has_many :out, :files, rel_class: :UploaderRel
     end
 
-    stub_active_rel_class('UploaderRel') do
+    stub_relationship_class('UploaderRel') do
       from_class :User
       to_class :StoredFile
       type 'uploaded'
@@ -238,7 +238,7 @@ describe ActiveGraph::ActiveNode do
       create_index :ConflictingModel, :enum2, type: :exact
 
       expect do
-        stub_active_node_class('ConflictingModel') do
+        stub_node_class('ConflictingModel') do
           enum enum1: [:a, :b, :c]
           enum enum2: [:c, :d]
         end
@@ -263,7 +263,7 @@ describe ActiveGraph::ActiveNode do
   describe 'required index behavior' do
     before do
       create_index(:Incomplete, :foo, type: :exact)
-      stub_active_node_class('Incomplete') do
+      stub_node_class('Incomplete') do
         enum foo: [:a, :b]
         enum bar: [:c, :d]
       end

@@ -63,7 +63,7 @@ module ActiveGraph
       end
 
       def migration_transaction(&block)
-        ActiveBase.run_transaction(transactions?, &block)
+        ActiveGraph::Base.run_transaction(transactions?, &block)
       end
 
       def log_queries

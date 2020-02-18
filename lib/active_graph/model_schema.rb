@@ -66,16 +66,16 @@ module ActiveGraph
 
       def ensure_model_data_state!
         # If we load a new model, reset everything
-        if @previously_loaded_models_count != ActiveGraph::ActiveNode.loaded_classes.size
+        if @previously_loaded_models_count != ActiveGraph::Node.loaded_classes.size
           # Make sure we've finalized id_property details and have called
           # add_ constraint/index methods above
-          ActiveGraph::ActiveNode.loaded_classes.each(&:ensure_id_property_info!)
+          ActiveGraph::Node.loaded_classes.each(&:ensure_id_property_info!)
           reload_models_data!
         end
       end
 
       def reload_models_data!
-        @previously_loaded_models_count = ActiveGraph::ActiveNode.loaded_classes.size
+        @previously_loaded_models_count = ActiveGraph::Node.loaded_classes.size
         @model_indexes = @model_constraints = nil
       end
 
@@ -122,7 +122,7 @@ MSG
       end
 
       def log_warning!(index_or_constraint, model, property_name)
-        ActiveGraph::ActiveBase.logger.warn "WARNING: The #{index_or_constraint} option is no longer supported (Defined on #{model.name} for #{property_name})"
+        ActiveGraph::Base.logger.warn "WARNING: The #{index_or_constraint} option is no longer supported (Defined on #{model.name} for #{property_name})"
       end
 
       private

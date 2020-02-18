@@ -1,5 +1,5 @@
-describe ActiveGraph::ActiveRel::RelatedNode do
-  class RelatedNode < ActiveGraph::ActiveRel::RelatedNode; end
+describe ActiveGraph::Relationship::RelatedNode do
+  class RelatedNode < ActiveGraph::Relationship::RelatedNode; end
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
@@ -10,7 +10,7 @@ describe ActiveGraph::ActiveRel::RelatedNode do
       def id; 1; end
     end.new
   end
-  let(:rel) { double('ActiveRel object') }
+  let(:rel) { double('Relationship object') }
 
   describe 'initialize' do
     it 'can be called without params' do
@@ -36,7 +36,7 @@ describe ActiveGraph::ActiveRel::RelatedNode do
         let(:r) { RelatedNode.new(nil) }
 
         it 'raises' do
-          expect { r.loaded }.to raise_error ActiveGraph::ActiveRel::RelatedNode::UnsetRelatedNodeError
+          expect { r.loaded }.to raise_error ActiveGraph::Relationship::RelatedNode::UnsetRelatedNodeError
         end
       end
     end

@@ -57,7 +57,7 @@ module ActiveGraph
       end
 
       def mark_versions_as_complete(versions)
-        ActiveGraph::ActiveBase.new_query
+        ActiveGraph::Base.new_query
                          .with('$versions AS versions').params(versions: versions).break
                          .unwind(version: :versions).break
                          .merge('(:`ActiveGraph::Migrations::SchemaMigration` {migration_id: version})')

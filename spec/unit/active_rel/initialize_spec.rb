@@ -1,7 +1,7 @@
-describe ActiveGraph::ActiveRel::Initialize do
+describe ActiveGraph::Relationship::Initialize do
   let(:clazz) do
     Class.new do
-      include ActiveGraph::ActiveRel::Initialize
+      include ActiveGraph::Relationship::Initialize
     end
   end
 

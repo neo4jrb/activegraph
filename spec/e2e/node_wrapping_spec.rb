@@ -2,13 +2,13 @@ describe 'Node Wrapping' do
   before(:each) do
     clear_model_memory_caches
 
-    stub_active_node_class('Post')
+    stub_node_class('Post')
 
-    stub_active_node_class('GitHub') do
+    stub_node_class('GitHub') do
       self.mapped_label_name = 'GitHub'
     end
 
-    stub_active_node_class('StackOverflow') do
+    stub_node_class('StackOverflow') do
       self.mapped_label_name = 'StackOverflow'
     end
 
@@ -39,10 +39,10 @@ describe 'Node Wrapping' do
     let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
     before do
-      ActiveGraph::ActiveBase.new_query.create("(n#{label_string})").exec
+      ActiveGraph::Base.new_query.create("(n#{label_string})").exec
     end
 
-    let(:result) { ActiveGraph::ActiveBase.new_query.match("(n#{label_string})").pluck(:n).first }
+    let(:result) { ActiveGraph::Base.new_query.match("(n#{label_string})").pluck(:n).first }
 
     context 'constantize errors' do
       let(:labels) { %w[MissingClass] }

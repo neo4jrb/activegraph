@@ -5,7 +5,7 @@ shared_examples_for 'unsaveable model' do
     end
 
     it 'should raise an exception' do
-      expect { subject.save! }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError
+      expect { subject.save! }.to raise_error ActiveGraph::Node::Persistence::RecordInvalidError
     end
   end
 
