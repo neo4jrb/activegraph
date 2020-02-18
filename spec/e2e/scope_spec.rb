@@ -1,6 +1,6 @@
-# module Neo4j::ActiveNode::Scope
+# module ActiveGraph::ActiveNode::Scope
 
-describe 'Neo4j::NodeMixin::Scope' do
+describe 'ActiveGraph::NodeMixin::Scope' do
   before do
     clear_model_memory_caches
 

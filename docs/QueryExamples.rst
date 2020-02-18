@@ -77,7 +77,7 @@ Now let's see how we could write this using ActiveNode syntax in a ``User`` Ruby
 .. code-block:: ruby
 
     class User
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       property :id, type: Integer
 
@@ -111,7 +111,7 @@ This assumes we have a ``Page`` class like the following:
 .. code-block:: ruby
 
     class Page
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       property name, type: String
 

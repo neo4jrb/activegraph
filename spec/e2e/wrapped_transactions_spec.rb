@@ -28,7 +28,7 @@ describe 'wrapped nodes in transactions' do
     Student.create(name: 'John')
     Teacher.create(name: 'Mr Jones')
     begin
-      tx = Neo4j::ActiveBase.new_transaction
+      tx = ActiveGraph::ActiveBase.new_transaction
       @john = Student.first
       @jones = Teacher.first
     ensure
@@ -61,7 +61,7 @@ describe 'wrapped nodes in transactions' do
 
     it 'will load rels within a tranaction' do
       begin
-        tx = Neo4j::ActiveBase.new_transaction
+        tx = ActiveGraph::ActiveBase.new_transaction
         retrieved_rel = @john.teachers.each_rel do |r|
           expect(r).to be_a(StudentTeacher)
         end
@@ -74,7 +74,7 @@ describe 'wrapped nodes in transactions' do
     it 'does not create an additional relationship after load then save' do
       starting_count = @john.teachers.rels.count
       begin
-        tx = Neo4j::ActiveBase.new_transaction
+        tx = ActiveGraph::ActiveBase.new_transaction
         @john.teachers.each_rel do |r|
           r.appreciation = 9001
           r.save

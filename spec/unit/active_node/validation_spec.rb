@@ -1,17 +1,17 @@
-describe Neo4j::ActiveNode::Validations do
+describe ActiveGraph::ActiveNode::Validations do
   let(:node) { double('a persisted node') }
   before(:each) { allow_any_instance_of(clazz).to receive(:_persisted_obj).and_return(nil) }
 
   let(:clazz) do
     Class.new do
-      include Neo4j::Shared
-      include Neo4j::Shared::Identity
-      include Neo4j::ActiveNode::Query
-      include Neo4j::ActiveNode::Persistence
-      include Neo4j::ActiveNode::Unpersisted
-      include Neo4j::ActiveNode::HasN
-      include Neo4j::ActiveNode::Property
-      include Neo4j::ActiveNode::Validations
+      include ActiveGraph::Shared
+      include ActiveGraph::Shared::Identity
+      include ActiveGraph::ActiveNode::Query
+      include ActiveGraph::ActiveNode::Persistence
+      include ActiveGraph::ActiveNode::Unpersisted
+      include ActiveGraph::ActiveNode::HasN
+      include ActiveGraph::ActiveNode::Property
+      include ActiveGraph::ActiveNode::Validations
 
       property :name
       property :age, type: Integer

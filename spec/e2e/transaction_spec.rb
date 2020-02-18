@@ -1,5 +1,5 @@
-describe 'Neo4j::Transaction' do
-  context 'reading has_one relationships for Neo4j::Server' do
+describe 'ActiveGraph::Transaction' do
+  context 'reading has_one relationships for ActiveGraph::Server' do
     before do
       stub_active_node_class('Clazz') do
         property :name
@@ -11,7 +11,7 @@ describe 'Neo4j::Transaction' do
 
     it 'returns a wrapped node inside and outside of transaction' do
       begin
-        tx = Neo4j::ActiveBase.new_transaction
+        tx = ActiveGraph::ActiveBase.new_transaction
         a = Clazz.create name: 'a'
         b = Clazz.create name: 'b'
         a.thing = b

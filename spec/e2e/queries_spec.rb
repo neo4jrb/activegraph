@@ -1,4 +1,4 @@
-describe 'Neo4j::ActiveNode#find' do
+describe 'ActiveGraph::ActiveNode#find' do
   before do
     clear_model_memory_caches
   end
@@ -20,7 +20,7 @@ describe 'Neo4j::ActiveNode#find' do
 end
 
 
-describe 'Neo4j::ActiveNode#all' do
+describe 'ActiveGraph::ActiveNode#all' do
   before do
     clear_model_memory_caches
   end

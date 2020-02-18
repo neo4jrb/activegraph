@@ -1,8 +1,8 @@
-describe Neo4j::ActiveNode::IdProperty do
+describe ActiveGraph::ActiveNode::IdProperty do
   before(:all) do
-    Neo4j::Config.delete(:id_property)
-    Neo4j::Config.delete(:id_property_type)
-    Neo4j::Config.delete(:id_property_type_value)
+    ActiveGraph::Config.delete(:id_property)
+    ActiveGraph::Config.delete(:id_property_type)
+    ActiveGraph::Config.delete(:id_property_type_value)
   end
 
   before do
@@ -136,7 +136,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       context 'id_property defined twice' do
         before do
-          Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
+          ActiveGraph::ModelSchema::MODEL_CONSTRAINTS.clear
 
           Clazz.id_property :my_property, auto: :uuid
           Clazz.id_property :another_property, auto: :uuid
@@ -146,7 +146,7 @@ describe Neo4j::ActiveNode::IdProperty do
         it 'removes any previously declared properties' do
           begin
             node = Clazz.create
-          rescue Neo4j::DeprecatedSchemaDefinitionError
+          rescue ActiveGraph::DeprecatedSchemaDefinitionError
             nil
           end
           expect(node.respond_to?(:uuid)).to be_falsey
@@ -273,7 +273,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
       Clazz.ensure_id_property_info!
       SubClazz.ensure_id_property_info!
-      Neo4j::ModelSchema.reload_models_data!
+      ActiveGraph::ModelSchema.reload_models_data!
     end
 
     it_behaves_like 'raises schema error including', :constraint, :Clazz, :uuid

@@ -1,4 +1,4 @@
-describe Neo4j::ActiveRel::Persistence::QueryFactory do
+describe ActiveGraph::ActiveRel::Persistence::QueryFactory do
   describe '#build!' do
     describe 'non-subclassed' do
       before do
@@ -145,7 +145,7 @@ describe Neo4j::ActiveRel::Persistence::QueryFactory do
           to_class :ToClass
 
           def self.count
-            Neo4j::ActiveBase.new_query
+            ActiveGraph::ActiveBase.new_query
                              .match('(from:FromClass:ParentClass)-[r:HAS_REL]->()')
                              .pluck('COUNT(r)').first
           end

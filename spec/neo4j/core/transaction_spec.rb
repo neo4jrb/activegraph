@@ -1,14 +1,14 @@
 require 'spec_helper'
-require 'neo4j/transaction'
+require 'active_graph/transaction'
 
-describe Neo4j::Transaction do
+describe ActiveGraph::Transaction do
   # let(:url) { ENV['NEO4J_URL'] }
   # let(:driver) { TestDriver.new(url) }
   #
 
-  before { Neo4j::Transaction.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
+  before { ActiveGraph::Transaction.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
 
-  subject { Neo4j::Transaction }
+  subject { ActiveGraph::Transaction }
 
   describe '#query' do
     it 'Can make a query' do
@@ -225,7 +225,7 @@ describe Neo4j::Transaction do
     end
 
     describe 'parameter input and output' do
-      subject { Neo4j::Transaction.query('WITH $param AS param RETURN param', param: param).first.param }
+      subject { ActiveGraph::Transaction.query('WITH $param AS param RETURN param', param: param).first.param }
 
       [
         # Integers
@@ -341,12 +341,12 @@ describe Neo4j::Transaction do
   end
 
   def create_constraint(label_name, property, options = {})
-    label_object = Neo4j::Core::Label.new(label_name)
+    label_object = ActiveGraph::Core::Label.new(label_name)
     label_object.create_constraint(property, options)
   end
 
   def create_index(label_name, property, options = {})
-    label_object = Neo4j::Core::Label.new(label_name)
+    label_object = ActiveGraph::Core::Label.new(label_name)
     label_object.create_index(property, options)
   end
 
@@ -356,26 +356,26 @@ describe Neo4j::Transaction do
       before { create_constraint(:Album, :uuid, type: :unique) }
 
       it 'raises an error' do
-        Neo4j::Transaction.query("CREATE (:Album {uuid: 'dup'})").to_a
+        ActiveGraph::Transaction.query("CREATE (:Album {uuid: 'dup'})").to_a
         expect do
           described_class.query("CREATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::SchemaErrors::ConstraintValidationFailedError)
+        end.to raise_error(::ActiveGraph::Core::SchemaErrors::ConstraintValidationFailedError)
       end
     end
 
     describe 'Invalid input error' do
       it 'raises an error' do
         expect do
-          Neo4j::Transaction.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::CypherError, /Invalid input 'A'/)
+          ActiveGraph::Transaction.query("CRATE (:Album {uuid: 'dup'})").to_a
+        end.to raise_error(::ActiveGraph::Core::CypherError, /Invalid input 'A'/)
       end
     end
 
     describe 'Clause ordering error' do
       it 'raises an error' do
         expect do
-          Neo4j::Transaction.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::Neo4j::Core::CypherError, /RETURN can only be used at the end of the query/)
+          ActiveGraph::Transaction.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
+        end.to raise_error(::ActiveGraph::Core::CypherError, /RETURN can only be used at the end of the query/)
       end
     end
   end
@@ -394,7 +394,7 @@ describe Neo4j::Transaction do
 
     describe 'constraints' do
       let(:label) {}
-      subject { Neo4j::Transaction.constraints }
+      subject { ActiveGraph::Transaction.constraints }
 
       it do
         should match_array([
@@ -407,7 +407,7 @@ describe Neo4j::Transaction do
 
     describe 'indexes' do
       let(:label) {}
-      subject { Neo4j::Transaction.indexes }
+      subject { ActiveGraph::Transaction.indexes }
 
       it do
         should match_array([

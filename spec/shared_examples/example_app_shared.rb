@@ -62,7 +62,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       end
 
       it 'should raise an error if there is no instance with that id' do
-        expect { user_adapter.get!('nonexistent id') }.to raise_error(Neo4j::Error)
+        expect { user_adapter.get!('nonexistent id') }.to raise_error(ActiveGraph::Error)
       end
     end
 
@@ -212,7 +212,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       end
 
       it 'should raise error when create fails' do
-        expect { user_adapter.create!(user: create_model(note_class)) }.to raise_error(Neo4j::Error)
+        expect { user_adapter.create!(user: create_model(note_class)) }.to raise_error(ActiveGraph::Error)
       end
 
       it 'when attributes contain an associated object, should create a model with the attributes' do

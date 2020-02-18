@@ -1,4 +1,4 @@
-module Neo4j::Shared
+module ActiveGraph::Shared
   describe TypecastedAttributes do
     subject(:model) { model_class.new }
 

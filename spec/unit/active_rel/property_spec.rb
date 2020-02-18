@@ -1,4 +1,4 @@
-describe Neo4j::ActiveRel::Property do
+describe ActiveGraph::ActiveRel::Property do
   let(:driver) { double('Driver') }
 
   before do
@@ -12,8 +12,8 @@ describe Neo4j::ActiveRel::Property do
         'Clazz'
       end
 
-      include Neo4j::ActiveRel::Property
-      include Neo4j::ActiveRel::Types
+      include ActiveGraph::ActiveRel::Property
+      include ActiveGraph::ActiveRel::Types
     end
   end
 

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module Neo4j
+module ActiveGraph
   module Core
     describe CypherError do
       let(:code) { 'SomeError' }

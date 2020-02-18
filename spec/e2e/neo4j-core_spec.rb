@@ -1,4 +1,4 @@
-describe 'works well together with Neo4j::Core' do
+describe 'works well together with ActiveGraph::Core' do
   before do
     clear_model_memory_caches
 
@@ -7,7 +7,7 @@ describe 'works well together with Neo4j::Core' do
     end
   end
 
-  it 'can add Neo4j::Core::Node to declared relationships' do
+  it 'can add ActiveGraph::Core::Node to declared relationships' do
     obj = Clazz.create
     wrapped_node = Clazz.create
     node = wrapped_node._persisted_obj
@@ -24,7 +24,7 @@ describe 'works well together with Neo4j::Core' do
   # Maybe we could support that via a method call, but it's easy enough to
   # map(&:_persisted_obj)
   #
-  # it 'can retrieve Neo4j::Core::Node from declared relationships' do
+  # it 'can retrieve ActiveGraph::Core::Node from declared relationships' do
   #   obj = Clazz.create
   #   node = Clazz.create._persisted_obj
   #   obj.stuff << node

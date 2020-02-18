@@ -1,5 +1,5 @@
-describe Neo4j::ActiveNode::Query::QueryProxy do
-  let(:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
+describe ActiveGraph::ActiveNode::Query::QueryProxy do
+  let(:qp) { ActiveGraph::ActiveNode::Query::QueryProxy.new(Object) }
   let(:driver) { double('A driver') }
   let(:query_result) { double('the result of calling :query') }
   let(:node) { double('A node object', foo: 'bar', neo_id: true) }

@@ -51,16 +51,16 @@ To make a new session, you must first create an adaptor object and then provide 
 
 .. code-block:: ruby
 
-  require 'neo4j/core/cypher_session/adaptors/http'
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:port', options)
+  require 'active_graph/core/cypher_session/adaptors/http'
+  neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:port', options)
   # or
-  require 'neo4j/core/cypher_session/adaptors/bolt'
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Bolt.new('bolt://user:pass@host:port', options)
+  require 'active_graph/core/cypher_session/adaptors/bolt'
+  neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::Bolt.new('bolt://user:pass@host:port', options)
   # or
-  require 'neo4j/core/cypher_session/adaptors/embedded'
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new('path/to/db', options)
+  require 'active_graph/core/cypher_session/adaptors/embedded'
+  neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::Embedded.new('path/to/db', options)
 
-  neo4j_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
+  neo4j_session = ActiveGraph::Core::CypherSession.new(neo4j_adaptor)
 
 With your session object, you can make queries in a number of different ways:
 
@@ -72,11 +72,11 @@ With your session object, you can make queries in a number of different ways:
   # Query with parameters
   neo4j_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
 
-Or via the `Neo4j::Core::Query` class
+Or via the `ActiveGraph::Core::Query` class
 
 .. code-block:: ruby
 
-  query_obj = Neo4j::Core::Query.new.match(:n).return(:n).limit(10)
+  query_obj = ActiveGraph::Core::Query.new.match(:n).return(:n).limit(10)
 
   neo4j_session.query(query_obj)
 
@@ -92,7 +92,7 @@ Making multiple queries with one request is supported with the HTTP Adaptor:
   results[0] # results of first query
   results[1] # results of second query
 
-When doing batched queries, there is also a shortcut for getting a new `Neo4j::Core::Query`:
+When doing batched queries, there is also a shortcut for getting a new `ActiveGraph::Core::Query`:
 
 .. code-block:: ruby
 
@@ -121,13 +121,13 @@ In ``7.0`` of the ``neo4j-core`` gem, the new API doesn't have the concept of a 
 
 .. code-block:: ruby
 
-  Neo4j::Session.current
+  ActiveGraph::Session.current
 
 If you are using version ``8.0`` of the ``neo4j`` gem, that will be accessible, but ``neo4j`` is no longer using that old API to have a session with Neo4j.  Instead you might use:
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.current_session
+  ActiveGraph::ActiveBase.current_session
   
 Transactions
 ^^^^^^^^^^^^
@@ -136,16 +136,16 @@ Because of the changes to the current session API in the ``neo4j`` gem, the tran
 
 .. code-block:: ruby
 
-  Neo4j::Transaction.run do |tx|
+  ActiveGraph::Transaction.run do |tx|
     # do stuff
     tx.mark_failed
   end
 
-Now, you now interact with transactions through ``Neo4j::ActiveBase`` like so:
+Now, you now interact with transactions through ``ActiveGraph::ActiveBase`` like so:
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.run_transaction do |tx|
+  ActiveGraph::ActiveBase.run_transaction do |tx|
     # do stuff
     tx.mark_failed
   end
@@ -204,28 +204,28 @@ Outside of Rails
 
 The ``neo4j`` gem will automatically set up a number of things with it's ``railtie``.  If you aren't using Rails you may need to set some things up yourself and some of the details have changed with version 8.0 of the ``neo4j`` gem.
 
-Previously a connection with be established with ``Neo4j::Session.open`` and the default session from ``neo4j-core`` would be used.  In version 7.0 of the ``neo4j-core`` gem, no such default session exists for the new API so you will need to establish a session to use the ``ActiveNode`` and ``ActiveRel`` modules like so:
+Previously a connection with be established with ``ActiveGraph::Session.open`` and the default session from ``neo4j-core`` would be used.  In version 7.0 of the ``neo4j-core`` gem, no such default session exists for the new API so you will need to establish a session to use the ``ActiveNode`` and ``ActiveRel`` modules like so:
 
 .. code-block:: ruby
 
-  adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
+  adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
 
-  session = Neo4j::Core::CypherSession.new(adaptor)
+  session = ActiveGraph::Core::CypherSession.new(adaptor)
 
-  Neo4j::ActiveBase.current_session = session
+  ActiveGraph::ActiveBase.current_session = session
 
   # Or skip setting up the session yourself:
 
-  Neo4j::ActiveBase.current_adaptor = adaptor
+  ActiveGraph::ActiveBase.current_adaptor = adaptor
 
 If you are using multiple threads, you should use the `on_establish_session` method to define how to setup your session.  The `current_session` is stored on a per-thread basis and if you spawn a new thread, this block will be used to establish the session for that thread:
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.on_establish_session do
-    adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
+  ActiveGraph::ActiveBase.on_establish_session do
+    adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://username:password@localhost:7474', wrap_level: :proc)
 
-    Neo4j::Core::CypherSession.new(adaptor)
+    ActiveGraph::Core::CypherSession.new(adaptor)
   end
 
 Migrations:
@@ -274,9 +274,9 @@ With the new API comes some new exceptions which are raised.  With the new adapt
 =======================================================  =========================================================================
 Old Exception                                            New Exception
 -------------------------------------------------------  -------------------------------------------------------------------------
-Neo4j::Server::Resource::ServerException                 Neo4j::Core::CypherSession::ConnectionFailedError
-Neo4j::Server::CypherResponse::ConstraintViolationError  Neo4j::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError
-Neo4j::Session::CypherError                              Neo4j::Core::CypherSession::CypherError
+ActiveGraph::Server::Resource::ServerException                 ActiveGraph::Core::CypherSession::ConnectionFailedError
+ActiveGraph::Server::CypherResponse::ConstraintViolationError  ActiveGraph::Core::CypherSession::SchemaErrors::ConstraintValidationFailedError
+ActiveGraph::Session::CypherError                              ActiveGraph::Core::CypherSession::CypherError
 ?                                                        ConstraintAlreadyExistsError
 ?                                                        IndexAlreadyExistsError
 =======================================================  =========================================================================

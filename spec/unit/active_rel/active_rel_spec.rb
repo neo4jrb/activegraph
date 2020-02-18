@@ -1,11 +1,11 @@
-describe Neo4j::ActiveRel do
+describe ActiveGraph::ActiveRel do
   let(:clazz) do
     Class.new do
       def self.name
         'Clazz'
       end
 
-      include Neo4j::ActiveRel
+      include ActiveGraph::ActiveRel
     end
   end
 

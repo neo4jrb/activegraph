@@ -1,11 +1,11 @@
-describe Neo4j::ActiveRel::RelatedNode do
-  class RelatedNode < Neo4j::ActiveRel::RelatedNode; end
+describe ActiveGraph::ActiveRel::RelatedNode do
+  class RelatedNode < ActiveGraph::ActiveRel::RelatedNode; end
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
   let(:node1) do
     Class.new do
-      include Neo4j::Core::Node
+      include ActiveGraph::Core::Node
 
       def id; 1; end
     end.new
@@ -36,7 +36,7 @@ describe Neo4j::ActiveRel::RelatedNode do
         let(:r) { RelatedNode.new(nil) }
 
         it 'raises' do
-          expect { r.loaded }.to raise_error Neo4j::ActiveRel::RelatedNode::UnsetRelatedNodeError
+          expect { r.loaded }.to raise_error ActiveGraph::ActiveRel::RelatedNode::UnsetRelatedNodeError
         end
       end
     end
@@ -108,7 +108,7 @@ describe Neo4j::ActiveRel::RelatedNode do
     it 'does not accept an invalid initialization param' do
       expect do
         RelatedNode.new(foo: 'bar')
-      end.to raise_error(Neo4j::InvalidParameterError)
+      end.to raise_error(ActiveGraph::InvalidParameterError)
     end
   end
 end

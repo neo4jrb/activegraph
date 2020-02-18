@@ -1,4 +1,4 @@
-describe Neo4j::ActiveNode do
+describe ActiveGraph::ActiveNode do
   before(:each) do
     stub_active_node_class('Person') do
       property :name, type: String
@@ -58,7 +58,7 @@ describe Neo4j::ActiveNode do
     end
 
     it 'does not allow to set undeclared properties using create' do
-      expect { Person.create(foo: 43) }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
+      expect { Person.create(foo: 43) }.to raise_error ActiveGraph::Shared::Property::UndefinedPropertyError
     end
   end
 
@@ -102,8 +102,8 @@ describe Neo4j::ActiveNode do
       expect(get_value_from_db(person, :name)).to eq('Jim')
     end
 
-    it 'raise Neo4j::Shared::UnknownAttributeError if trying to set undeclared property' do
-      expect { Person.new[:foo] = 42 }.to raise_error(Neo4j::UnknownAttributeError)
+    it 'raise ActiveGraph::Shared::UnknownAttributeError if trying to set undeclared property' do
+      expect { Person.new[:foo] = 42 }.to raise_error(ActiveGraph::UnknownAttributeError)
     end
   end
 
@@ -117,7 +117,7 @@ describe Neo4j::ActiveNode do
     context 'with validations' do
       it 'raises an error with invalid params' do
         with_validations = WithValidations.new
-        expect { with_validations.save! }.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
+        expect { with_validations.save! }.to raise_error(ActiveGraph::ActiveNode::Persistence::RecordInvalidError)
       end
     end
   end
@@ -151,7 +151,7 @@ describe Neo4j::ActiveNode do
     it 'does not update it if it is not valid' do
       expect do
         person.update_attribute!(:name, nil)
-      end.to raise_error(Neo4j::ActiveNode::Persistence::RecordInvalidError)
+      end.to raise_error(ActiveGraph::ActiveNode::Persistence::RecordInvalidError)
 
       expect(get_value_from_db(person, :name)).to eq('Jim')
     end
@@ -241,7 +241,7 @@ describe Neo4j::ActiveNode do
         it do
           expect do
             UpdateWithValidations.new.update_db_property(:age, 20)
-          end.to raise_error(Neo4j::Error, /can not update on a new record object/)
+          end.to raise_error(ActiveGraph::Error, /can not update on a new record object/)
         end
       end
     end
@@ -295,7 +295,7 @@ describe Neo4j::ActiveNode do
     describe 'class method #create!' do
       context 'association validation fails' do
         it 'raises an error' do
-          expect { MyModel.create! }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
+          expect { MyModel.create! }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
         end
 
         it 'does not create the rel' do
@@ -315,7 +315,7 @@ describe Neo4j::ActiveNode do
     describe 'instance #save!' do
       context 'association validation fails' do
         it 'raises an error' do
-          expect { MyModel.new.save! }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
+          expect { MyModel.new.save! }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError, "Friend can't be blank"
         end
       end
 
@@ -330,7 +330,7 @@ describe Neo4j::ActiveNode do
   end
 end
 
-describe Neo4j::ActiveRel do
+describe ActiveGraph::ActiveRel do
   before do
     stub_active_node_class('Person') do
       property :name

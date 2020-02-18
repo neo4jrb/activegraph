@@ -46,19 +46,19 @@ describe 'migration tasks' do
 
   describe 'base Migration class' do
     it 'raises an error' do
-      expect { Neo4j::Migration.new.migrate }.to raise_error 'not implemented'
+      expect { ActiveGraph::Migration.new.migrate }.to raise_error 'not implemented'
     end
   end
 
   describe 'AddIdProperty class' do
     before do
-      Neo4j::Config.delete(:id_property)
-      Neo4j::Config.delete(:id_property_type)
-      Neo4j::Config.delete(:id_property_type_value)
+      ActiveGraph::Config.delete(:id_property)
+      ActiveGraph::Config.delete(:id_property_type)
+      ActiveGraph::Config.delete(:id_property_type_value)
     end
 
     let(:full_path) { '/hd/gems/rails/add_id_property.yml' }
-    let(:clazz) { Neo4j::Migration::AddIdProperty }
+    let(:clazz) { ActiveGraph::Migration::AddIdProperty }
     let(:map_template) { {models: %w(User Song)} }
 
     before do
@@ -72,7 +72,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      Neo4j::Transaction.query('CREATE (n:`User`) return n')
+      ActiveGraph::Transaction.query('CREATE (n:`User`) return n')
       user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
@@ -97,7 +97,7 @@ describe 'migration tasks' do
       create_constraint :Song, :my_id, type: :unique
 
       Song.id_property :my_id, on: :custom_id
-      Neo4j::Transaction.query('CREATE (n:`Song`) return n')
+      ActiveGraph::Transaction.query('CREATE (n:`Song`) return n')
       user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

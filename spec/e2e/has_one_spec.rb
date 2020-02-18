@@ -26,7 +26,7 @@ describe 'has_one' do
 
       describe 'with chainable: true option' do
         it 'returns an empty association proxy object' do
-          expect(unsaved_node.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+          expect(unsaved_node.parent(chainable: true)).to be_a ActiveGraph::ActiveNode::HasN::AssociationProxy
         end
       end
     end
@@ -51,9 +51,9 @@ describe 'has_one' do
         a.children << b
         a.children << c
 
-        expect(c.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(c.parent(chainable: true)).to be_a ActiveGraph::ActiveNode::HasN::AssociationProxy
         expect(c.parent(chainable: true).first).to eq(a)
-        expect(b.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(b.parent(chainable: true)).to be_a ActiveGraph::ActiveNode::HasN::AssociationProxy
         expect(b.parent(chainable: true).first).to eq(a)
         expect(a.children.to_a).to match_array([b, c])
       end

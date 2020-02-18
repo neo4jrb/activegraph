@@ -40,7 +40,7 @@ describe 'Query API' do
       property :name
       property :age, type: Integer
 
-      property :likely_to_succeed, type: Neo4j::Shared::Boolean, default: false
+      property :likely_to_succeed, type: ActiveGraph::Shared::Boolean, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
@@ -172,7 +172,7 @@ describe 'Query API' do
 
     it 'evaluates `all` lazily' do
       result = Teacher.all
-      expect(result).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+      expect(result).to be_a(ActiveGraph::ActiveNode::Query::QueryProxy)
       expect(result.size).to eq(2)
       expect(result).to include(samuels)
       expect(result).to include(othmar)
@@ -389,7 +389,7 @@ describe 'Query API' do
 
       it 'allows for finds on associations' do
         expect(samuels.lessons_teaching.find(ss101.id)).to eq(ss101)
-        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(Neo4j::RecordNotFound)
+        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(ActiveGraph::RecordNotFound)
       end
 
       context 'samuels taught math 101 lesson' do
@@ -746,7 +746,7 @@ describe 'Query API' do
         let(:student_interests_association_options) { {type: nil, unique: true} }
 
         it 'becomes :none' do
-          expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
+          expect(ActiveGraph::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
           changed_props_create.call
         end
       end

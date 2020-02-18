@@ -1,6 +1,6 @@
 describe 'ActiveModel::Lint' do
   class LintClass
-    include Neo4j::ActiveNode
+    include ActiveGraph::ActiveNode
   end
 
   let(:clazz) { LintClass }

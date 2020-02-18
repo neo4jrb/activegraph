@@ -1,4 +1,4 @@
-describe Neo4j::ActiveNode::Validations do
+describe ActiveGraph::ActiveNode::Validations do
   before(:each) do
     stub_active_node_class('Comment')
 

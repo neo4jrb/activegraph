@@ -1,4 +1,4 @@
-module Neo4j
+module ActiveGraph
   module Shared
     describe QueryFactory do
       before do
@@ -24,7 +24,7 @@ module Neo4j
         end
 
         context 'with RelatedNode' do
-          let(:graph_obj) { Neo4j::ActiveRel::RelatedNode.new(NodeClass.new) }
+          let(:graph_obj) { ActiveGraph::ActiveRel::RelatedNode.new(NodeClass.new) }
           it { is_expected.to eq NodeQueryFactory }
         end
 

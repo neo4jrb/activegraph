@@ -1,6 +1,6 @@
 module AutoLoadTest
   class MyWrapperClass
-    include Neo4j::ActiveNode
+    include ActiveGraph::ActiveNode
     property :some_prop
   end
 end

@@ -37,7 +37,7 @@ neo4j-core
   Provides low-level connectivity, transactions, and response object wrapping.  Includes ``Query`` class for generating Cypher queries with Ruby method chaining.
 
 Model
-  A Ruby class including either the ``Neo4j::ActiveNode`` module (for modeling nodes) or the ``Neo4j::ActiveRel`` module (for modeling relationships) from the ``neo4j`` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
+  A Ruby class including either the ``ActiveGraph::ActiveNode`` module (for modeling nodes) or the ``ActiveGraph::ActiveRel`` module (for modeling relationships) from the ``neo4j`` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
 
 Association
   Defined on an ``ActiveNode`` model.  Defines either a ``has_one`` or ``has_many`` relationship to a model.  A higher level abstraction of a **Relationship**

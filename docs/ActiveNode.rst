@@ -3,25 +3,25 @@ ActiveNode
 
 ActiveNode is the ActiveRecord replacement module for Rails. Its syntax should be familiar for ActiveRecord users but has some unique qualities.
 
-To use ActiveNode, include Neo4j::ActiveNode in a class.
+To use ActiveNode, include ActiveGraph::ActiveNode in a class.
 
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
     end
 
 Properties
 ----------
 
-All properties for Neo4j::ActiveNode objects must be declared (unlike neo4j-core nodes). Properties are declared using the property method which is the same as attribute from the active_attr gem.
+All properties for ActiveGraph::ActiveNode objects must be declared (unlike neo4j-core nodes). Properties are declared using the property method which is the same as attribute from the active_attr gem.
 
 Example:
 
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       property :title
       property :text, default: 'bla bla bla'
       property :score, type: Integer, default: 0
@@ -56,7 +56,7 @@ Additionally you can change the name of a particular ``ActiveNode`` by using ``m
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       self.mapped_label_name = 'BlogPost'
     end
@@ -78,7 +78,7 @@ The class name maps directly to the label.  In the following case both the class
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
     end
 
 If you want to specify a different label for your class you can use ``mapped_label_name``:
@@ -86,7 +86,7 @@ If you want to specify a different label for your class you can use ``mapped_lab
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       self.mapped_label_name = 'BlogPost'
     end
@@ -96,7 +96,7 @@ If you would like to use multiple labels you can use class inheritance.  In the 
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
     end
 
     class Article < Post
@@ -112,7 +112,7 @@ Pass a property name as a symbol to the serialize method if you want to save JSO
 .. code-block:: ruby
 
     class Student
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       property :links
 
@@ -136,7 +136,7 @@ You can declare special properties that maps an integer value in the database wi
 .. code-block:: ruby
 
     class Media
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       enum type: [:image, :video, :unknown]
     end
@@ -193,7 +193,7 @@ By default, every ``enum`` property will require you to add an associated index 
 .. code-block:: ruby
 
     class Media
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       enum type: [:image, :video, :unknown], _index: false
     end
@@ -203,7 +203,7 @@ Sometimes it is desirable to have a default value for an ``enum`` property.  To 
 .. code-block:: ruby
 
     class Media
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       enum type: [:image, :video, :unknown], _default: :video
     end
@@ -213,7 +213,7 @@ By default, enum setters are `case insensitive` (in the example below, ``Media.c
 .. code-block:: ruby
 
     class Media
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       enum type: [:image, :video, :unknown], _case_sensitive: false
     end
@@ -229,7 +229,7 @@ Scopes in ``ActiveNode`` are a way of defining a subset of nodes for a particula
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       scope :minors, -> { where(age: 0..17) }
     end
@@ -239,7 +239,7 @@ This allows you chain a description of the defined set of nodes which can make y
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       scope :eligible, -> { where_not(age: 0..17).where(completed_form: true) }
     end
@@ -256,7 +256,7 @@ While that's useful in of itself, sometimes you want to be able to create more d
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       scope :around_age_of, -> (age) { where(age: (age - 5..age + 5)) }
     end
@@ -271,7 +271,7 @@ All of the examples so far have used the Ruby API for automatically generating C
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       scope :non_teenagers, -> { where("#{identity}.age < 13 OR #{identity}.age >= 18") }
     end
@@ -288,7 +288,7 @@ Finally, the ``scope`` method just gives us a convenient way of having a method 
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       def self.average_age
         all(:person).pluck('avg(person.age)').first
@@ -330,11 +330,11 @@ created_at, updated_at
 .. code-block:: ruby
 
     class Blog
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
-      include Neo4j::Timestamps # will give model created_at and updated_at timestamps
-      include Neo4j::Timestamps::Created # will give model created_at timestamp
-      include Neo4j::Timestamps::Updated # will give model updated_at timestamp
+      include ActiveGraph::Timestamps # will give model created_at and updated_at timestamps
+      include ActiveGraph::Timestamps::Created # will give model created_at timestamp
+      include ActiveGraph::Timestamps::Updated # will give model updated_at timestamp
     end
 
 Validation
@@ -358,19 +358,19 @@ Associations
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       has_many :in, :comments, origin: :post
       has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Comment
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       has_one :out, :post, type: :post
       has_one :out, :author, type: :author, model_class: :Person
     end
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       has_many :in, :posts, origin: :author
       has_many :in, :comments, origin: :author
 
@@ -437,7 +437,7 @@ This is done by setting ``model_class: false`` or ``model_class: [:ModelOne, :Mo
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       # Match all incoming relationship types
       has_many :in, :written_things, type: :WROTE, model_class: [:Post, :Comment]
@@ -484,7 +484,7 @@ Similar to ActiveRecord, you can specify four ``dependent`` options when declari
 .. code-block:: ruby
 
     class Route
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       has_many :out, :stops, type: :STOPPING_AT, dependent: :delete_orphans
     end
 

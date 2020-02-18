@@ -1,8 +1,8 @@
-describe Neo4j::Migrations::Helpers do
+describe ActiveGraph::Migrations::Helpers do
   include described_class
-  include Neo4j::Migrations::Helpers::Schema
-  include Neo4j::Migrations::Helpers::IdProperty
-  include Neo4j::Migrations::Helpers::Relationships
+  include ActiveGraph::Migrations::Helpers::Schema
+  include ActiveGraph::Migrations::Helpers::IdProperty
+  include ActiveGraph::Migrations::Helpers::Relationships
 
   before do
     clear_model_memory_caches
@@ -108,7 +108,7 @@ describe Neo4j::Migrations::Helpers do
   end
 
   def label_object
-    Neo4j::Core::Label.new(:Book)
+    ActiveGraph::Core::Label.new(:Book)
   end
 
   describe '#add_constraint' do

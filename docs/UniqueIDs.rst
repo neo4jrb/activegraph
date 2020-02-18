@@ -3,7 +3,7 @@ Unique IDs
 
 The database generates unique IDs and they are accessible from all nodes and relationships using the ``neo_id`` method. These keys are somewhat volatile and may be reused or change throughout a database's lifetime, so they are unsafe to use within an application.
 
-Neo4j.rb requires you to define which key should act as primary key on ``Neo4j::ActiveNode`` classes instead of using the internal Neo4j ids. By default, ActiveNode will generate a unique ID using ``SecureRandom::uuid`` saving it in a ``uuid`` property. The instance method ``id`` will also point to this.
+Neo4j.rb requires you to define which key should act as primary key on ``ActiveGraph::ActiveNode`` classes instead of using the internal Neo4j ids. By default, ActiveNode will generate a unique ID using ``SecureRandom::uuid`` saving it in a ``uuid`` property. The instance method ``id`` will also point to this.
 
 You can define a global or per-model generation methods if you do not want to use the default. Additionally, you can change the property that will be aliased to the ``id`` method. This can be done through :doc:`Configuration </Configuration>` or models themselves.
 
@@ -17,7 +17,7 @@ The ``on`` parameter tells which method is used to generate the unique id.
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       id_property :personal_id, on: :phone_and_name
 
       property :name
@@ -36,7 +36,7 @@ Even if using internal Neo4j ids is not recommended, you can configure your mode
 .. code-block:: ruby
 
     class Person
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       id_property :neo_id
     end
 
@@ -70,7 +70,7 @@ Just create a new migration like this and run it:
 
 .. code-block:: ruby
 
-    class PopulateIdProperties < Neo4j::Migrations::Base
+    class PopulateIdProperties < ActiveGraph::Migrations::Base
       def up
         populate_id_property :MyModel
       end
@@ -107,7 +107,7 @@ This command will provide a list of indexes and constraints
 
 .. code-block:: ruby
 
-    class AddConstraintToTag < Neo4j::Migrations::Base
+    class AddConstraintToTag < ActiveGraph::Migrations::Base
       def up
         drop_index :Tag, :uuid
         add_constraint :Tag, :uuid

@@ -1,4 +1,4 @@
-describe Neo4j::Migrations::MigrationFile do
+describe ActiveGraph::Migrations::MigrationFile do
   let(:file_name) do
     "#{Rails.root}/spec/migration_files/transactional_migrations/1231231232_failing_migration_without_transactions.rb"
   end

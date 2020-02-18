@@ -9,7 +9,7 @@ describe 'Generators' do
     Timecop.freeze(Time.parse('1990-12-10 00:00:00 -0000')) { example.run }
   end
 
-  describe Neo4j::Generators::ModelGenerator do
+  describe ActiveGraph::Generators::ModelGenerator do
     it 'has a `source_root`' do
       expect(described_class.source_root).to include('rails/generators/neo4j/model/templates')
     end
@@ -21,7 +21,7 @@ describe 'Generators' do
     end
   end
 
-  describe Neo4j::Generators::MigrationGenerator do
+  describe ActiveGraph::Generators::MigrationGenerator do
     it 'has a `source_root`' do
       expect(described_class.source_root).to include('rails/generators/neo4j/migration/templates')
     end
@@ -32,7 +32,7 @@ describe 'Generators' do
     end
   end
 
-  describe Neo4j::Generators::UpgradeV8Generator do
+  describe ActiveGraph::Generators::UpgradeV8Generator do
     before do
       app = double
       allow(app).to receive(:eager_load!) do

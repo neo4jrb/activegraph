@@ -12,7 +12,7 @@ describe 'ActiveRel unpersisted handling' do
       property :name
       property :created_at, type: Integer
       property :updated_at, type: Integer
-      property :before_run, type: Neo4j::Shared::Boolean
+      property :before_run, type: ActiveGraph::Shared::Boolean
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
@@ -31,7 +31,7 @@ describe 'ActiveRel unpersisted handling' do
       after_create :log_after
       property :created_at, type: Integer
       property :updated_at, type: Integer
-      property :before_run, type: Neo4j::Shared::Boolean
+      property :before_run, type: ActiveGraph::Shared::Boolean
       property :after_run
 
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
@@ -66,7 +66,7 @@ describe 'ActiveRel unpersisted handling' do
       context 'from_node invalid' do
         it 'fails with an error' do
           expect(from_node).to receive(:valid?).and_return(false)
-          expect { rel.save }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
+          expect { rel.save }.to raise_error ActiveGraph::ActiveRel::Persistence::RelCreateFailedError
         end
       end
 
@@ -74,7 +74,7 @@ describe 'ActiveRel unpersisted handling' do
         it 'fails with an error' do
           expect(from_node).to receive(:valid?).and_return(true)
           expect(to_node).to receive(:valid?).and_return(false)
-          expect { rel.save }.to raise_error Neo4j::ActiveRel::Persistence::RelCreateFailedError
+          expect { rel.save }.to raise_error ActiveGraph::ActiveRel::Persistence::RelCreateFailedError
         end
       end
 

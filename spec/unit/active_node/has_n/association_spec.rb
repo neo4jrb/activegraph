@@ -1,13 +1,13 @@
 class Default
 end
 
-describe Neo4j::ActiveNode::HasN::Association do
+describe ActiveGraph::ActiveNode::HasN::Association do
   let(:options) { {type: nil} }
   let(:name) { :default }
   let(:direction) { :out }
 
   let(:association) do
-    Neo4j::ActiveNode::HasN::Association.new(type, direction, name, options)
+    ActiveGraph::ActiveNode::HasN::Association.new(type, direction, name, options)
   end
 
   before { stub_active_node_class('Default') }
@@ -288,7 +288,7 @@ describe Neo4j::ActiveNode::HasN::Association do
 
         context 'specified as class' do
           before(:each) do
-            stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
+            stub_const 'Fizzl', Class.new { include ActiveGraph::ActiveNode }
           end
 
           let(:options) { {type: :foo, model_class: 'Fizzl'} }
@@ -304,7 +304,7 @@ describe Neo4j::ActiveNode::HasN::Association do
                        def self.name
                          'TheRel'
                        end
-                       include Neo4j::ActiveRel
+                       include ActiveGraph::ActiveRel
                        from_class :any
                      end)
         end
@@ -322,7 +322,7 @@ describe Neo4j::ActiveNode::HasN::Association do
         context 'targeting a specific class' do
           context 'outbound' do
             before(:each) do
-              stub_const 'Fizzl', Class.new { include Neo4j::ActiveNode }
+              stub_const 'Fizzl', Class.new { include ActiveGraph::ActiveNode }
               TheRel.to_class(:Fizzl)
             end
 
@@ -333,7 +333,7 @@ describe Neo4j::ActiveNode::HasN::Association do
             let(:direction) { :in }
 
             before(:each) do
-              stub_const 'Buzz', Class.new { include Neo4j::ActiveNode }
+              stub_const 'Buzz', Class.new { include ActiveGraph::ActiveNode }
               TheRel.from_class(:Buzz)
             end
 
@@ -362,7 +362,7 @@ describe Neo4j::ActiveNode::HasN::Association do
     end
 
     describe 'origin_type' do
-      let(:start) { Neo4j::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
+      let(:start) { ActiveGraph::ActiveNode::HasN::Association.new(:has_many, :in, 'name') }
       let(:myclass) { double('another activenode class') }
       let(:myassoc) { double('an association object') }
       let(:assoc_details) { double('the result of calling :associations', relationship_type: 'MyRel') }

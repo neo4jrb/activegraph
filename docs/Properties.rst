@@ -1,12 +1,12 @@
 Properties
 ==========
 
-In classes that mixin the ``Neo4j::ActiveNode`` or ``Neo4j::ActiveRel`` modules, properties must be declared using the ``property`` class method. It requires a single argument, a symbol that will correspond with the getter and setter as well as the property in the database.
+In classes that mixin the ``ActiveGraph::ActiveNode`` or ``ActiveGraph::ActiveRel`` modules, properties must be declared using the ``property`` class method. It requires a single argument, a symbol that will correspond with the getter and setter as well as the property in the database.
 
 .. code-block:: ruby
 
     class Post
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       property :title
     end
@@ -23,7 +23,7 @@ In practice, you can put it all together like this:
 .. code-block:: ruby
 
   class Post
-    include Neo4j::ActiveNode
+    include ActiveGraph::ActiveNode
 
     property :title, type: String, default: 'This ia new post'
     property :links
@@ -43,14 +43,14 @@ One validation to note in particular is ``validates_uniqueness_of``.  Whereas mo
 Undeclared Properties
 ---------------------
 
-Neo4j, being schemaless as far as the database is concerned, does not require that property keys be defined ahead of time. As a result, it's possible (and sometimes desirable) to set properties on the node that are not also defined on the database. By including the module ``Neo4j::UndeclaredProperties`` no exceptions will be thrown if unknown attributes are passed to selected methods.
+Neo4j, being schemaless as far as the database is concerned, does not require that property keys be defined ahead of time. As a result, it's possible (and sometimes desirable) to set properties on the node that are not also defined on the database. By including the module ``ActiveGraph::UndeclaredProperties`` no exceptions will be thrown if unknown attributes are passed to selected methods.
 
 
 .. code-block:: ruby
 
   class Post
-    include Neo4j::ActiveNode
-    include Neo4j::UndeclaredProperties
+    include ActiveGraph::ActiveNode
+    include ActiveGraph::UndeclaredProperties
 
     property :title
   end
@@ -82,7 +82,7 @@ Declaring a type is not necessary and, in some cases, is better for performance.
 .. code-block:: ruby
 
   class Post
-    include Neo4j::ActiveNode
+    include ActiveGraph::ActiveNode
 
     property :score, type: Integer
     property :created_at, type: DateTime
@@ -121,7 +121,7 @@ It is possible to define custom converters for types not handled natively by the
       alias_method :call, :to_ruby
     end
 
-    include Neo4j::Shared::Typecaster
+    include ActiveGraph::Shared::Typecaster
   end
 
 This would allow you to use ``property :my_prop, type: Range`` in a model.

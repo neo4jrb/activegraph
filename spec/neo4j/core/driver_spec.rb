@@ -1,19 +1,19 @@
 require 'spec_helper'
-require 'neo4j/core/driver'
+require 'active_graph/core/driver'
 require 'neo4j/driver'
 
 def port
   URI(ENV['NEO4J_URL']).port
 end
 
-describe Neo4j::Core::Driver do
+describe ActiveGraph::Core::Driver do
   let(:url) { ENV['NEO4J_URL'] }
 
-  # let(:driver) { Neo4j::Core::Adaptors::Driver.new(url, logger_level: Logger::DEBUG) }
+  # let(:driver) { ActiveGraph::Core::Adaptors::Driver.new(url, logger_level: Logger::DEBUG) }
   let(:driver) { TestDriver.new(url) }
 
   after(:context) do
-    # Neo4j::Core::DriverRegistry.instance.close_all
+    # ActiveGraph::Core::DriverRegistry.instance.close_all
   end
 
   subject { driver }

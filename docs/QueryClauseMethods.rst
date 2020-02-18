@@ -1,12 +1,12 @@
 QueryClauseMethods
 ==================
 
-The ``Neo4j::Core::Query`` class from the `neo4j-core` gem defines a DSL which allows for easy creation of Neo4j `Cypher queries <http://neo4j.com/developer/cypher-query-language>`_.  They can be started from a session like so:
+The ``ActiveGraph::Core::Query`` class from the `neo4j-core` gem defines a DSL which allows for easy creation of Neo4j `Cypher queries <http://neo4j.com/developer/cypher-query-language>`_.  They can be started from a session like so:
 
 .. code-block:: ruby
 
   a_session.query
-  # The current session for `ActiveNode` / `ActiveRel` in the `neo4j` gem can be retrieved with `Neo4j::ActiveBase.current_session`
+  # The current session for `ActiveNode` / `ActiveRel` in the `neo4j` gem can be retrieved with `ActiveGraph::ActiveBase.current_session`
 
 Advantages of using the `Query` class include:
 
@@ -17,7 +17,7 @@ Advantages of using the `Query` class include:
 
 Below is a series of Ruby code samples and the resulting Cypher that would be generated.  These examples are all generated directly from the `spec file <https://github.com/neo4jrb/neo4j-core/blob/master/spec/neo4j-core/unit/query_spec.rb>`_ and are thus all tested to work.
 
-Neo4j::Core::Query
+ActiveGraph::Core::Query
 ------------------
 
 #match

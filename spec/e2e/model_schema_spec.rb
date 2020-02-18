@@ -1,4 +1,4 @@
-describe Neo4j::ModelSchema do
+describe ActiveGraph::ModelSchema do
   before { delete_schema }
 
   before do

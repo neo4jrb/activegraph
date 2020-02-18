@@ -1,4 +1,4 @@
-describe 'Neo4j::ActiveNode' do
+describe 'ActiveGraph::ActiveNode' do
   before(:each) do
     clear_model_memory_caches
 
@@ -232,18 +232,18 @@ describe 'Neo4j::ActiveNode' do
       before do
         stub_active_node_class('NoTimestampsClass')
         stub_active_node_class('ClassWithTimestampsIncluded') do
-          include Neo4j::Timestamps
+          include ActiveGraph::Timestamps
         end
       end
 
       it 'does not include timestamp properites on all models' do
         node = NoTimestampsClass.new
-        expect(node).not_to be_a(Neo4j::Timestamps)
+        expect(node).not_to be_a(ActiveGraph::Timestamps)
       end
 
       it 'allows timestamps to be manually included' do
         node = ClassWithTimestampsIncluded.new
-        expect(node).to be_a(Neo4j::Timestamps)
+        expect(node).to be_a(ActiveGraph::Timestamps)
       end
     end
 
@@ -256,7 +256,7 @@ describe 'Neo4j::ActiveNode' do
 
       it 'includes timestamp properties on all models' do
         node = TimestampedClass.new
-        expect(node).to be_a(Neo4j::Timestamps)
+        expect(node).to be_a(ActiveGraph::Timestamps)
       end
     end
   end
@@ -472,13 +472,13 @@ describe 'Neo4j::ActiveNode' do
     it 'can find or create by... AGGRESSIVELY' do
       expect(Person.find_by(name: 'Darcy', age: 5)).to be_falsey
       expect { Person.find_or_create_by!(name: 'Darcy', age: 30) }.to change { Person.count }
-      expect { Person.find_or_create_by!(name: nil) }.to raise_error Neo4j::ActiveNode::Persistence::RecordInvalidError
+      expect { Person.find_or_create_by!(name: nil) }.to raise_error ActiveGraph::ActiveNode::Persistence::RecordInvalidError
     end
 
     it 'can find (or initialize) by...' do
       expect(Person.find_by(name: 'Donovan', age: 30)).to be_falsey
       person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
-      expect(person).to be_a(Neo4j::ActiveNode)
+      expect(person).to be_a(ActiveGraph::ActiveNode)
       expect(person).not_to be_persisted
       expect(person.name).to eq('Donovan')
       expect(person.age).to eq(30)
@@ -487,7 +487,7 @@ describe 'Neo4j::ActiveNode' do
     it 'can (find or) initialize by...' do
       person = Person.create!(name: 'Donovan', age: 30)
       found_person = Person.find_or_initialize_by(name: 'Donovan', age: 30)
-      expect(found_person).to be_a(Neo4j::ActiveNode)
+      expect(found_person).to be_a(ActiveGraph::ActiveNode)
       expect(found_person).to be_persisted
       expect(found_person).to eq(person)
     end
@@ -597,7 +597,7 @@ describe 'Neo4j::ActiveNode' do
     it 'saves all declared properties' do
       expect do
         Person.create(name: 'person123', age: 123, unknown: 'yes')
-      end.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
+      end.to raise_error(ActiveGraph::Shared::Property::UndefinedPropertyError)
     end
 
     it 'does not have the weird bug described in issue #761' do
@@ -656,7 +656,7 @@ describe 'Neo4j::ActiveNode' do
       it 'raises an error when it receives values it cannot process' do
         expect do
           Person.create('foo(1i)' => '2014', 'foo(2i)' => '2014')
-        end.to raise_error(Neo4j::Shared::Property::MultiparameterAssignmentError)
+        end.to raise_error(ActiveGraph::Shared::Property::MultiparameterAssignmentError)
       end
 
       it 'sends values straight through when no type is specified' do
@@ -719,7 +719,7 @@ describe 'Neo4j::ActiveNode' do
       query = new_query.match(p: :Person)
                        .where(p: {neo_id: person.neo_id})
                        .return('p.datetime AS datetime')
-      Neo4j::Transaction.query(query).first.datetime
+      ActiveGraph::Transaction.query(query).first.datetime
     end
 
     it 'saves as date/time string by default' do
@@ -795,7 +795,7 @@ describe 'Neo4j::ActiveNode' do
             it 'reuses or resets' do
               expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
               expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
-              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error Neo4j::Core::CypherError
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error ActiveGraph::Core::CypherError
               expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
             end
           end
@@ -804,7 +804,7 @@ describe 'Neo4j::ActiveNode' do
     end
   end
 
-  describe 'Neo4j::Paginated.create_from' do
+  describe 'ActiveGraph::Paginated.create_from' do
     before do
       Person.delete_all
       i = 1.upto(16).to_a
@@ -812,10 +812,10 @@ describe 'Neo4j::ActiveNode' do
     end
 
     let(:t) { Person.where }
-    let(:p) { Neo4j::Paginated.create_from(t, 2, 5) }
+    let(:p) { ActiveGraph::Paginated.create_from(t, 2, 5) }
 
-    it 'returns a Neo4j::Paginated' do
-      expect(p).to be_a(Neo4j::Paginated)
+    it 'returns a ActiveGraph::Paginated' do
+      expect(p).to be_a(ActiveGraph::Paginated)
     end
 
     it 'returns the expected number of objects' do
@@ -829,13 +829,13 @@ describe 'Neo4j::ActiveNode' do
       end
 
       it 'allows ordering with a symbol' do
-        person = Neo4j::Paginated.create_from(Person.all, 1, 2, :name)
+        person = ActiveGraph::Paginated.create_from(Person.all, 1, 2, :name)
         expect(person.count).to eq 2
         expect(person.first.name).to eq 'Alice'
       end
 
       it 'allows ordering with a hash' do
-        person = Neo4j::Paginated.create_from(Person.all, 1, 2, name: :desc)
+        person = ActiveGraph::Paginated.create_from(Person.all, 1, 2, name: :desc)
         expect(person.count).to eq 2
         expect(person.first.name).to eq 'David'
       end

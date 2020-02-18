@@ -10,11 +10,11 @@ If you are using the ``neo4j-core`` gem, querying is as simple as calling the ``
 
   neo4j_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
 
-Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``Neo4j::ActiveBase.current_session``.  So you could make the above query with:
+Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``ActiveGraph::ActiveBase.current_session``.  So you could make the above query with:
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
+  ActiveGraph::ActiveBase.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
 
 Most of the time, though, using the ``neo4j`` gem involves using the ``ActiveNode`` and ``ActiveRel`` APIs as described below.
 
@@ -259,7 +259,7 @@ The ``neo4j-core`` gem provides a ``Query`` class which can be used for building
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.new_query # Get a new Query object
+  ActiveGraph::ActiveBase.new_query # Get a new Query object
 
   # Get a Query object based on a scope
   Student.query_as(:s) # For a

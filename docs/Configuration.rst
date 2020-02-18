@@ -11,7 +11,7 @@ In either ``config/application.rb`` or one of the environment configurations (e.
 Other Ruby apps
 ~~~~~~~~~~~~~~~
 
-You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
+You can set configuration variables directly in the Neo4j configuration class like so: ``ActiveGraph::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
 
 Variables
 ~~~~~~~~~
@@ -75,7 +75,7 @@ Variables
   **skip_migration_check**
     **Default:** ``false``
 
-    Prevents the ``neo4j`` gem from raising ``Neo4j::PendingMigrationError`` in web requests when migrations haven't been run.  For environments (like testing) where you need to use the ``neo4j:schema:load`` rake task to build the database instead of migrations.  Automatically set to ``true`` in Rails test environments by default
+    Prevents the ``neo4j`` gem from raising ``ActiveGraph::PendingMigrationError`` in web requests when migrations haven't been run.  For environments (like testing) where you need to use the ``neo4j:schema:load`` rake task to build the database instead of migrations.  Automatically set to ``true`` in Rails test environments by default
 
   .. _configuration-class_name_property:
 
@@ -113,7 +113,7 @@ The ``neo4j-core`` gem instruments a handful of events so that users can subscri
 
 .. code-block:: ruby
 
-  Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
+  ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
     puts message
   end
 
@@ -131,15 +131,15 @@ The argument to the block (``message`` in this case) will be an ANSI formatted s
 
 All methods and their corresponding events:
 
-  **Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query**
+  **ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query**
     **neo4j.core.cypher_query**
 
-  **Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
+  **ActiveGraph::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
     **neo4j.core.http.request**
 
-  **Neo4j::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
+  **ActiveGraph::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
     **neo4j.core.bolt.request**
 
-  **Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
+  **ActiveGraph::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
     **neo4j.core.embedded.transaction**
 

@@ -237,7 +237,7 @@ describe 'association creation' do
       let!(:math) { Lesson.create(subject: 'math') }
 
       it 'does not raise error, creates rel on save' do
-        expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
+        expect_any_instance_of(ActiveGraph::Core::Query).not_to receive(:delete)
         expect { chris.lesson_ids = [math.id] }.not_to raise_error
         expect { chris.save }.to change { math.students.count }
       end

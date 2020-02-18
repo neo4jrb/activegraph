@@ -1,6 +1,6 @@
 require 'rake'
 require 'bundler/gem_tasks'
-require 'neo4j/rake_tasks'
+require 'active_graph/rake_tasks'
 # load 'neo4j/tasks/migration.rake'
 
 desc 'Generate YARD documentation'

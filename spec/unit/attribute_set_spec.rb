@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-describe Neo4j::AttributeSet do
+describe ActiveGraph::AttributeSet do
   let(:attr_hash) { {halley: 1986} }
   let(:attr_list) { [:halley, :icarus_year] }
-  subject { Neo4j::AttributeSet.new(attr_hash, attr_list) }
+  subject { ActiveGraph::AttributeSet.new(attr_hash, attr_list) }
 
   describe '#method_missing' do
     let(:delegated_hash) { subject.instance_variable_get(:@attributes).send(:materialize) }

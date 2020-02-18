@@ -1,12 +1,12 @@
-describe Neo4j::ActiveNode::Query do
+describe ActiveGraph::ActiveNode::Query do
   let(:driver) { double('Driver') }
 
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
-    Neo4j::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = ActiveGraph::ActiveNode::Labels._wrapped_classes
+    ActiveGraph::ActiveNode::Labels._wrapped_classes.clear
 
     @class_a = Class.new do
-      include Neo4j::ActiveNode::Query
+      include ActiveGraph::ActiveNode::Query
       def neo_id
         8724
       end
@@ -23,7 +23,7 @@ describe Neo4j::ActiveNode::Query do
 
   after(:all) do
     # restore
-    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    ActiveGraph::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
   end
 
   describe '.query_as' do

@@ -1,4 +1,4 @@
-describe Neo4j::Shared::QueryFactory do
+describe ActiveGraph::Shared::QueryFactory do
   let!(:factory_from_class) do
     stub_active_node_class('FactoryFromClass') do
       property :name
@@ -47,7 +47,7 @@ describe Neo4j::Shared::QueryFactory do
 
       context 'with multiple labels' do
         before do
-          stub_named_class('FromSubclass', factory_from_class { include Neo4j::ActiveNode })
+          stub_named_class('FromSubclass', factory_from_class { include ActiveGraph::ActiveNode })
           FromSubclass.property :other_prop
         end
 
@@ -110,8 +110,8 @@ describe Neo4j::Shared::QueryFactory do
   describe 'base_query' do
     context 'when not already set' do
       it 'creates a new Query object' do
-        expect(Neo4j::Core::Query).to receive(:new).and_call_original
-        expect(from_node_factory.base_query).to be_a(Neo4j::Core::Query)
+        expect(ActiveGraph::Core::Query).to receive(:new).and_call_original
+        expect(from_node_factory.base_query).to be_a(ActiveGraph::Core::Query)
       end
     end
 
@@ -119,8 +119,8 @@ describe Neo4j::Shared::QueryFactory do
       before { from_node_factory.instance_variable_set(:@base_query, new_query) }
 
       it 'returns the existing query' do
-        expect(Neo4j::Core::Query).not_to receive(:new)
-        expect(from_node_factory.base_query).to be_a(Neo4j::Core::Query)
+        expect(ActiveGraph::Core::Query).not_to receive(:new)
+        expect(from_node_factory.base_query).to be_a(ActiveGraph::Core::Query)
       end
 
       it 'is built upon' do

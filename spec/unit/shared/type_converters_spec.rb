@@ -1,10 +1,10 @@
-module Neo4j::Shared
+module ActiveGraph::Shared
   describe TypeConverters do
     subject(:model) { properties_class.new }
 
     let :properties_class do
       Class.new do
-        include Neo4j::Shared::TypeConverters
+        include ActiveGraph::Shared::TypeConverters
       end
     end
 
@@ -25,7 +25,7 @@ module Neo4j::Shared
     describe '#typecaster_for' do
 
       it 'returns BooleanTypecaster for Boolean' do
-        expect(model.typecaster_for(Neo4j::Shared::Boolean)).to eq TypeConverters::BooleanConverter
+        expect(model.typecaster_for(ActiveGraph::Shared::Boolean)).to eq TypeConverters::BooleanConverter
       end
 
       it 'returns DateTypecaster for Date' do

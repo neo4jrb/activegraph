@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'neo4j/core/wrappable'
+require 'active_graph/core/wrappable'
 
-describe Neo4j::Core::Wrappable do
+describe ActiveGraph::Core::Wrappable do
   before do
     stub_const 'WrapperClass', (Class.new do
       attr_reader :wrapped_object
@@ -12,7 +12,7 @@ describe Neo4j::Core::Wrappable do
     end)
 
     stub_const 'WrappableClass', (Class.new do
-      include Neo4j::Core::Wrappable
+      include ActiveGraph::Core::Wrappable
     end)
   end
 

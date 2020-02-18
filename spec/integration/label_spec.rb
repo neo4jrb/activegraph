@@ -19,8 +19,8 @@ describe 'Labels' do
         current_driver
       end
 
-      extend Neo4j::ActiveNode::Query::ClassMethods
-      extend Neo4j::ActiveNode::Labels::ClassMethods
+      extend ActiveGraph::ActiveNode::Query::ClassMethods
+      extend ActiveGraph::ActiveNode::Labels::ClassMethods
     end
 
     stub_active_node_class('SomeLabelClass') do
@@ -128,7 +128,7 @@ describe 'Labels' do
 
       it 'raises an error if no results match' do
         expect { IndexedTestClass.find_by!(name: 'foo') }
-          .to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound) { |e| expect(e.model).to eq 'IndexedTestClass' }
+          .to raise_error(ActiveGraph::ActiveNode::Labels::RecordNotFound) { |e| expect(e.model).to eq 'IndexedTestClass' }
       end
     end
   end

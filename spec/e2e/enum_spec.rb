@@ -1,4 +1,4 @@
-describe Neo4j::ActiveNode do
+describe ActiveGraph::ActiveNode do
   before(:each) do
     create_index :StoredFile, :type, type: :exact
     create_index :StoredFile, :size, type: :exact
@@ -84,7 +84,7 @@ describe Neo4j::ActiveNode do
       file = StoredFile.new
       file.type = :audio
       expect { file.save! }.to raise_error(
-        Neo4j::Shared::Enum::InvalidEnumValueError,
+        ActiveGraph::Shared::Enum::InvalidEnumValueError,
         'Case-insensitive (downcased) value passed to an enum property must match one of the enum keys'
       )
     end
@@ -92,7 +92,7 @@ describe Neo4j::ActiveNode do
     it 'respects local _case_sensitive option' do
       file = StoredFile.new
       file.type_format = :png
-      expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
+      expect { file.save! }.to raise_error(ActiveGraph::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
 
       file.type_format = :Png
       file.save!
@@ -113,7 +113,7 @@ describe Neo4j::ActiveNode do
         it 'respects global _case_sensitive = true default' do
           file = StoredFile.new
           file.type = :VIdeO
-          expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
+          expect { file.save! }.to raise_error(ActiveGraph::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
         end
 
         it 'still accepts valid params' do
@@ -242,7 +242,7 @@ describe Neo4j::ActiveNode do
           enum enum1: [:a, :b, :c]
           enum enum2: [:c, :d]
         end
-      end.to raise_error(Neo4j::Shared::Enum::ConflictingEnumMethodError)
+      end.to raise_error(ActiveGraph::Shared::Enum::ConflictingEnumMethodError)
     end
   end
 

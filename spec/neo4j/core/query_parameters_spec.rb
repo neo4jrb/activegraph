@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Neo4j::Core::Query::Parameters do
-  let(:parameters) { Neo4j::Core::Query::Parameters.new }
+describe ActiveGraph::Core::Query::Parameters do
+  let(:parameters) { ActiveGraph::Core::Query::Parameters.new }
 
   it 'lets you add params' do
     expect(parameters.add_param(:foo, 1)).to eq(:foo)

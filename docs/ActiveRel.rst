@@ -20,7 +20,7 @@ Setup
 
 ActiveRel model definitions have three requirements:
 
- * ``include Neo4j::ActiveRel``
+ * ``include ActiveGraph::ActiveRel``
  * Call ``from_class`` with a symbol/string referring to an ``ActiveNode`` model or :any
  * Call ``to_class`` with a symbol/string referring to an ``ActiveNode`` model or :any
 
@@ -30,7 +30,7 @@ See the note on from/to at the end of this page for additional information.
 
     # app/models/enrolled_in.rb
     class EnrolledIn
-      include Neo4j::ActiveRel
+      include ActiveGraph::ActiveRel
       before_save :do_this
 
       from_class :Student
@@ -54,14 +54,14 @@ See the note on from/to at the end of this page for additional information.
     # Using the `ActiveRel` model in `ActiveNode` models:
     # app/models/student.rb
     class Student
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       has_many :out, :lessons, rel_class: :EnrolledIn
     end
 
     # app/models/lesson.rb
     class Lesson
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
 
       has_many :in, :students, rel_class: :EnrolledIn
     end
@@ -106,7 +106,7 @@ Add the :rel_class option to an association with the name of an ActiveRel model.
 .. code-block:: ruby
 
     class Student
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       has_many :out, :lessons, rel_class: :EnrolledIn
     end
 
@@ -154,9 +154,9 @@ Once a relationship has been wrapped, you can access the related nodes using fro
     lesson = Lesson.first
     rel = EnrolledIn.create(from_node: student, to_node: lesson, since: 2014)
     rel.from_node
-    => #<Neo4j::ActiveRel::RelatedNode:0x00000104589d78 @node=#<Student property: 'value'>>
+    => #<ActiveGraph::ActiveRel::RelatedNode:0x00000104589d78 @node=#<Student property: 'value'>>
     rel.to_node
-    => #<Neo4j::ActiveRel::RelatedNode:0x00000104589d50 @node=#<Lesson property: 'value'>>
+    => #<ActiveGraph::ActiveRel::RelatedNode:0x00000104589d50 @node=#<Lesson property: 'value'>>
 
 As you can see, this returns objects of type RelatedNode which delegate to the nodes. This allows for lazy loading when a relationship is returned in the future: the nodes are not loaded until you interact with them, which is beneficial with something like each_with_rel where you already have access to the nodes and do not want superfluous calls to the server.
 
@@ -171,7 +171,7 @@ ActiveRel really shines when you have multiple associations that share a relatio
 .. code-block:: ruby
 
     class User
-      include Neo4j::ActiveNode
+      include ActiveGraph::ActiveNode
       property :managed_stats, type: Integer #store the number of managed objects to improve performance
 
       has_many :out, :managed_lessons,  model_class: :Lesson,  rel_class: :ManagedRel
@@ -186,7 +186,7 @@ ActiveRel really shines when you have multiple associations that share a relatio
     end
 
     class ManagedRel
-      include Neo4j::ActiveRel
+      include ActiveGraph::ActiveRel
       after_create :update_user_stats
       validate :manageable_object
       from_class :User
@@ -220,4 +220,4 @@ Additional methods
 Regarding: from and to
 ----------------------
 
-``:from_node``, ``:to_node``, ``:from_class``, and ``:to_class`` all have aliases using ``start`` and ``end``: ``:start_class``, ``:end_class``, ``:start_node``, ``:end_node``, ``:start_node=``, ``:end_node=``. This maintains consistency with elements of the Neo4j::Core API while offering what may be more natural options for Rails users.
+``:from_node``, ``:to_node``, ``:from_class``, and ``:to_class`` all have aliases using ``start`` and ``end``: ``:start_class``, ``:end_class``, ``:start_node``, ``:end_node``, ``:start_node=``, ``:end_node=``. This maintains consistency with elements of the ActiveGraph::Core API while offering what may be more natural options for Rails users.

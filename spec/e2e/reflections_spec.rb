@@ -35,7 +35,7 @@ describe 'reflections' do
 
   it 'returns information about a given association' do
     reflection = clazz.reflect_on_association(:in_things)
-    expect(reflection).to be_a(Neo4j::ActiveNode::Reflection::AssociationReflection)
+    expect(reflection).to be_a(ActiveGraph::ActiveNode::Reflection::AssociationReflection)
     expect(reflection.klass).to eq clazz
     expect(reflection.class_name).to eq clazz.name
     expect(reflection.type).to eq :things

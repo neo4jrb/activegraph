@@ -72,13 +72,13 @@ RST
   end
 end
 
-describe Neo4j::Core::Query do
+describe ActiveGraph::Core::Query do
   before(:all) do
     @doc_generator = DocGenerator.new('QueryClauseMethods.rst')
   end
 
   describe 'options' do
-    let(:query) { Neo4j::Core::Query.new(parser: 2.0) }
+    let(:query) { ActiveGraph::Core::Query.new(parser: 2.0) }
 
     it 'should generate a per-query cypher parser version' do
       expect(query.to_cypher).to eq('CYPHER 2.0')
@@ -98,14 +98,14 @@ describe Neo4j::Core::Query do
 
   describe 'batch finding' do
     let!(:driver) { test_driver_adaptor(test_bolt_url) }
-    let(:query_object) { Neo4j::Core::Query.new }
+    let(:query_object) { ActiveGraph::Core::Query.new }
 
     before(:each) do
       5.times do
-        Neo4j::Transaction.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Transaction.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
       2.times do
-        Neo4j::Transaction.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Transaction.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
     end
 
@@ -153,8 +153,8 @@ describe Neo4j::Core::Query do
 
   describe 'DEFINED_CLAUSES' do
     it 'includes a key for each clause' do
-      Neo4j::Core::Query::METHODS.each do |clause_string|
-        expect(Neo4j::Core::Query::DEFINED_CLAUSES).to have_key(clause_string.to_sym)
+      ActiveGraph::Core::Query::METHODS.each do |clause_string|
+        expect(ActiveGraph::Core::Query::DEFINED_CLAUSES).to have_key(clause_string.to_sym)
       end
     end
   end
@@ -166,17 +166,17 @@ describe Neo4j::Core::Query do
       let(:clause_method) { :where }
 
       context 'Query with a where' do
-        let(:query) { Neo4j::Core::Query.new.where(true) }
+        let(:query) { ActiveGraph::Core::Query.new.where(true) }
         it { should be(true) }
       end
 
       context 'Query with an order' do
-        let(:query) { Neo4j::Core::Query.new.order(:foo) }
+        let(:query) { ActiveGraph::Core::Query.new.order(:foo) }
         it { should be(false) }
       end
 
       context 'Query with a where and an order' do
-        let(:query) { Neo4j::Core::Query.new.where('true').order(:foo) }
+        let(:query) { ActiveGraph::Core::Query.new.where('true').order(:foo) }
         it { should be(true) }
       end
     end
@@ -188,7 +188,7 @@ describe Neo4j::Core::Query do
   end
 
   def expects_cypher(cypher, params = {})
-    query = eval("Neo4j::Core::Query.new#{self.class.description}") # rubocop:disable Security/Eval
+    query = eval("ActiveGraph::Core::Query.new#{self.class.description}") # rubocop:disable Security/Eval
     add_query_doc_line(cypher, params)
 
     expect(query.to_cypher).to eq(cypher)
@@ -925,15 +925,15 @@ describe Neo4j::Core::Query do
 
   describe '#union_cypher' do
     it 'returns a cypher string with the union of the callee and argument query strings' do
-      q = Neo4j::Core::Query.new.match(o: :Person).where(o: {age: 10})
-      result = Neo4j::Core::Query.new.match(n: :Person).union_cypher(q)
+      q = ActiveGraph::Core::Query.new.match(o: :Person).where(o: {age: 10})
+      result = ActiveGraph::Core::Query.new.match(n: :Person).union_cypher(q)
 
       expect(result).to eq('MATCH (n:`Person`) UNION MATCH (o:`Person`) WHERE (o.age = $o_age)')
     end
 
     it 'can represent UNION ALL with an option' do
-      q = Neo4j::Core::Query.new.match(o: :Person).where(o: {age: 10})
-      result = Neo4j::Core::Query.new.match(n: :Person).union_cypher(q, all: true)
+      q = ActiveGraph::Core::Query.new.match(o: :Person).where(o: {age: 10})
+      result = ActiveGraph::Core::Query.new.match(n: :Person).union_cypher(q, all: true)
 
       expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE (o.age = $o_age)')
     end
@@ -1033,8 +1033,8 @@ describe Neo4j::Core::Query do
   end
 
   describe 'merging queries' do
-    let(:query1) { Neo4j::Core::Query.new.match(p: Person) }
-    let(:query2) { Neo4j::Core::Query.new.match(c: :Car) }
+    let(:query1) { ActiveGraph::Core::Query.new.match(p: Person) }
+    let(:query2) { ActiveGraph::Core::Query.new.match(c: :Car) }
 
     it 'Merging two matches' do
       expect((query1 & query2).to_cypher).to eq('MATCH (p:`Person`), (c:`Car`)')

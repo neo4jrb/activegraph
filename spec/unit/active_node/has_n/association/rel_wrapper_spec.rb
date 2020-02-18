@@ -1,10 +1,10 @@
-class Neo4j::ActiveNode::HasN::Association
+class ActiveGraph::ActiveNode::HasN::Association
   describe RelWrapper do
     let(:type) { :FRIENDS_WITH }
     let(:identifier) { :r }
     let(:unique_props) { {} }
     let(:assoc_props) { {type: 'FRIENDS_WITH'}.merge(unique_props) }
-    let(:association) { Neo4j::ActiveNode::HasN::Association.new(:has_many, :out, :friends, assoc_props) }
+    let(:association) { ActiveGraph::ActiveNode::HasN::Association.new(:has_many, :out, :friends, assoc_props) }
     let(:props) { {first: :foo, second: :bar, third: :baz, fourth: :buzz} }
     let(:wrapper) { described_class.new(association, props) }
 

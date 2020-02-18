@@ -1,19 +1,18 @@
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
-require 'neo4j/version'
+require 'active_graph/version'
 
 
 Gem::Specification.new do |s|
   s.name     = 'activegraph'
-  s.version  = Neo4j::VERSION
+  s.version  = ActiveGraph::VERSION
 
   s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg, Heinrich Klobuczek'
   s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com, heinrich@mail.com'
   s.homepage = 'https://github.com/neo4jrb/neo4j/'
-  s.rubyforge_project = 'neo4j'
   s.summary = 'A graph database for Ruby'
   s.license = 'MIT'
   s.description = <<-DESCRIPTION

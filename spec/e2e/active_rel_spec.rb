@@ -7,7 +7,7 @@ describe 'ActiveRel' do
     stub_active_node_class('FromClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: Neo4j::Shared::Boolean
+      property :before_run, type: ActiveGraph::Shared::Boolean
       property :after_run
 
       has_many :out, :others, model_class: 'ToClass', rel_class: 'MyRelClass'
@@ -25,7 +25,7 @@ describe 'ActiveRel' do
     stub_active_node_class('ToClass') do
       before_create :log_before
       after_create :log_after
-      property :before_run, type: Neo4j::Shared::Boolean
+      property :before_run, type: ActiveGraph::Shared::Boolean
       property :after_run
 
       has_many :in, :others, model_class: 'FromClass', rel_class: 'MyRelClass'
@@ -164,7 +164,7 @@ describe 'ActiveRel' do
 
     describe '#create!' do
       it 'raises an error on invalid params' do
-        expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+        expect { RelClassWithValidations.create!(from_node: from_node, to_node: to_node) }.to raise_error ActiveGraph::ActiveRel::Persistence::RelInvalidError
       end
 
       it_behaves_like 'three-argument ActiveRel create/create!', :create!
@@ -173,7 +173,7 @@ describe 'ActiveRel' do
     describe '#save!' do
       it 'raises an error on invalid params' do
         invalid_rel = RelClassWithValidations.new(from_node: from_node, to_node: to_node)
-        expect { invalid_rel.save! }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+        expect { invalid_rel.save! }.to raise_error ActiveGraph::ActiveRel::Persistence::RelInvalidError
       end
 
       it 'returns true on success' do
@@ -208,7 +208,7 @@ describe 'ActiveRel' do
           before { MyRelClass.creates_unique }
 
           it 'defaults to :none' do
-            expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
+            expect(ActiveGraph::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
             MyRelClass.create(nodes.merge(first_props))
           end
         end
@@ -264,7 +264,7 @@ describe 'ActiveRel' do
           before { MyRelClass.from_class(class_method_value) }
 
           it 'fails when given a mismatched value' do
-            expect { MyRelClass.create(from_node: OtherClass.create!, to_node: to_node) }.to raise_error Neo4j::ActiveRel::Persistence::ModelClassInvalidError
+            expect { MyRelClass.create(from_node: OtherClass.create!, to_node: to_node) }.to raise_error ActiveGraph::ActiveRel::Persistence::ModelClassInvalidError
           end
 
           it 'does not fail when given a matching value' do
@@ -295,7 +295,7 @@ describe 'ActiveRel' do
       context 'Array' do
         # stub_const does not behave with `it_is_expected_to_satisfy` so making it explicit for now...
         class OtherAcceptableClass
-          include Neo4j::ActiveNode
+          include ActiveGraph::ActiveNode
         end
 
         it_is_expected_to_satisfy([:OtherAcceptableClass, :FromClass])
@@ -323,7 +323,7 @@ describe 'ActiveRel' do
     # The class constants here are long to disambiguate from other constants in
     # the namespace
     class ActiveRelSpecTypesAutomaticRelType
-      include Neo4j::ActiveRel
+      include ActiveGraph::ActiveRel
 
       from_class 'FromClass'
       to_class 'ToClass'
@@ -356,7 +356,7 @@ describe 'ActiveRel' do
     let(:f1) { FromClass.create }
     let(:t1) { ToClass.create }
     let(:result) do
-      Neo4j::Transaction.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
+      ActiveGraph::Transaction.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
     context 'with a rel type requiring backticks' do
@@ -390,7 +390,7 @@ describe 'ActiveRel' do
 
       context 'unsuccessfully' do
         it 'raises an error, does not create' do
-          expect { f1.others.create(t1, should_be_nil: 'not nil') }.to raise_error Neo4j::ActiveRel::Persistence::RelInvalidError
+          expect { f1.others.create(t1, should_be_nil: 'not nil') }.to raise_error ActiveGraph::ActiveRel::Persistence::RelInvalidError
           expect(result).to be_empty
         end
       end
@@ -535,7 +535,7 @@ describe 'ActiveRel' do
       end
 
       it 'with no results' do
-        expect { MyRelClass.find(8_675_309) }.to raise_error(Neo4j::RecordNotFound)
+        expect { MyRelClass.find(8_675_309) }.to raise_error(ActiveGraph::RecordNotFound)
       end
     end
 

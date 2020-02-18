@@ -1,4 +1,4 @@
-class RenameBobFrank < Neo4j::Migrations::Base
+class RenameBobFrank < ActiveGraph::Migrations::Base
   def up
     execute 'MATCH (u:`User`) WHERE u.name = $name SET u.name = $new_name',
             name: 'Bob', new_name: 'Frank'

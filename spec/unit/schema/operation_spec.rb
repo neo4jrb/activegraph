@@ -1,7 +1,7 @@
-module Neo4j::Schema
+module ActiveGraph::Schema
   describe 'Operation classes' do
-    let(:label_double) { double('An instance of Neo4j::Core::Label') }
-    before { allow(Neo4j::Core::Label).to receive(:new).and_return(label_double) }
+    let(:label_double) { double('An instance of ActiveGraph::Core::Label') }
+    before { allow(ActiveGraph::Core::Label).to receive(:new).and_return(label_double) }
 
     describe 'public interface' do
       [Operation, ExactIndexOperation, UniqueConstraintOperation].each do |c|

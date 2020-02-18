@@ -1,4 +1,4 @@
-class Create<%= @migration_class_name.underscore.camelize %> < Neo4j::Migrations::Base
+class Create<%= @migration_class_name.underscore.camelize %> < ActiveGraph::Migrations::Base
   def up
     add_constraint :<%= class_name %>, :uuid
   end

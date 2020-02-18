@@ -141,7 +141,7 @@ describe 'has_many' do
       it 'occurs within a transaction' do
         friend3 = Person.create(name: 'foo')
         node.friends = [friend1, friend2]
-        expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise('Bar error')
+        expect_any_instance_of(ActiveGraph::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise('Bar error')
         expect { node.friends = [friend3] }.to raise_error RuntimeError, 'Bar error'
         expect(node.friends.to_a).to include(friend1, friend2)
         expect(node.friends.to_a).not_to include friend3
@@ -156,7 +156,7 @@ describe 'has_many' do
       end
 
       it 'has a is_a method' do
-        expect(node.friends.is_a?(Neo4j::ActiveNode::HasN::AssociationProxy)).to be true
+        expect(node.friends.is_a?(ActiveGraph::ActiveNode::HasN::AssociationProxy)).to be true
         expect(node.friends.is_a?(Array)).to be false
         expect(node.friends.is_a?(String)).to be false
       end
@@ -236,10 +236,10 @@ describe 'has_many' do
     let!(:person) { Author.create }
 
     before(:each) do
-      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
+      ActiveGraph::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
                        .create('(post)<-[:comments_on]-(comment)').exec
 
-      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Author).where(person: {Author.id_property_name => person.id})
+      ActiveGraph::ActiveBase.new_query.match(post: :Post, person: :Author).where(person: {Author.id_property_name => person.id})
                        .create('(post)<-[:comments_on]-(person)').exec
     end
 
@@ -414,7 +414,7 @@ describe 'has_many' do
     context 'failure' do
       it 'rolls back <<' do
         begin
-          tx = Neo4j::ActiveBase.new_transaction
+          tx = ActiveGraph::ActiveBase.new_transaction
           node.friends << friend1
           tx.failure
         ensure
@@ -426,7 +426,7 @@ describe 'has_many' do
       it 'rolls back =' do
         node.friends = friend1
         begin
-          tx = Neo4j::ActiveBase.new_transaction
+          tx = ActiveGraph::ActiveBase.new_transaction
           node.friends = friend2
           tx.failure
         ensure
