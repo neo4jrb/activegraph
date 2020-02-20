@@ -674,11 +674,11 @@ describe 'Query API' do
       before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
 
       let(:date) { Date.today }
-      let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
+      let(:converted_date) { date.readable_inspect }
       let(:datetime) { DateTime.now }
       let(:converted_datetime) { datetime.utc.to_i }
       let(:time) { Time.now }
-      let(:converted_time) { time.utc.to_i }
+      let(:converted_time) { time.strftime('%Y-%m-%d %H:%M:%S.%6N %z') }
 
       context 'with properties declared on the model' do
         it 'converts properties using the model\'s type converter' do
