@@ -29,6 +29,10 @@ module Neo4j::Shared
       end
 
       it 'returns DateTypecaster for Date' do
+        expect(model.typecaster_for(Date)).to eq TypeConverters::DateConverter
+      end
+
+      it 'returns DateTimeTypecaster for DateTime' do
         expect(model.typecaster_for(DateTime)).to eq TypeConverters::DateTimeConverter
       end
 

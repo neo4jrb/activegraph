@@ -674,19 +674,26 @@ describe 'Query API' do
       before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
 
       let(:date) { Date.today }
+      let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
       let(:datetime) { DateTime.now }
       let(:converted_datetime) { datetime.utc.to_i }
       let(:time) { Time.now }
+      let(:converted_time) { time.utc.to_i }
 
       context 'with properties declared on the model' do
         it 'converts properties using the model\'s type converter' do
+          expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
           expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+          expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
           expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher2_age=>1')
           expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
         end
 
         context '...and values already in the destination format' do
           it 'uses the values as they are' do
+            expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
+            expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
+            expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
             expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher2_age=>1')
             expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
           end
