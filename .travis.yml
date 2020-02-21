@@ -1,6 +1,5 @@
 ---
 dist: xenial
-sudo: false
 
 before_script:
   - "travis_retry bin/rake neo4j:install[$NEO4J_VERSION] --trace"
@@ -20,7 +19,7 @@ cache: bundler
 jdk: openjdk11
 rvm:
   - 2.7.0
-  - jruby-9.2.9.0
+  - jruby-9.2.8.0
   - jruby-9.2.10.0
 env:
   global:
