@@ -678,7 +678,7 @@ describe 'Query API' do
       let(:datetime) { DateTime.now }
       let(:converted_datetime) { datetime.utc.to_i }
       let(:time) { Time.now }
-      let(:converted_time) { time.strftime('%Y-%m-%d %H:%M:%S.%6N %z') }
+      let(:converted_time) { time.strftime('%Y-%m-%d %H:%M:%S.%6N') }
 
       context 'with properties declared on the model' do
         it 'converts properties using the model\'s type converter' do
