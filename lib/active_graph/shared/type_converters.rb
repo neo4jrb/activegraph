@@ -28,7 +28,6 @@ module ActiveGraph::Shared
       NEO4J_LARGEST_INT = 9223372036854775807
       NEO4J_SMALLEST_INT = -9223372036854775808
       class << self
-        
         def converted?(value)
           false
         end
@@ -52,21 +51,22 @@ module ActiveGraph::Shared
       end
     end
 
-    class FloatConverter < BaseConverter  
-      class << self 
-        def convert_type  
-          Float 
-        end 
+    class FloatConverter < BaseConverter
+      class << self
+        def convert_type
+          Float
+        end
 
-        def db_type 
-          Float 
-        end 
+        def db_type
+          Float
+        end
 
-        def to_db(value)  
-          value.to_f  
-        end 
-        alias to_ruby to_db 
-      end 
+        def to_db(value)
+          value.to_f
+        end
+
+        alias to_ruby to_db
+      end
     end
 
     class StringConverter < BaseConverter
@@ -82,10 +82,33 @@ module ActiveGraph::Shared
         def to_db(value)
           value.to_s
         end
+
         alias to_ruby to_db
       end
     end
 
+    # Converts Java long types to Date objects. Must be timezone UTC.
+    class DateConverter < BaseConverter
+      class << self
+        def convert_type
+          Date
+        end
+
+        def db_type
+          Date
+        end
+
+        def to_ruby(value)
+          value.respond_to?(:to_date) ? value.to_date : Time.at(value).utc.to_date
+        rescue Exception => e
+          raise e
+        end
+
+        alias to_db to_ruby
+      end
+    end
+
+    # Converts DateTime objects to and from Java long types. Must be timezone UTC.
     class DateTimeConverter < BaseConverter
       class << self
         def convert_type
@@ -94,7 +117,7 @@ module ActiveGraph::Shared
 
         def db_type
           Integer
-        end 
+        end
 
         # Converts the given DateTime (UTC) value to an Integer.
         # DateTime values are automatically converted to UTC.
@@ -122,6 +145,24 @@ module ActiveGraph::Shared
 
           DateTime.civil(t.year, t.month, t.day, t.hour, t.min, t.sec)
         end
+      end
+    end
+
+    class TimeConverter < BaseConverter
+      class << self
+        def convert_type
+          Time
+        end
+
+        def db_type
+          Time
+        end
+
+        def to_ruby(value)
+          value.respond_to?(:to_time) ? value.to_time : Time.at(value).utc
+        end
+
+        alias to_db to_ruby
       end
     end
 

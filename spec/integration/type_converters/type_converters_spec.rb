@@ -4,6 +4,14 @@ describe ActiveGraph::Shared::TypeConverters do
       expect(ActiveGraph::Shared::TypeConverters::CONVERTERS[DateTime]).to eq(ActiveGraph::Shared::TypeConverters::DateTimeConverter)
     end
 
+    it 'has converters for Time' do
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Time]).to eq(Neo4j::Shared::TypeConverters::TimeConverter)
+    end
+
+    it 'has converters for Date' do
+      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Date]).to eq(Neo4j::Shared::TypeConverters::DateConverter)
+    end
+
     it 'has converters for JSON' do
       expect(ActiveGraph::Shared::TypeConverters::CONVERTERS[JSON]).to eq(ActiveGraph::Shared::TypeConverters::JSONConverter)
     end

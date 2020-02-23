@@ -1,6 +1,5 @@
 ---
 dist: xenial
-sudo: false
 
 before_script:
   - "travis_retry bin/rake neo4j:install[$NEO4J_VERSION] --trace"
@@ -10,7 +9,8 @@ before_script:
   - "echo 'dbms.memory.heap.max_size=600m' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
   - "echo 'dbms.memory.heap.initial_size=600m' >> ./db/neo4j/development/conf/neo4j$WRAPPER.conf"
   - "bin/rake neo4j:start --trace"
-  - "curl -L https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.tar.gz | tar -xz"
+  - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
+  - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
   - "while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done"
 script:
   - "travis_retry bin/rake default --trace"
@@ -20,11 +20,11 @@ jdk: openjdk11
 rvm:
   - 2.7.0
   - jruby-9.2.8.0
+  - jruby-9.2.10.0
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
     - NEO4J_URL="bolt://localhost:7472"
-    - SEABOLT_LIB=./seabolt-1.7.4-Linux-ubuntu-16.04/usr/local/lib/libseabolt17.so
   matrix:
     - NEO4J_VERSION=enterprise-3.5.14
     - NEO4J_VERSION=enterprise-4.0.0
