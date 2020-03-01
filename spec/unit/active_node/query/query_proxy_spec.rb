@@ -1,6 +1,6 @@
-describe Neo4j::ActiveNode::Query::QueryProxy do
-  let(:qp) { Neo4j::ActiveNode::Query::QueryProxy.new(Object) }
-  let(:session) { double('A session') }
+describe ActiveGraph::Node::Query::QueryProxy do
+  let(:qp) { ActiveGraph::Node::Query::QueryProxy.new(Object) }
+  let(:driver) { double('A driver') }
   let(:query_result) { double('the result of calling :query') }
   let(:node) { double('A node object', foo: 'bar', neo_id: true) }
   let(:rel)  { double('A rel object') }
@@ -25,7 +25,7 @@ describe Neo4j::ActiveNode::Query::QueryProxy do
     end
 
     it 'sets node on rel object' do
-      rel = stub_active_rel_class('MyRelClass').new
+      rel = stub_relationship_class('MyRelClass').new
       expect(qp).to receive(:pluck).and_return([[node, rel]])
       allow(qp).to receive(:association).and_return(double(name: 'abc', direction: :out))
       expect(qp.each_with_rel {}.first.last.to_node).to eq(node)

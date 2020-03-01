@@ -1,12 +1,12 @@
-describe Neo4j::ActiveNode::Query do
-  let(:session) { double('Session') }
+describe ActiveGraph::Node::Query do
+  let(:driver) { double('Driver') }
 
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
-    Neo4j::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = ActiveGraph::Node::Labels._wrapped_classes
+    ActiveGraph::Node::Labels._wrapped_classes.clear
 
     @class_a = Class.new do
-      include Neo4j::ActiveNode::Query
+      include ActiveGraph::Node::Query
       def neo_id
         8724
       end
@@ -15,15 +15,15 @@ describe Neo4j::ActiveNode::Query do
         'Person'
       end
 
-      def self.neo4j_session
-        current_session
+      def self.neo4j_driver
+        current_driver
       end
     end
   end
 
   after(:all) do
     # restore
-    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    ActiveGraph::Node::Labels._wrapped_classes.concat(@prev_wrapped_classes)
   end
 
   describe '.query_as' do
@@ -36,17 +36,17 @@ describe Neo4j::ActiveNode::Query do
     end
 
     it 'can be built upon' do
-      expect(@class_a.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher).to eq('MATCH (q:`Person`), q--p WHERE (p.name = {p_name})')
+      expect(@class_a.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher).to eq('MATCH (q:`Person`), q--p WHERE (p.name = $p_name)')
     end
   end
 
   describe '#query_as' do
     it 'generates a basic query with labels' do
-      expect(@class_a.new.query_as(:q).to_cypher).to eq('MATCH (q) WHERE (ID(q) = {ID_q})')
+      expect(@class_a.new.query_as(:q).to_cypher).to eq('MATCH (q) WHERE (ID(q) = $ID_q)')
     end
 
     it 'can be built upon' do
-      expect(@class_a.new.query_as(:q).match('(q)--(p)').return(p: :name).to_cypher).to eq('MATCH (q), (q)--(p) WHERE (ID(q) = {ID_q}) RETURN p.name')
+      expect(@class_a.new.query_as(:q).match('(q)--(p)').return(p: :name).to_cypher).to eq('MATCH (q), (q)--(p) WHERE (ID(q) = $ID_q) RETURN p.name')
     end
 
     it 'does not include labels' do

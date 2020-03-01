@@ -1,7 +1,7 @@
-describe Neo4j::ActiveNode do
+describe ActiveGraph::Node do
   before(:each) do
-    stub_active_node_class('Person') do
-      include Neo4j::UndeclaredProperties
+    stub_node_class('Person') do
+      include ActiveGraph::UndeclaredProperties
       property :name, type: String
     end
   end
@@ -19,7 +19,7 @@ describe Neo4j::ActiveNode do
 
   describe '.create' do
     it 'does allow to set undeclared properties using create' do
-      expect { Person.create(foo: 43) }.not_to raise_error Neo4j::Shared::Property::UndefinedPropertyError
+      expect { Person.create(foo: 43) }.not_to raise_error
     end
 
     it 'stores undefined attributes' do
@@ -31,7 +31,7 @@ describe Neo4j::ActiveNode do
   end
 
   describe 'save' do
-    it 'does not raise Neo4j::Shared::UnknownAttributeError if trying to set undeclared property' do
+    it 'does not raise ActiveGraph::Shared::UnknownAttributeError if trying to set undeclared property' do
       expect { Person.new[:foo] = 42 }.not_to raise_error
     end
 

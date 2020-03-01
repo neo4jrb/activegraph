@@ -32,8 +32,8 @@ Layout/EmptyLineAfterMagicComment:
 # Configuration parameters: AllowAdjacentOneLineDefs, NumberOfEmptyLines.
 Layout/EmptyLineBetweenDefs:
   Exclude:
-    - 'lib/neo4j/active_node/id_property.rb'
-    - 'lib/neo4j/active_node/query/query_proxy_methods.rb'
+    - 'lib/neo4j/node/id_property.rb'
+    - 'lib/neo4j/node/query/query_proxy_methods.rb'
     - 'lib/rails/generators/neo4j/model/model_generator.rb'
 
 # Offense count: 7
@@ -42,7 +42,6 @@ Layout/EmptyLineBetweenDefs:
 # SupportedStyles: auto_detection, squiggly, active_support, powerpack, unindent
 Layout/IndentHeredoc:
   Exclude:
-    - 'bin/neo4j-jars'
     - 'lib/neo4j/migration.rb'
     - 'lib/neo4j/migrations/runner.rb'
     - 'lib/neo4j/model_schema.rb'
@@ -55,7 +54,7 @@ Layout/IndentHeredoc:
 # SupportedStyles: symmetrical, new_line, same_line
 Layout/MultilineMethodCallBraceLayout:
   Exclude:
-    - 'lib/neo4j/active_node/labels.rb'
+    - 'lib/neo4j/node/labels.rb'
     - 'spec/e2e/migrations_spec.rb'
     - 'spec/shared_examples/model_schema.rb'
     - 'spec/unit/migrations/helpers_spec.rb'
@@ -80,8 +79,8 @@ Layout/SpaceInsidePercentLiteralDelimiters:
 Lint/AmbiguousBlockAssociation:
   Exclude:
     - 'spec/e2e/active_model_spec.rb'
-    - 'spec/e2e/active_rel/unpersisted_spec.rb'
-    - 'spec/e2e/active_rel_spec.rb'
+    - 'spec/e2e/relationship/unpersisted_spec.rb'
+    - 'spec/e2e/relationship_spec.rb'
     - 'spec/e2e/label_spec.rb'
     - 'spec/e2e/persistence_spec.rb'
     - 'spec/e2e/property_management_spec.rb'
@@ -89,7 +88,7 @@ Lint/AmbiguousBlockAssociation:
     - 'spec/e2e/query_spec.rb'
     - 'spec/e2e/shared/query_factory_spec.rb'
     - 'spec/e2e/unpersisted_association_spec.rb'
-    - 'spec/unit/active_node/has_n/association_spec.rb'
+    - 'spec/unit/node/has_n/association_spec.rb'
     - 'spec/unit/migrations/helpers_spec.rb'
 
 # Offense count: 2
@@ -108,14 +107,14 @@ Lint/InheritException:
 # Offense count: 6
 Lint/InterpolationCheck:
   Exclude:
-    - 'spec/e2e/active_rel_spec.rb'
+    - 'spec/e2e/relationship_spec.rb'
     - 'spec/e2e/scope_spec.rb'
 
 # Offense count: 1
 # Configuration parameters: ContextCreatingMethods, MethodCreatingMethods.
 Lint/UselessAccessModifier:
   Exclude:
-    - 'lib/neo4j/active_node/has_n/association.rb'
+    - 'lib/neo4j/node/has_n/association.rb'
 
 # Offense count: 22
 Metrics/AbcSize:
@@ -144,9 +143,9 @@ Metrics/ModuleLength:
 # Offense count: 11
 Naming/MemoizedInstanceVariableName:
   Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
-    - 'lib/neo4j/active_node/id_property/accessor.rb'
-    - 'lib/neo4j/active_node/query/query_proxy_enumerable.rb'
+    - 'lib/neo4j/node/has_n.rb'
+    - 'lib/neo4j/node/id_property/accessor.rb'
+    - 'lib/neo4j/node/query/query_proxy_enumerable.rb'
     - 'lib/neo4j/shared/declared_properties.rb'
     - 'lib/neo4j/shared/property.rb'
     - 'lib/rails/generators/neo4j_generator.rb'
@@ -156,8 +155,8 @@ Naming/MemoizedInstanceVariableName:
 # AllowedNames: io, id, to, by, on, in, at
 Naming/UncommunicativeMethodParamName:
   Exclude:
-    - 'lib/neo4j/active_node/query/query_proxy_eager_loading.rb'
-    - 'lib/neo4j/active_node/query/query_proxy_link.rb'
+    - 'lib/neo4j/node/query/query_proxy_eager_loading.rb'
+    - 'lib/neo4j/node/query/query_proxy_link.rb'
     - 'lib/neo4j/migrations/base.rb'
     - 'lib/neo4j/shared/declared_properties.rb'
     - 'lib/neo4j/shared/mass_assignment.rb'
@@ -165,7 +164,7 @@ Naming/UncommunicativeMethodParamName:
     - 'lib/neo4j/shared/type_converters.rb'
     - 'lib/neo4j/undeclared_properties.rb'
     - 'spec/spec_helper.rb'
-    - 'spec/unit/active_node/persistance_spec.rb'
+    - 'spec/unit/node/persistance_spec.rb'
 
 # Offense count: 1
 Security/MarshalLoad:
@@ -202,9 +201,9 @@ Style/Documentation:
 # Cop supports --auto-correct.
 Style/EmptyCaseCondition:
   Exclude:
-    - 'lib/neo4j/active_node/has_n/association.rb'
-    - 'lib/neo4j/active_rel/related_node.rb'
-    - 'lib/neo4j/active_rel/types.rb'
+    - 'lib/neo4j/node/has_n/association.rb'
+    - 'lib/neo4j/relationship/related_node.rb'
+    - 'lib/neo4j/relationship/types.rb'
     - 'lib/neo4j/shared/declared_property.rb'
     - 'lib/neo4j/shared/query_factory.rb'
     - 'lib/neo4j/shared/type_converters.rb'
@@ -222,7 +221,7 @@ Style/EmptyMethod:
 # Offense count: 4
 Style/EvalWithLocation:
   Exclude:
-    - 'lib/neo4j/active_node/id_property.rb'
+    - 'lib/neo4j/node/id_property.rb'
     - 'spec/unique_class.rb'
 
 # Offense count: 10
@@ -245,11 +244,11 @@ Style/GuardClause:
 Style/IfUnlessModifier:
   Exclude:
     - 'Vagrantfile'
-    - 'lib/neo4j/active_node/has_n/association.rb'
-    - 'lib/neo4j/active_node/has_n/association_cypher_methods.rb'
-    - 'lib/neo4j/active_node/labels.rb'
-    - 'lib/neo4j/active_node/query_methods.rb'
-    - 'lib/neo4j/active_rel/persistence.rb'
+    - 'lib/neo4j/node/has_n/association.rb'
+    - 'lib/neo4j/node/has_n/association_cypher_methods.rb'
+    - 'lib/neo4j/node/labels.rb'
+    - 'lib/neo4j/node/query_methods.rb'
+    - 'lib/neo4j/relationship/persistence.rb'
     - 'lib/neo4j/class_arguments.rb'
     - 'lib/neo4j/migrations/schema.rb'
     - 'lib/neo4j/railtie.rb'
@@ -266,20 +265,20 @@ Style/InverseMethods:
 # Offense count: 1
 Style/MethodMissingSuper:
   Exclude:
-    - 'lib/neo4j/active_rel/related_node.rb'
+    - 'lib/neo4j/relationship/related_node.rb'
 
 # Offense count: 2
 Style/MissingRespondToMissing:
   Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
-    - 'lib/neo4j/active_node/scope.rb'
+    - 'lib/neo4j/node/has_n.rb'
+    - 'lib/neo4j/node/scope.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/MultilineIfModifier:
   Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
-    - 'lib/neo4j/active_node/labels.rb'
+    - 'lib/neo4j/node/has_n.rb'
+    - 'lib/neo4j/node/labels.rb'
     - 'lib/neo4j/shared/attributes.rb'
     - 'lib/neo4j/shared/enum.rb'
 
@@ -306,7 +305,7 @@ Style/NumericPredicate:
 # Cop supports --auto-correct.
 Style/ParallelAssignment:
   Exclude:
-    - 'lib/neo4j/active_node/has_n.rb'
+    - 'lib/neo4j/node/has_n.rb'
 
 # Offense count: 52
 # Cop supports --auto-correct.
@@ -342,9 +341,9 @@ Style/SymbolArray:
 # SupportedStyles: require_parentheses, require_no_parentheses, require_parentheses_when_complex
 Style/TernaryParentheses:
   Exclude:
-    - 'lib/neo4j/active_node/has_n/association.rb'
-    - 'lib/neo4j/active_node/property.rb'
-    - 'lib/neo4j/active_node/query/query_proxy.rb'
+    - 'lib/neo4j/node/has_n/association.rb'
+    - 'lib/neo4j/node/property.rb'
+    - 'lib/neo4j/node/query/query_proxy.rb'
     - 'neo4j.gemspec'
 
 # Offense count: 1696

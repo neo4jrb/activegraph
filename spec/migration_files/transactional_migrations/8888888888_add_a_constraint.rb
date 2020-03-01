@@ -1,4 +1,4 @@
-class AddAConstraint < Neo4j::Migrations::Base
+class AddAConstraint < ActiveGraph::Migrations::Base
   def up
     add_constraint :Book, :some
   end

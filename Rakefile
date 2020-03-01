@@ -1,6 +1,5 @@
 require 'rake'
 require 'bundler/gem_tasks'
-# require 'neo4j-core'
 require 'neo4j/rake_tasks'
 # load 'neo4j/tasks/migration.rake'
 

@@ -10,13 +10,13 @@ describe 'association creation' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class 'Student' do
+    stub_node_class 'Student' do
       property :name
       has_many :out, :lessons, type: 'ENROLLED_IN'
       has_one :out, :favorite_class, type: 'FAVORITE_CLASS', model_class: 'Lesson'
     end
 
-    stub_active_node_class 'Lesson' do
+    stub_node_class 'Lesson' do
       property :subject
       validates_presence_of :subject
       has_many :in, :students, origin: :lessons
@@ -237,7 +237,7 @@ describe 'association creation' do
       let!(:math) { Lesson.create(subject: 'math') }
 
       it 'does not raise error, creates rel on save' do
-        expect_any_instance_of(Neo4j::Core::Query).not_to receive(:delete)
+        expect_any_instance_of(ActiveGraph::Core::Query).not_to receive(:delete)
         expect { chris.lesson_ids = [math.id] }.not_to raise_error
         expect { chris.save }.to change { math.students.count }
       end

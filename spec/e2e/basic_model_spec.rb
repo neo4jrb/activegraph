@@ -7,9 +7,8 @@ require 'shared_examples/destroyable_model'
 describe 'BasicModel' do
   before(:each) do
     clear_model_memory_caches
-    delete_db
 
-    stub_active_node_class('BasicModel') do
+    stub_node_class('BasicModel') do
       property :name
       property :a
       property :b

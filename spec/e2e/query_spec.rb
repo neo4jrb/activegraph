@@ -2,7 +2,6 @@ require 'set'
 
 describe 'Query API' do
   before(:each) do
-    delete_db
     clear_model_memory_caches
   end
 
@@ -10,13 +9,13 @@ describe 'Query API' do
   let(:student_interests_association_options) { {} }
 
   before(:each) do
-    stub_active_node_class('Interest') do
+    stub_node_class('Interest') do
       property :name
 
       has_many :both, :interested, type: nil, model_class: false
     end
 
-    stub_active_node_class('Lesson') do
+    stub_node_class('Lesson') do
       property :subject
       property :level
 
@@ -37,11 +36,11 @@ describe 'Query API' do
     end
 
     scoped_interests_options = student_interests_association_options # Grrr
-    stub_active_node_class('Student') do
+    stub_node_class('Student') do
       property :name
       property :age, type: Integer
 
-      property :likely_to_succeed, type: Neo4j::Shared::Boolean, default: false
+      property :likely_to_succeed, type: ActiveGraph::Shared::Boolean, default: false
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
@@ -52,7 +51,7 @@ describe 'Query API' do
       has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
     end
 
-    stub_active_rel_class('IsEnrolledFor') do
+    stub_relationship_class('IsEnrolledFor') do
       from_class :Student
       to_class :Lesson
       type 'is_enrolled_for'
@@ -60,7 +59,7 @@ describe 'Query API' do
       property :grade, type: Integer
     end
 
-    stub_active_node_class('Teacher') do
+    stub_node_class('Teacher') do
       property :name
       property :age, type: Integer
       property :status, default: 'active'
@@ -102,7 +101,7 @@ describe 'Query API' do
   describe 'association validation' do
     before(:each) do
       %w(Foo Bar).each do |const|
-        stub_active_node_class(const)
+        stub_node_class(const)
       end
     end
 
@@ -173,7 +172,7 @@ describe 'Query API' do
 
     it 'evaluates `all` lazily' do
       result = Teacher.all
-      expect(result).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+      expect(result).to be_a(ActiveGraph::Node::Query::QueryProxy)
       expect(result.size).to eq(2)
       expect(result).to include(samuels)
       expect(result).to include(othmar)
@@ -199,7 +198,7 @@ describe 'Query API' do
       end
 
       it 'allows filtering and parametarizing by String and Hash in where' do
-        expect(Teacher.as(:teach).where('teach.name =~ {name}', name: '.*Othmar.*').to_a).to eq([othmar])
+        expect(Teacher.as(:teach).where('teach.name =~ $name', name: '.*Othmar.*').to_a).to eq([othmar])
       end
     end
 
@@ -217,7 +216,7 @@ describe 'Query API' do
         after { expect(Teacher.count).to eq 1 }
 
         before(:each) do
-          stub_active_node_class('TeacherFoo')
+          stub_node_class('TeacherFoo')
           stub_named_class('Substitute', TeacherFoo)
         end
 
@@ -312,7 +311,7 @@ describe 'Query API' do
 
         context 'custom id property method' do
           before do
-            stub_active_node_class('CustomTeacher') do
+            stub_node_class('CustomTeacher') do
               id_property :custom_uuid, on: :custom_prop_method
               property :name
 
@@ -390,7 +389,7 @@ describe 'Query API' do
 
       it 'allows for finds on associations' do
         expect(samuels.lessons_teaching.find(ss101.id)).to eq(ss101)
-        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(Neo4j::RecordNotFound)
+        expect { samuels.lessons_teaching.find(math101.id) }.to raise_error(ActiveGraph::RecordNotFound)
       end
 
       context 'samuels taught math 101 lesson' do
@@ -425,9 +424,9 @@ describe 'Query API' do
       end
 
       it 'allows params' do
-        expect(Teacher.as(:t).where('t.name = {name}').params(name: 'Harold Samuels').to_a).to eq([samuels])
+        expect(Teacher.as(:t).where('t.name = $name').params(name: 'Harold Samuels').to_a).to eq([samuels])
 
-        expect(samuels.lessons_teaching(:lesson).where('lesson.level = {level}').params(level: 103).to_a).to eq([geo103])
+        expect(samuels.lessons_teaching(:lesson).where('lesson.level = $level').params(level: 103).to_a).to eq([geo103])
       end
 
       it 'allows filtering on associations' do
@@ -488,9 +487,9 @@ describe 'Query API' do
 
     describe 'multiple labels' do
       before(:each) do
-        stub_active_node_class('GitHub')
+        stub_node_class('GitHub')
 
-        stub_active_node_class('StackOverflow')
+        stub_node_class('StackOverflow')
 
         stub_named_class('GitHubUser', GitHub) do
           self.mapped_label_name = 'User'
@@ -640,7 +639,7 @@ describe 'Query API' do
 
     let(:query_proxy) { Student.as(:s).lessons.where(subject: 'Math') }
     it 'builds a new QueryProxy object upon an existing Core::Query object' do
-      part2 = 'MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = {result_lessons3_subject})'
+      part2 = 'MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = $result_lessons3_subject)'
       combined_strings = "#{core_query.to_cypher} #{part2}"
       combined_query = core_query.proxy_as(Student, :s).lessons.where(subject: 'Math')
 
@@ -662,7 +661,7 @@ describe 'Query API' do
 
     describe 'optional matches' do
       let(:combined_query) { core_query.proxy_as(Student, :s, true).lessons.where(subject: 'Math') }
-      let(:part2) { 'OPTIONAL MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = {result_lessons3_subject})' }
+      let(:part2) { 'OPTIONAL MATCH (s)-[rel1:`is_enrolled_for`]->(result_lessons3:`Lesson`) WHERE (result_lessons3.subject = $result_lessons3_subject)' }
       let(:combined_strings) { "#{core_query.to_cypher} #{part2}" }
       it 'can create an optional match' do
         expect(combined_query.to_cypher).to eq combined_strings
@@ -675,11 +674,11 @@ describe 'Query API' do
       before { [Date, DateTime, Time].each { |c| Teacher.property c.name.downcase.to_sym, type: c } }
 
       let(:date) { Date.today }
-      let(:converted_date) { Time.utc(date.year, date.month, date.day).to_i }
+      let(:converted_date) { date.readable_inspect }
       let(:datetime) { DateTime.now }
       let(:converted_datetime) { datetime.utc.to_i }
       let(:time) { Time.now }
-      let(:converted_time) { time.utc.to_i }
+      let(:converted_time) { time.strftime('%Y-%m-%d %H:%M:%S') }
 
       context 'with properties declared on the model' do
         it 'converts properties using the model\'s type converter' do
@@ -718,15 +717,15 @@ describe 'Query API' do
           before { Teacher.create(date: today) }
 
           it 'does not perform any conversion' do
-            expect(Teacher.where(date: [today]).count).to eq 0
-            expect(Teacher.where(date: [Time.utc(today.year, today.month, today.day).to_i]).count).to eq 1
+            expect(Teacher.where(date: [today]).count).to eq 1
+            expect(Teacher.where(date: today).count).to eq 1
           end
         end
       end
 
       context 'with properties not declared on the model' do
         it 'uses values as they are' do
-          expect(Teacher.where(undeclared_date: date).to_cypher_with_params).not_to include(converted_date.to_s)
+          expect(Teacher.where(undeclared_prop: '9999').to_cypher_with_params).to include('999')
         end
       end
 
@@ -754,7 +753,7 @@ describe 'Query API' do
         let(:student_interests_association_options) { {type: nil, unique: true} }
 
         it 'becomes :none' do
-          expect(Neo4j::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
+          expect(ActiveGraph::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
           changed_props_create.call
         end
       end

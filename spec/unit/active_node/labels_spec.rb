@@ -1,17 +1,17 @@
-describe Neo4j::ActiveNode::Labels do
+describe ActiveGraph::Node::Labels do
   before(:all) do
-    @prev_wrapped_classes = Neo4j::ActiveNode::Labels._wrapped_classes
-    Neo4j::ActiveNode::Labels._wrapped_classes.clear
+    @prev_wrapped_classes = ActiveGraph::Node::Labels._wrapped_classes
+    ActiveGraph::Node::Labels._wrapped_classes.clear
 
     @class_a = Class.new do
-      include Neo4j::ActiveNode::Labels
+      include ActiveGraph::Node::Labels
       def self.mapped_label_name
         'A'
       end
     end
 
     @class_b = Class.new do
-      include Neo4j::ActiveNode::Labels
+      include ActiveGraph::Node::Labels
       def self.mapped_label_name
         'B'
       end
@@ -20,13 +20,13 @@ describe Neo4j::ActiveNode::Labels do
 
   after(:all) do
     # restore
-    Neo4j::ActiveNode::Labels._wrapped_classes.concat(@prev_wrapped_classes)
+    ActiveGraph::Node::Labels._wrapped_classes.concat(@prev_wrapped_classes)
   end
 
-  describe Neo4j::ActiveNode::Labels::ClassMethods do
+  describe ActiveGraph::Node::Labels::ClassMethods do
     describe 'index and inheritance' do
       before do
-        stub_active_node_class('MyBaseClass') do
+        stub_node_class('MyBaseClass') do
           property :things
         end
         stub_named_class('MySubClass', MyBaseClass) do
@@ -42,7 +42,7 @@ describe Neo4j::ActiveNode::Labels do
     describe 'mapped_label_name' do
       it 'return the class name if not given a label name' do
         clazz = Class.new do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          extend ActiveGraph::Node::Labels::ClassMethods
           def self.name
             'MyClass'
           end
@@ -53,24 +53,24 @@ describe Neo4j::ActiveNode::Labels do
 
     describe 'set_mapped_label_name' do
       it 'sets the label name and overrides the class name' do
-        clazz = Class.new { extend Neo4j::ActiveNode::Labels::ClassMethods }
+        clazz = Class.new { extend ActiveGraph::Node::Labels::ClassMethods }
         clazz.send(:mapped_label_name=, 'foo')
         expect(clazz.mapped_label_name).to eq(:foo)
       end
     end
 
     describe 'label' do
-      it 'wraps the mapped_label_name in a Neo4j::Core::Label object' do
+      it 'wraps the mapped_label_name in a ActiveGraph::Core::Label object' do
         clazz = Class.new do
-          include Neo4j::Shared
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          include ActiveGraph::Shared
+          extend ActiveGraph::Node::Labels::ClassMethods
           def self.name
             'MyClass'
           end
         end
 
         label_double = double('label')
-        expect(Neo4j::Core::Label).to receive(:new).with(:MyClass, Neo4j::ActiveBase.current_session).and_return(label_double)
+        expect(ActiveGraph::Core::Label).to receive(:new).with(:MyClass).and_return(label_double)
         expect(clazz.send(:mapped_label)).to eq(label_double)
       end
     end
@@ -78,7 +78,7 @@ describe Neo4j::ActiveNode::Labels do
     describe 'mapped_label_names' do
       it 'returns the label of a class' do
         clazz = Class.new do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          extend ActiveGraph::Node::Labels::ClassMethods
           def self.name
             'mylabel'
           end
@@ -94,7 +94,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         middle_class = Class.new(base_class) do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          extend ActiveGraph::Node::Labels::ClassMethods
 
           def self.mapped_label_name
             'middle'
@@ -102,7 +102,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         top_class = Class.new(middle_class) do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          extend ActiveGraph::Node::Labels::ClassMethods
 
           def self.mapped_label_name
             'top'
@@ -128,7 +128,7 @@ describe Neo4j::ActiveNode::Labels do
         end
 
         clazz = Class.new do
-          extend Neo4j::ActiveNode::Labels::ClassMethods
+          extend ActiveGraph::Node::Labels::ClassMethods
           include module1
           include module2
 
@@ -143,11 +143,11 @@ describe Neo4j::ActiveNode::Labels do
 
     describe 'model_for_labels' do
       class Event
-        include Neo4j::ActiveNode
+        include ActiveGraph::Node
       end
 
       class URL
-        include Neo4j::ActiveNode
+        include ActiveGraph::Node
       end
 
       module DataSource
@@ -164,11 +164,11 @@ describe Neo4j::ActiveNode::Labels do
         classes = [Event, URL, DataSource::URL, DataSource::Event]
 
         # TODO: not sure why this is not being called when the class is defined
-        classes.reverse_each { |c| Neo4j::ActiveNode::Labels.add_wrapped_class(c) }
+        classes.reverse_each { |c| ActiveGraph::Node::Labels.add_wrapped_class(c) }
 
         classes.each do |c|
           labels = c.mapped_label_names
-          model = Neo4j::ActiveNode::Labels.model_for_labels(labels)
+          model = ActiveGraph::Node::Labels.model_for_labels(labels)
           expect(model).to eq(c)
         end
       end

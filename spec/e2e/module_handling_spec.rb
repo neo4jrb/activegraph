@@ -1,16 +1,14 @@
 describe 'Module handling from config: :module_handling option' do
   before do
-    delete_db
-    delete_schema
     clear_model_memory_caches
 
-    stub_active_node_class('Clazz')
+    stub_node_class('Clazz')
   end
 
   before do
     stub_named_class 'ModuleTest::Student', Clazz
-    Neo4j::Config[:association_model_namespace] = nil
-    Neo4j::Config[:module_handling] = nil
+    ActiveGraph::Config[:association_model_namespace] = nil
+    ActiveGraph::Config[:module_handling] = nil
   end
 
   describe 'labels' do
@@ -22,7 +20,7 @@ describe 'Module handling from config: :module_handling option' do
     end
 
     context 'with config set to :demodulize' do
-      before { Neo4j::Config[:module_handling] = :demodulize }
+      before { ActiveGraph::Config[:module_handling] = :demodulize }
 
       it 'strips module names from labels' do
         expect(ModuleTest::Student.mapped_label_name).to eq :Student
@@ -34,7 +32,7 @@ describe 'Module handling from config: :module_handling option' do
 
     context 'with a proc' do
       before do
-        Neo4j::Config[:module_handling] = proc do |name|
+        ActiveGraph::Config[:module_handling] = proc do |name|
           module_name = name.deconstantize
           name.gsub(module_name, 'Foo')
         end
@@ -60,7 +58,7 @@ describe 'Module handling from config: :module_handling option' do
 
     context ' with :association_model_namespace set' do
       before do
-        Neo4j::Config[:association_model_namespace] = 'ModuleTest'
+        ActiveGraph::Config[:association_model_namespace] = 'ModuleTest'
         Clazz.has_many :out, :students, type: :HAS_STUDENT
       end
 
@@ -76,9 +74,9 @@ describe 'Module handling from config: :module_handling option' do
 
   describe 'node wrapping' do
     before do
-      Neo4j::Config[:module_handling] = :demodulize
+      ActiveGraph::Config[:module_handling] = :demodulize
     end
-    let!(:cache) { Neo4j::ActiveNode::Labels::MODELS_FOR_LABELS_CACHE }
+    let!(:cache) { ActiveGraph::Node::Labels::MODELS_FOR_LABELS_CACHE }
 
     it 'saves the map of label to class correctly when labels do not match class' do
       expect(cache).to be_empty
@@ -89,14 +87,14 @@ describe 'Module handling from config: :module_handling option' do
     end
   end
 
-  describe 'ActiveRel' do
+  describe 'Relationship' do
     let(:test_config) do
       proc do |config_option|
-        Neo4j::Config[:module_handling] = config_option
-        # ActiveRel types are misbehaving when using stub_const, will have to fix later
+        ActiveGraph::Config[:module_handling] = config_option
+        # Relationship types are misbehaving when using stub_const, will have to fix later
         module ModuleTest
           class RelClass
-            include Neo4j::ActiveRel
+            include ActiveGraph::Relationship
           end
         end
       end

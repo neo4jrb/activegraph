@@ -1,13 +1,11 @@
-describe Neo4j::ActiveNode::IdProperty do
+describe ActiveGraph::Node::IdProperty do
   before(:all) do
-    Neo4j::Config.delete(:id_property)
-    Neo4j::Config.delete(:id_property_type)
-    Neo4j::Config.delete(:id_property_type_value)
+    ActiveGraph::Config.delete(:id_property)
+    ActiveGraph::Config.delete(:id_property_type)
+    ActiveGraph::Config.delete(:id_property_type_value)
   end
 
   before do
-    delete_db
-    delete_schema
     clear_model_memory_caches
   end
 
@@ -15,7 +13,7 @@ describe Neo4j::ActiveNode::IdProperty do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
         expect do
-          stub_active_node_class('Unique') do
+          stub_node_class('Unique') do
             id_property :something, :bla
           end
         end.to raise_error(/Expected a Hash/)
@@ -23,7 +21,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       it 'raise for id_property :something, bla: 42' do
         expect do
-          stub_active_node_class('Unique') do
+          stub_node_class('Unique') do
             id_property :something, bla: 42
           end
         end.to raise_error(/Illegal value/)
@@ -34,7 +32,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'when no id_property' do
     let!(:clazz) do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         property :name
       end
     end
@@ -67,7 +65,7 @@ describe Neo4j::ActiveNode::IdProperty do
       let_config(:id_property_type_value, :uuid)
 
       let!(:clazz) do
-        stub_active_node_class('Clazz')
+        stub_node_class('Clazz')
       end
 
       it 'will set the id_property' do
@@ -82,7 +80,7 @@ describe Neo4j::ActiveNode::IdProperty do
     let_config(:id_property, :neo_id)
 
     before do
-      stub_active_node_class('NeoIdTest')
+      stub_node_class('NeoIdTest')
     end
 
     it 'it will find node by neo_id' do
@@ -93,7 +91,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :myid' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :myid
       end
     end
@@ -138,7 +136,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       context 'id_property defined twice' do
         before do
-          Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
+          ActiveGraph::ModelSchema::MODEL_CONSTRAINTS.clear
 
           Clazz.id_property :my_property, auto: :uuid
           Clazz.id_property :another_property, auto: :uuid
@@ -148,7 +146,7 @@ describe Neo4j::ActiveNode::IdProperty do
         it 'removes any previously declared properties' do
           begin
             node = Clazz.create
-          rescue Neo4j::DeprecatedSchemaDefinitionError
+          rescue ActiveGraph::DeprecatedSchemaDefinitionError
             nil
           end
           expect(node.respond_to?(:uuid)).to be_falsey
@@ -201,7 +199,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :my_id, on: :foobar
 
         def foobar
@@ -265,7 +263,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
       property_name = id_property_name
       property_options = id_property_options
-      stub_active_node_class('Clazz', false) do
+      stub_node_class('Clazz', false) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
       property_name = subclass_id_property_name
@@ -275,7 +273,7 @@ describe Neo4j::ActiveNode::IdProperty do
       end
       Clazz.ensure_id_property_info!
       SubClazz.ensure_id_property_info!
-      Neo4j::ModelSchema.reload_models_data!
+      ActiveGraph::ModelSchema.reload_models_data!
     end
 
     it_behaves_like 'raises schema error including', :constraint, :Clazz, :uuid
@@ -365,7 +363,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         id_property :my_uuid, auto: :uuid
       end
     end
@@ -425,11 +423,9 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'id_property :neo_id' do
     before do
-      stub_active_node_class('NeoIdTest', false) do
+      stub_node_class('NeoIdTest', false) do
         id_property :neo_id
       end
-
-      # delete_db
     end
 
     it 'has an index' do
@@ -524,7 +520,7 @@ describe Neo4j::ActiveNode::IdProperty do
 
   describe 'inheritance' do
     before do
-      stub_active_node_class('Teacher') do
+      stub_node_class('Teacher') do
         id_property :my_id, on: :my_method
 
         def my_method
@@ -534,19 +530,19 @@ describe Neo4j::ActiveNode::IdProperty do
 
       stub_named_class('Substitute', Teacher)
 
-      stub_active_node_class('Vehicle') do
+      stub_node_class('Vehicle') do
         id_property :my_id, auto: :uuid
       end
 
       stub_named_class('Car', Vehicle)
 
-      stub_active_node_class('Fruit') do
+      stub_node_class('Fruit') do
         id_property :my_id
       end
 
       stub_named_class('Apple', Fruit)
 
-      stub_active_node_class('Sport') do
+      stub_node_class('Sport') do
         id_property :neo_id
       end
 
@@ -571,9 +567,9 @@ describe Neo4j::ActiveNode::IdProperty do
       expect(node.id).to eq(node.neo_id)
     end
 
-    context 'when a session is not started' do
+    context 'when a driver is not started' do
       before do
-        stub_active_node_class('Executive') do
+        stub_node_class('Executive') do
           id_property :my_id, on: :my_method
 
           def my_method

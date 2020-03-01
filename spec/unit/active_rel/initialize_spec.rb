@@ -1,7 +1,7 @@
-describe Neo4j::ActiveRel::Initialize do
+describe ActiveGraph::Relationship::Initialize do
   let(:clazz) do
     Class.new do
-      include Neo4j::ActiveRel::Initialize
+      include ActiveGraph::Relationship::Initialize
     end
   end
 

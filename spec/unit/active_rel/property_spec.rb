@@ -1,9 +1,9 @@
-describe Neo4j::ActiveRel::Property do
-  let(:session) { double('Session') }
+describe ActiveGraph::Relationship::Property do
+  let(:driver) { double('Driver') }
 
   before do
-    @session = double('Mock Session')
-    allow(clazz).to receive(:neo4j_session).and_return(session)
+    @driver = double('Mock Driver')
+    allow(clazz).to receive(:neo4j_driver).and_return(driver)
   end
 
   let(:clazz) do
@@ -12,8 +12,8 @@ describe Neo4j::ActiveRel::Property do
         'Clazz'
       end
 
-      include Neo4j::ActiveRel::Property
-      include Neo4j::ActiveRel::Types
+      include ActiveGraph::Relationship::Property
+      include ActiveGraph::Relationship::Types
     end
   end
 

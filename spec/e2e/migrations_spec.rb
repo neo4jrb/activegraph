@@ -1,16 +1,13 @@
-module Neo4j
+module ActiveGraph
   module Migrations
-    describe 'Neo4j::Migrations' do
-      before { delete_schema }
-
+    describe 'ActiveGraph::Migrations' do
       capture_output!(:output_string)
 
       before do
-        create_constraint :'Neo4j::Migrations::SchemaMigration', :migration_id, type: :unique
+        create_constraint :'ActiveGraph::Migrations::SchemaMigration', :migration_id, type: :unique
 
-        create_constraint :User, :uuid, type: :unique
         create_constraint :User, :name, type: :unique
-        stub_active_node_class('User') do
+        stub_node_class('User') do
           property :name
         end
 
@@ -30,7 +27,7 @@ module Neo4j
       describe '#maintain_test_schema!' do
         it 'checks and runs pending migrations' do
           expect do
-            Neo4j::Migrations.maintain_test_schema!
+            ActiveGraph::Migrations.maintain_test_schema!
           end.to change { SchemaMigration.count }.by(3)
         end
       end
@@ -39,21 +36,21 @@ module Neo4j
         it 'fails with a PendingMigrationError for rails >= 5' do
           allow(Rails).to receive(:version).and_return('5.0.0')
           expect do
-            Neo4j::Migrations.check_for_pending_migrations!
+            ActiveGraph::Migrations.check_for_pending_migrations!
           end.to raise_error(PendingMigrationError, %r{bin/rails neo4j:migrate})
         end
 
         it 'fails with a PendingMigrationError for rails < 5' do
           allow(Rails).to receive(:version).and_return('4.0.0')
           expect do
-            Neo4j::Migrations.check_for_pending_migrations!
+            ActiveGraph::Migrations.check_for_pending_migrations!
           end.to raise_error(PendingMigrationError, %r{bin/rake neo4j:migrate})
         end
 
         it 'fails with a PendingMigrationError for non-rails' do
           allow_any_instance_of(PendingMigrationError).to receive(:rails?).and_return(false)
           expect do
-            Neo4j::Migrations.check_for_pending_migrations!
+            ActiveGraph::Migrations.check_for_pending_migrations!
           end.to raise_error(PendingMigrationError, /rake neo4j:migrate/)
         end
       end
@@ -85,7 +82,7 @@ module Neo4j
             SchemaMigration.create! migration_id: '1234567890'
             expect do
               described_class.new.all
-            end.to change { Neo4j::Migrations::SchemaMigration.count }.by(2)
+            end.to change { ActiveGraph::Migrations::SchemaMigration.count }.by(2)
               .and(change { u.reload.name }.to('Frank'))
           end
         end
@@ -130,7 +127,7 @@ module Neo4j
 
           it 'fails when passing a missing version' do
             expect { described_class.new.up '123123' }.to raise_error(
-              ::Neo4j::UnknownMigrationVersionError, 'No such migration 123123')
+              ::ActiveGraph::UnknownMigrationVersionError, 'No such migration 123123')
           end
         end
 
@@ -146,11 +143,11 @@ module Neo4j
 
           it 'fails when passing a missing version' do
             expect { described_class.new.down '123123' }.to raise_error(
-              Neo4j::UnknownMigrationVersionError, 'No such migration 123123')
+              ActiveGraph::UnknownMigrationVersionError, 'No such migration 123123')
           end
 
           it 'fails on irreversible migrations' do
-            expect { described_class.new.down '1234567890' }.to raise_error(::Neo4j::IrreversibleMigration)
+            expect { described_class.new.down '1234567890' }.to raise_error(::ActiveGraph::IrreversibleMigration)
           end
         end
 
@@ -177,7 +174,7 @@ module Neo4j
               expect do
                 described_class.new.up '8888888888'
               end.not_to raise_error
-            end.to change { Neo4j::Core::Label.new(:Book, current_session).constraint?(:some) }.to(true)
+            end.to change { ActiveGraph::Core::Label.new(:Book).constraint?(:some) }.to(true)
           end
 
           it 'run `down` without raising errors' do
@@ -187,13 +184,13 @@ module Neo4j
               expect do
                 described_class.new.down '8888888888'
               end.not_to raise_error
-            end.to change { Neo4j::Core::Label.new(:Book, current_session).constraint?(:some) }.to(false)
+            end.to change { ActiveGraph::Core::Label.new(:Book).constraint?(:some) }.to(false)
           end
         end
 
         describe 'failure' do
           it 'Removes SchemaMigration when there is a failure' do
-            allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+            allow_any_instance_of(ActiveGraph::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
             expect { described_class.new.up '9500000000' }.to raise_error('SURPRISE!')
 
             expect(SchemaMigration.find_by(migration_id: '9500000000')).to be_nil
@@ -202,7 +199,7 @@ module Neo4j
           it 'Rolls back SchemaMigration to being complete when there is a failure' do
             described_class.new.up '9500000000'
 
-            allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+            allow_any_instance_of(ActiveGraph::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
             expect { described_class.new.down '9500000000' }.to raise_error('SURPRISE!')
 
             expect(SchemaMigration.find_by(migration_id: '9500000000').incomplete).to be_nil
@@ -216,7 +213,7 @@ module Neo4j
             end
 
             it 'Leaves SchemaMigration as incomplete when there is a failure in a non-transactional migration up' do
-              allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+              allow_any_instance_of(ActiveGraph::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
               expect { described_class.new.up '1231231232' }.to raise_error('SURPRISE!')
 
               expect(SchemaMigration.find_by(migration_id: '1231231232').incomplete).to be true
@@ -224,7 +221,7 @@ module Neo4j
 
             it 'Leaves SchemaMigration as incomplete when there is a failure in a non-transactional migration down' do
               described_class.new.up '1231231232'
-              allow_any_instance_of(Neo4j::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
+              allow_any_instance_of(ActiveGraph::Migrations::Base).to receive(:execute).and_raise('SURPRISE!')
               expect { described_class.new.down '1231231232' }.to raise_error('SURPRISE!')
 
               expect(SchemaMigration.find_by(migration_id: '1231231232').incomplete).to be true
@@ -272,12 +269,11 @@ module Neo4j
 
         describe 'transactional behavior in migrations' do
           before do
-            stub_active_node_class('Contact') do
+            stub_node_class('Contact') do
               property :phone
             end
 
             Contact.delete_all
-            create_constraint :Contact, :uuid, type: :unique
             create_constraint :Contact, :phone, type: :unique
             Contact.create! phone: '123123'
 

@@ -1,10 +1,10 @@
-describe Neo4j::Shared::Property do
-  before { stub_named_class('SharedPropertyTest') { include Neo4j::ActiveNode::Property } }
+describe ActiveGraph::Shared::Property do
+  before { stub_named_class('SharedPropertyTest') { include ActiveGraph::Node::Property } }
 
   describe ':property class method' do
     it 'raises an error when passing illegal properties' do
-      Neo4j::Shared::DeclaredProperty::ILLEGAL_PROPS.push 'foo'
-      expect { SharedPropertyTest.property :foo }.to raise_error(Neo4j::Shared::DeclaredProperty::IllegalPropertyError)
+      ActiveGraph::Shared::DeclaredProperty::ILLEGAL_PROPS.push 'foo'
+      expect { SharedPropertyTest.property :foo }.to raise_error(ActiveGraph::Shared::DeclaredProperty::IllegalPropertyError)
     end
   end
 
@@ -35,7 +35,7 @@ describe Neo4j::Shared::Property do
 
     describe 'schema' do
       before do
-        allow_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:index_or_constraint?).and_return true
+        allow_any_instance_of(ActiveGraph::Shared::DeclaredProperty).to receive(:index_or_constraint?).and_return true
         allow(SharedPropertyTest.class).to receive(:index)
       end
 
@@ -48,7 +48,7 @@ describe Neo4j::Shared::Property do
 
       context 'unique constraint' do
         it 'is removed' do
-          expect_any_instance_of(Neo4j::Shared::DeclaredProperty).to receive(:constraint?).and_return(true)
+          expect_any_instance_of(ActiveGraph::Shared::DeclaredProperty).to receive(:constraint?).and_return(true)
           expect(SharedPropertyTest).to receive(:drop_constraint)
           remove!
         end
@@ -70,7 +70,7 @@ describe Neo4j::Shared::Property do
 
       context '...and specified in config' do
         before do
-          Neo4j::Config[:timestamp_type] = Integer
+          ActiveGraph::Config[:timestamp_type] = Integer
           SharedPropertyTest.property :created_at
           SharedPropertyTest.property :updated_at
         end
@@ -151,7 +151,7 @@ describe Neo4j::Shared::Property do
       end
     end
 
-    before { stub_active_node_class('CustomTypeTest') }
+    before { stub_node_class('CustomTypeTest') }
     let(:instance)  { CustomTypeTest.new }
     let(:range)     { 1..3 }
 
@@ -161,11 +161,11 @@ describe Neo4j::Shared::Property do
 
     # TODO: Is this still necessary past 7.0, post ActiveAttr removal?
     it 'sets underlying typecaster to ObjectTypecaster' do
-      expect(CustomTypeTest.attributes[:range][:typecaster]).to eq(Neo4j::Shared::TypeConverters::ObjectConverter)
+      expect(CustomTypeTest.attributes[:range][:typecaster]).to eq(ActiveGraph::Shared::TypeConverters::ObjectConverter)
     end
 
     it 'adds new converter' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Range]).to eq(converter)
+      expect(ActiveGraph::Shared::TypeConverters::CONVERTERS[Range]).to eq(converter)
     end
 
     it 'returns object of a proper type' do
@@ -184,7 +184,7 @@ describe Neo4j::Shared::Property do
     end
   end
 
-  describe Neo4j::ActiveNode do
+  describe ActiveGraph::Node do
     before(:each) do
       # This serializer adds a text when the data is saved on the db,
       # and removes it when deserializing
@@ -214,7 +214,7 @@ describe Neo4j::Shared::Property do
         end
       end)
 
-      stub_active_node_class('MyData') do
+      stub_node_class('MyData') do
         property :polite_string
         property :happy_string
 

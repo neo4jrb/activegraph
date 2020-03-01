@@ -1,9 +1,8 @@
 describe 'has_many' do
   before(:each) do
     clear_model_memory_caches
-    delete_db
 
-    stub_active_node_class('Person') do
+    stub_node_class('Person') do
       property :name
 
       has_many :both, :friends, model_class: false, type: nil
@@ -142,7 +141,7 @@ describe 'has_many' do
       it 'occurs within a transaction' do
         friend3 = Person.create(name: 'foo')
         node.friends = [friend1, friend2]
-        expect_any_instance_of(Neo4j::ActiveNode::Query::QueryProxy).to receive(:_create_relationship).and_raise('Bar error')
+        expect_any_instance_of(ActiveGraph::Node::Query::QueryProxy).to receive(:_create_relationship).and_raise('Bar error')
         expect { node.friends = [friend3] }.to raise_error RuntimeError, 'Bar error'
         expect(node.friends.to_a).to include(friend1, friend2)
         expect(node.friends.to_a).not_to include friend3
@@ -157,7 +156,7 @@ describe 'has_many' do
       end
 
       it 'has a is_a method' do
-        expect(node.friends.is_a?(Neo4j::ActiveNode::HasN::AssociationProxy)).to be true
+        expect(node.friends.is_a?(ActiveGraph::Node::HasN::AssociationProxy)).to be true
         expect(node.friends.is_a?(Array)).to be false
         expect(node.friends.is_a?(String)).to be false
       end
@@ -221,26 +220,26 @@ describe 'has_many' do
     before(:each) do
       mc = model_class
 
-      stub_active_node_class('Post') do
+      stub_node_class('Post') do
         has_many :in, :comments, type: :comments_on, model_class: mc
       end
 
-      stub_active_node_class('Comment')
+      stub_node_class('Comment')
 
-      stub_active_node_class('Person')
+      stub_node_class('Author')
     end
 
     let!(:post) { Post.create }
 
     let!(:comments) { [Comment.create, Comment.create] }
 
-    let!(:person) { Person.create }
+    let!(:person) { Author.create }
 
     before(:each) do
-      Neo4j::ActiveBase.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
+      ActiveGraph::Base.new_query.match(post: :Post, comment: :Comment).where(comment: {Comment.id_property_name => comments.map(&:id)})
                        .create('(post)<-[:comments_on]-(comment)').exec
 
-      Neo4j::ActiveBase.new_query.match(post: :Post, person: :Person).where(person: {Person.id_property_name => person.id})
+      ActiveGraph::Base.new_query.match(post: :Post, person: :Author).where(person: {Author.id_property_name => person.id})
                        .create('(post)<-[:comments_on]-(person)').exec
     end
 
@@ -256,8 +255,8 @@ describe 'has_many' do
       it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
-    context "model_class: 'Person'" do
-      let(:model_class) { 'Person' }
+    context "model_class: 'Author'" do
+      let(:model_class) { 'Author' }
       it { is_expected.to eq([person.id]) }
     end
 
@@ -271,8 +270,8 @@ describe 'has_many' do
       it { is_expected.to eq(comments.map(&:id).sort) }
     end
 
-    context "model_class: ['Comment', 'Person']" do
-      let(:model_class) { %w(Comment Person) }
+    context "model_class: ['Comment', 'Author']" do
+      let(:model_class) { %w(Comment Author) }
       it { is_expected.to eq((comments.map(&:id) + [person.id]).sort) }
 
       describe 'plucking :id instead of id_property_name' do
@@ -285,11 +284,11 @@ describe 'has_many' do
 
   describe 'using mapped_label_name' do
     before do
-      stub_active_node_class('ClazzC') do
+      stub_node_class('ClazzC') do
         has_many :in, :furrs, type: nil, model_class: :ClazzD
       end
 
-      stub_active_node_class('ClazzD') do
+      stub_node_class('ClazzD') do
         self.mapped_label_name = 'Fuur'
       end
     end
@@ -305,15 +304,14 @@ describe 'has_many' do
 
   describe 'query chaining' do
     before(:each) do
-      delete_db
       clear_model_memory_caches
 
-      stub_active_node_class('Dog') do
+      stub_node_class('Dog') do
         property :name
 
         has_many :out, :toys, type: :has_toy
       end
-      stub_active_node_class('Toy') do
+      stub_node_class('Toy') do
         property :name
       end
     end
@@ -416,7 +414,7 @@ describe 'has_many' do
     context 'failure' do
       it 'rolls back <<' do
         begin
-          tx = Neo4j::ActiveBase.new_transaction
+          tx = ActiveGraph::Base.new_transaction
           node.friends << friend1
           tx.failure
         ensure
@@ -428,7 +426,7 @@ describe 'has_many' do
       it 'rolls back =' do
         node.friends = friend1
         begin
-          tx = Neo4j::ActiveBase.new_transaction
+          tx = ActiveGraph::Base.new_transaction
           node.friends = friend2
           tx.failure
         ensure
@@ -441,7 +439,7 @@ describe 'has_many' do
 
   # This block should perhaps be repeated in has_one_spec or extracted into a shared_example
   context 'Empty class' do
-    let!(:empty_class) { stub_active_node_class('Foo') }
+    let!(:empty_class) { stub_node_class('Foo') }
 
     describe 'option validation' do
       it 'should require the `:type` key' do
@@ -481,9 +479,9 @@ describe 'has_many' do
         expect(empty_class.associations[:bars].relationship_type).to eq(:bar)
       end
 
-      context 'an ActiveRel class exists' do
+      context 'an Relationship class exists' do
         before(:each) do
-          stub_active_rel_class('Link') do
+          stub_relationship_class('Link') do
             from_class 'Foo'
             to_class 'Bar'
             type 'link'
@@ -496,9 +494,9 @@ describe 'has_many' do
         end
       end
 
-      context 'another ActiveNode class exists' do
+      context 'another Node class exists' do
         before(:each) do
-          stub_active_node_class('Bar') do
+          stub_node_class('Bar') do
             has_many :in, :foos, type: :barz
           end
         end
@@ -512,11 +510,11 @@ describe 'has_many' do
   end
   describe 'id methods' do
     before(:each) do
-      stub_active_node_class('Post') do
+      stub_node_class('Post') do
         has_many :in, :comments, type: :COMMENTS_ON
       end
 
-      stub_active_node_class('Comment') do
+      stub_node_class('Comment') do
         has_one :out, :post, type: :COMMENTS_ON
       end
     end
@@ -575,15 +573,15 @@ describe 'has_many' do
 
   describe 'checking if associations are propagated to child classes' do
     before(:each) do
-      stub_active_node_class('Thing') do
+      stub_node_class('Thing') do
         has_many :out, :parents, origin: :things
       end
 
-      stub_active_node_class('OtherThing') do
+      stub_node_class('OtherThing') do
         has_many :out, :children, origin: :other_things
       end
 
-      stub_active_node_class('Parent') do
+      stub_node_class('Parent') do
         has_one :in, :thing, type: :HAS_THINGS, model_class: :Thing, unique: true
       end
 
@@ -602,7 +600,7 @@ describe 'has_many' do
   describe 'checking for double definitions of associations' do
     it 'should raise an error if an assocation is defined twice' do
       expect do
-        stub_active_node_class('DoubledAssociation') do
+        stub_node_class('DoubledAssociation') do
           has_many :in, :the_name, type: :the_name
           has_many :out, :the_name, type: :the_name2
         end
@@ -611,7 +609,7 @@ describe 'has_many' do
 
     it 'should allow for redefining of an association in a subclass' do
       expect do
-        stub_active_node_class('DoubledAssociation') do
+        stub_node_class('DoubledAssociation') do
           has_many :in, :the_name, type: :the_name
         end
 

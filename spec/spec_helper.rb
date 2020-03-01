@@ -27,16 +27,18 @@ require 'fileutils'
 require 'tmpdir'
 require 'logger'
 
-require 'neo4j-core'
-require 'neo4j'
+require 'active_graph/core'
+require 'active_graph'
 require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
-require 'neo4j/core/cypher_session'
-require 'neo4j/core/cypher_session/adaptors/http'
-require 'neo4j/core/cypher_session/adaptors/bolt'
-require 'neo4j/core/cypher_session/adaptors/embedded'
+require 'active_graph/core/driver'
+
+require 'dryspec/helpers'
+require 'neo4j_spec_helpers'
+require 'action_controller'
+require 'test_driver'
 
 class MockLogger
   def debug(*_args)
@@ -58,124 +60,9 @@ module Rails
   end
 end
 
-
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
-EMBEDDED_DB_PATH = File.join(Dir.tmpdir, 'neo4j-core-java')
-
 I18n.enforce_available_locales = false
-
-module Neo4jSpecHelpers
-  extend ActiveSupport::Concern
-
-  def new_query
-    Neo4j::ActiveBase.new_query
-  end
-
-  def current_session
-    Neo4j::ActiveBase.current_session
-  end
-
-  def session
-    current_session
-  end
-
-  def neo4j_query(*args)
-    current_session.query(*args)
-  end
-
-  def log_queries!
-    Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
-    Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request(&method(:puts))
-    Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction(&method(:puts))
-  end
-
-  def action_controller_params(args)
-    ActionController::Parameters.new(args)
-  end
-
-  def handle_child_output(read, write)
-    read.close
-    begin
-      rest = yield
-      write.puts [Marshal.dump(rest)].pack('m')
-    rescue StandardError => e
-      write.puts [Marshal.dump(e)].pack('m')
-    end
-    exit!
-  end
-
-  def do_in_child(&block)
-    read, write = IO.pipe
-    pid = fork do
-      handle_child_output(read, write, &block)
-    end
-    write.close
-    result = Marshal.load(read.read.unpack('m').first)
-    Process.wait2(pid)
-
-    fail result if result.class < Exception
-    result
-  end
-
-  # A trick to load action_controller without requiring in all specs. Not working in JRuby.
-  def using_action_controller
-    if RUBY_PLATFORM == 'java'
-      require 'action_controller'
-      yield
-    else
-      do_in_child do
-        require 'action_controller'
-        yield
-      end
-    end
-  end
-
-  class_methods do
-    def let_config(var_name, value)
-      around do |example|
-        old_value = Neo4j::Config[var_name]
-        Neo4j::Config[var_name] = value
-        example.run
-        Neo4j::Config[var_name] = old_value
-      end
-    end
-
-    def capture_output!(variable)
-      around do |example|
-        @captured_stream = StringIO.new
-
-        original_stream = $stdout
-        $stdout = @captured_stream
-
-        example.run
-
-        $stdout = original_stream
-      end
-      let(variable) { @captured_stream.string }
-    end
-
-    def let_env_variable(var_name)
-      around do |example|
-        old_value = ENV[var_name.to_s]
-        ENV[var_name.to_s] = yield
-        example.run
-        ENV[var_name.to_s] = old_value
-      end
-    end
-  end
-
-  # rubocop:disable Style/GlobalVars
-  def expect_queries(count, &block)
-    expect(queries_count(&block)).to eq(count)
-  end
-
-  def queries_count
-    start_count = $expect_queries_count
-    yield
-    $expect_queries_count - start_count
-  end
-end
 
 module Neo4jEntityFindingHelpers
   def rel_cypher_string(dir = :both, type = nil)
@@ -196,50 +83,42 @@ module Neo4jEntityFindingHelpers
   end
 end
 
-$expect_queries_count = 0
-Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |_message|
-  $expect_queries_count += 1
-end
-# rubocop:enable Style/GlobalVars
-
-FileUtils.rm_rf(EMBEDDED_DB_PATH)
-
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
-  Neo4j::ActiveRel::Types::WRAPPED_CLASSES.clear
-  Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
-  Neo4j::ActiveNode::Labels.clear_wrapped_models
+  ActiveGraph::Relationship::Types::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels.clear_wrapped_models
 end
 
-def delete_db
-  Neo4j::ActiveBase.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+def delete_db(executor = ActiveGraph::Base)
+  executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 def delete_schema
-  Neo4j::Core::Label.drop_uniqueness_constraints_for(Neo4j::ActiveBase.current_session)
-  Neo4j::Core::Label.drop_indexes_for(Neo4j::ActiveBase.current_session)
+  ActiveGraph::Core::Label.drop_constraints
+  ActiveGraph::Core::Label.drop_indexes
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_active_node_class(class_name, with_constraint = true, &block)
-    stub_const class_name, active_node_class(class_name, with_constraint, &block)
+  def stub_node_class(class_name, with_constraint = true, &block)
+    stub_const class_name, node_class(class_name, with_constraint, &block)
   end
 
-  def stub_active_rel_class(class_name, &block)
-    stub_const class_name, active_rel_class(class_name, &block)
+  def stub_relationship_class(class_name, &block)
+    stub_const class_name, relationship_class(class_name, &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
     stub_const class_name, named_class(class_name, superclass, &block)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
-  def active_node_class(class_name, with_constraint = true, &block)
+  def node_class(class_name, with_constraint = true, &block)
     named_class(class_name) do
-      include Neo4j::ActiveNode
+      include ActiveGraph::Node
 
       module_eval(&block) if block
     end.tap { |model| create_id_property_constraint(model, with_constraint) }
@@ -251,9 +130,9 @@ module ActiveNodeRelStubHelpers
     create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
   end
 
-  def active_rel_class(class_name, &block)
+  def relationship_class(class_name, &block)
     named_class(class_name) do
-      include Neo4j::ActiveRel
+      include ActiveGraph::Relationship
 
       module_eval(&block) if block
     end
@@ -279,38 +158,15 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_constraint(label_name, property, options = {})
-    Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::Base.label_object(label_name).create_constraint(property, options)
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
-    Neo4j::ActiveBase.label_object(label_name).create_index(property, options)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::Base.label_object(label_name).create_index(property, options)
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 end
-
-# Should allow for http on java
-TEST_SESSION_MODE = RUBY_PLATFORM == 'java' ? :embedded : :http
-
-session_adaptor = case TEST_SESSION_MODE
-                  when :embedded
-                    Neo4j::Core::CypherSession::Adaptors::Embedded.new(EMBEDDED_DB_PATH, impermanent: true, auto_commit: true, wrap_level: :proc)
-                  when :http
-                    server_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
-                    server_username = ENV['NEO4J_USERNAME'] || 'neo4j'
-                    server_password = ENV['NEO4J_PASSWORD'] || 'neo4jrb rules, ok?'
-
-                    basic_auth_hash = {username: server_username, password: server_password}
-
-                    case URI(server_url).scheme
-                    when 'http'
-                      Neo4j::Core::CypherSession::Adaptors::HTTP.new(server_url, basic_auth: basic_auth_hash, wrap_level: :proc)
-                    when 'bolt'
-                      Neo4j::Core::CypherSession::Adaptors::Bolt.new(server_url, wrap_level: :proc, ssl: false) # , logger_level: Logger::DEBUG)
-                    else
-                      fail "Invalid scheme for NEO4J_URL: #{scheme} (expected `http` or `bolt`)"
-                    end
-                  end
 
 module FixingRSpecHelpers
   # Supports giving either a Hash or a String and a Hash as arguments
@@ -330,19 +186,11 @@ module FixingRSpecHelpers
       instance_eval(&block)
     end
   end
-
-  def subject_should_raise(error, message = nil)
-    it_string = error.to_s
-    it_string += " (#{message.inspect})" if message
-
-    it it_string do
-      expect { subject }.to raise_error error, message
-    end
-  end
 end
 
-require 'neo4j-community' if RUBY_PLATFORM == 'java'
-Neo4j::ActiveBase.current_adaptor = session_adaptor
+server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
+
+ActiveGraph::Base.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 
@@ -351,52 +199,35 @@ RSpec.configure do |config|
   config.include Neo4jSpecHelpers
   config.include ActiveNodeRelStubHelpers
   config.include Neo4jEntityFindingHelpers
+  config.extend DRYSpec::Helpers
 
-  # Setup the current session
+  # Setup the current driver
   config.before(:suite) do
   end
 
   config.after(:suite) do
-    # Ability to close session?
+    # Ability to close driver?
   end
 
   config.before(:each) do
-    Neo4j::ModelSchema::MODEL_INDEXES.clear
-    Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
-    Neo4j::ModelSchema::REQUIRED_INDEXES.clear
-    Neo4j::ActiveNode.loaded_classes.clear
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::ModelSchema::MODEL_INDEXES.clear
+    ActiveGraph::ModelSchema::MODEL_CONSTRAINTS.clear
+    ActiveGraph::ModelSchema::REQUIRED_INDEXES.clear
+    ActiveGraph::Node.loaded_classes.clear
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
   config.before(:all) do
-    Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
+    ActiveGraph::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
   end
-
 
   config.before(:each) do
-    @active_base_logger = spy('ActiveBase logger')
-    allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
+    delete_db
+    delete_schema
+    @base_logger = spy('Base logger')
+    allow(ActiveGraph::Base).to receive(:logger).and_return(@base_logger)
   end
 
-  # config.before(:each) do
-  #   puts 'before each'
-  #   # TODO: What to do about this?
-  #   Neo4j::Session._listeners.clear
-  #   @current_session || create_session
-  # end
-
-  # config.after(:each) do
-  #   puts 'after each'
-  #   if current_transaction
-  #     puts 'WARNING forgot to close transaction'
-  #     Neo4j::ActiveBase.wait_for_schema_changes
-  #     current_transaction.close
-  #   end
-  # end
-
-  config.exclusion_filter = {
-    api: lambda do |ed|
-      RUBY_PLATFORM == 'java' && ed == :server
-    end
-  }
+  # TODO marshalling java objects, is it necessary?
+  config.filter_run_excluding :ffi_only if RUBY_PLATFORM =~ /java/
 end

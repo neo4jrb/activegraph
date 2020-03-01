@@ -62,7 +62,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       end
 
       it 'should raise an error if there is no instance with that id' do
-        expect { user_adapter.get!('nonexistent id') }.to raise_error(Neo4j::Error)
+        expect { user_adapter.get!('nonexistent id') }.to raise_error(ActiveGraph::Error)
       end
     end
 
@@ -212,7 +212,7 @@ shared_examples_for 'example app with orm_adapter fix' do
       end
 
       it 'should raise error when create fails' do
-        expect { user_adapter.create!(user: create_model(note_class)) }.to raise_error(Neo4j::Error)
+        expect { user_adapter.create!(user: create_model(note_class)) }.to raise_error(ActiveGraph::Error)
       end
 
       it 'when attributes contain an associated object, should create a model with the attributes' do
@@ -230,10 +230,8 @@ shared_examples_for 'example app with orm_adapter fix' do
 
     describe '#destroy(instance)' do
       it 'should destroy the instance if it exists' do
-        skip 'This does not work on Neo4j Embedded DB, since IDs can be reused see GraphDatabaseService#getNodeById, http://docs.neo4j.org/chunked/2.1.1/javadocs/'
         user = create_model(user_class)
-        expect(!!user_adapter.destroy(user)).to eq(true) # make it work with both RSpec 2.x and 3.x
-        expect(user_adapter.get(user.id)).to be_nil
+        expect(!!user_adapter.destroy(user)).to eq(true)
       end
 
       it 'should return nil if passed with an invalid instance' do
@@ -241,7 +239,6 @@ shared_examples_for 'example app with orm_adapter fix' do
       end
 
       it "should not destroy the instance if it doesn't match the model class" do
-        skip 'This does not work on Neo4j Embedded DB, since IDs can be reused see GraphDatabaseService#getNodeById, http://docs.neo4j.org/chunked/2.1.1/javadocs/'
         user = create_model(user_class)
         expect(note_adapter.destroy(user)).to be_nil
         expect(user_adapter.get(user.id)).to eq(user)

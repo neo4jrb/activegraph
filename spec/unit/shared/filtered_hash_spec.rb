@@ -1,4 +1,4 @@
-module Neo4j::Shared
+module ActiveGraph::Shared
   describe FilteredHash do
     let(:base) { {first: :foo, second: :bar, third: :baz, fourth: :buzz} }
     let(:instructions) { :all }

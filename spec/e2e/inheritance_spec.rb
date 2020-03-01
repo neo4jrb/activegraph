@@ -1,9 +1,8 @@
 describe 'Inheritance', type: :e2e do
   before(:each) do
-    delete_db
     clear_model_memory_caches
 
-    stub_active_node_class('Node') do
+    stub_node_class('Node') do
       property :created_at, type: DateTime
       property :updated_at, type: DateTime
       property :foo, type: String, default: 'foo'
@@ -22,7 +21,7 @@ describe 'Inheritance', type: :e2e do
       property :model
     end
 
-    stub_active_rel_class('BaseRel') do
+    stub_relationship_class('BaseRel') do
       from_class false
       to_class false
       property :foo, type: String, default: 'foo'
@@ -40,7 +39,7 @@ describe 'Inheritance', type: :e2e do
     @saab = Car.create(name: 'saab', model: '900')
   end
 
-  describe 'ActiveNode' do
+  describe 'Node' do
     describe 'find' do
       it 'can find using subclass index' do
         expect(@volvo.labels).to match_array([:Car, :Node, :Vehicle])
@@ -69,7 +68,7 @@ describe 'Inheritance', type: :e2e do
     end
   end
 
-  describe 'ActiveRel' do
+  describe 'Relationship' do
     let(:rel) { ManufacturedBy.new }
 
     it 'inherits properties' do

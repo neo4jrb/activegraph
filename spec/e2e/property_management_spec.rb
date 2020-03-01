@@ -1,5 +1,5 @@
 describe 'declared property classes' do
-  describe Neo4j::Shared::DeclaredProperty do
+  describe ActiveGraph::Shared::DeclaredProperty do
     before do
       clazz = Class.new do
         def primitive_type; end
@@ -8,14 +8,14 @@ describe 'declared property classes' do
       stub_const('MyTypeCaster', clazz)
     end
 
-    let(:clazz) { Neo4j::Shared::DeclaredProperty }
+    let(:clazz) { ActiveGraph::Shared::DeclaredProperty }
 
-    describe Neo4j::Shared::DeclaredProperty do
+    describe ActiveGraph::Shared::DeclaredProperty do
       let(:prop) { clazz.new(:my_prop) }
 
       context 'illegal property names' do
         it 'raises an error' do
-          expect { clazz.new(:from_node) }.to raise_error { Neo4j::Shared::DeclaredProperty::IllegalPropertyError }
+          expect { clazz.new(:from_node) }.to raise_error { ActiveGraph::Shared::DeclaredProperty::IllegalPropertyError }
         end
       end
 
@@ -61,17 +61,18 @@ describe 'declared property classes' do
     end
   end
 
-  describe Neo4j::Shared::DeclaredProperties do
+  describe ActiveGraph::Shared::DeclaredProperties do
     before do
       clazz = Class.new do
-        include Neo4j::ActiveNode
+        include ActiveGraph::Node
         property :foo
         property :bar, type: String, default: 'foo'
         property :qux, type: String, default: proc { "QUX-#{SecureRandom.hex(16)}" }
-        property :baz, type: Neo4j::Shared::Boolean, default: false
+        property :baz, type: ActiveGraph::Shared::Boolean, default: false
         validates :baz, inclusion: {in: [true, false]}
       end
 
+      create_constraint :MyModel, :uuid, type: :unique
       stub_const('MyModel', clazz)
     end
 
@@ -79,7 +80,7 @@ describe 'declared property classes' do
     let(:dpm)   { MyModel.declared_properties }
 
     it 'is included on each class' do
-      expect(model.declared_properties).to be_a(Neo4j::Shared::DeclaredProperties)
+      expect(model.declared_properties).to be_a(ActiveGraph::Shared::DeclaredProperties)
     end
 
     it 'has a convenience method on each instance' do
@@ -98,8 +99,8 @@ describe 'declared property classes' do
 
     it 'contains information about each declared property' do
       [:foo, :bar].each do |key|
-        expect(dpm.registered_properties[key]).to be_a(Neo4j::Shared::DeclaredProperty)
-        expect(dpm[key]).to be_a(Neo4j::Shared::DeclaredProperty)
+        expect(dpm.registered_properties[key]).to be_a(ActiveGraph::Shared::DeclaredProperty)
+        expect(dpm[key]).to be_a(ActiveGraph::Shared::DeclaredProperty)
         expect(dpm.property?(key)).to be_truthy
       end
 
@@ -114,7 +115,7 @@ describe 'declared property classes' do
     describe 'inheritance' do
       before do
         clazz = Class.new do
-          include Neo4j::ActiveNode
+          include ActiveGraph::Node
           property :foo
           property :bar, type: String, default: 'foo'
         end
@@ -122,7 +123,7 @@ describe 'declared property classes' do
         stub_const('MyModel', clazz)
 
         clazz = Class.new(MyModel) do
-          include Neo4j::ActiveNode
+          include ActiveGraph::Node
         end
 
         stub_const('MyInheritedClass', clazz)
@@ -160,7 +161,7 @@ describe 'declared property classes' do
         subject { node.baz }
         it { is_expected.to eq false }
 
-        context 'model from new with attributes' do
+        context 'model from new without attributes' do
           let(:node) { MyModel.new }
           it { is_expected.to eq false }
         end
@@ -170,7 +171,7 @@ describe 'declared property classes' do
           it { is_expected.to eq false }
         end
 
-        context 'model from create' do
+        context 'model from create without attributes' do
           let(:node) { MyModel.create }
           it { is_expected.to eq false }
         end

@@ -1,12 +1,11 @@
 describe 'Association Proxy' do
   before do
     clear_model_memory_caches
-    delete_db
   end
 
   context 'simple relationships' do
     before do
-      stub_active_node_class('Student') do
+      stub_node_class('Student') do
         property :name
         has_many :out, :lessons, rel_class: :LessonEnrollment
         has_many :in, :exams, model_class: :Exam, origin: :students
@@ -14,7 +13,7 @@ describe 'Association Proxy' do
         has_many :out, :homework, type: :HOMEWORK, model_class: %w[Lesson Exam]
       end
 
-      stub_active_rel_class('LessonEnrollment') do
+      stub_relationship_class('LessonEnrollment') do
         from_class :Student
         to_class :Lesson
         type :has_studet
@@ -22,14 +21,14 @@ describe 'Association Proxy' do
         property :grade
       end
 
-      stub_active_node_class('Lesson') do
+      stub_node_class('Lesson') do
         property :subject
         property :level, type: Integer
         has_many :in, :students, model_class: :Student, origin: :lessons
         has_many :out, :exams_given, type: nil, model_class: :Exam
       end
 
-      stub_active_node_class('Exam') do
+      stub_node_class('Exam') do
         property :name
         has_many :in, :lessons, model_class: :Lesson, origin: :exams_given
         has_many :out, :students, type: :has_student, model_class: :Student
@@ -55,6 +54,12 @@ describe 'Association Proxy' do
     it 'allows associations to respond to to_ary' do
       expect(billy.lessons).to respond_to(:to_ary)
       expect(billy.lessons.exams_given).to respond_to(:to_ary)
+    end
+
+    it 'does not recreate relatioship for existing relationships' do
+      rel_id = science.exams_given.where(id: science_exam.id).rel.id
+      science.exams_given = [science_exam]
+      expect(science.exams_given.rel.id).to eq(rel_id)
     end
 
     it 'Should only make one query per association' do
@@ -220,7 +225,7 @@ describe 'Association Proxy' do
 
     describe 'support relationship type as label' do
       before do
-        stub_active_node_class('Roster') do
+        stub_node_class('Roster') do
           has_many :out, :students, type: :student
         end
       end
@@ -299,7 +304,7 @@ describe 'Association Proxy' do
 
   context 'multi relationships' do
     before do
-      stub_active_node_class('Person') do
+      stub_node_class('Person') do
         property :name
 
         has_many :out, :knows, model_class: 'Person', type: nil
@@ -310,14 +315,14 @@ describe 'Association Proxy' do
         has_many :out, :owner_comments, type: :comments, model_class: 'Comment'
       end
 
-      stub_active_node_class('Post') do
+      stub_node_class('Post') do
         property :name
 
         has_one :out, :owner, origin: :posts, model_class: 'Person'
         has_many :in, :comments, type: :posts
       end
 
-      stub_active_node_class('Comment') do
+      stub_node_class('Comment') do
         property :text
 
         has_one :out, :owner, origin: :comments, model_class: 'Person'
@@ -392,28 +397,22 @@ describe 'Association Proxy' do
       end
     end
 
-    it 'raises error in case of inverse has_one rel is enforced' do
-      Neo4j::Config[:enforce_has_one] = true
+    it 'deletes inverse has_one rel and does not call callbacks in inverse rel' do
       person3 = Person.create(name: '3')
       person2 = Person.create(name: '2', children: [person3])
       person1 = Person.create(name: '1', children: [person2])
-      expect { person1.update(children: [person2, person3.id]) }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
+      person1.update(children: [person2, person3.id])
+
+      expect(person3.as(:p).parent.count).to eq(1)
+      expect { Person.find(person2.id) }.not_to raise_error
     end
 
-    it 'raises error in case of inverse has_one rel is enforced and two relationships with same type' do
-      Neo4j::Config[:enforce_has_one] = true
+    it 'deletes rel in case of inverse has_one rel and two relationships with same type' do
       person1 = Person.create(name: 'person-1')
       person2 = Person.create(name: 'person-2')
       comment = Comment.create(text: 'test-comment-2', comment_owner: person1)
-      expect { person2.owner_comments = [comment] }.to raise_error(Neo4j::ActiveNode::HasN::HasOneConstraintError)
-    end
-
-    it 'does not raises error in case of inverse has_one rel is not enforced' do
-      Neo4j::Config[:enforce_has_one] = false
-      person3 = Person.create(name: '3')
-      person2 = Person.create(name: '2', children: [person3])
-      person1 = Person.create(name: '1', children: [person2])
-      expect { person1.update(children: [person2, person3.id]) }.not_to raise_error
+      person2.owner_comments = [comment]
+      expect(comment.as(:c).comment_owner.count).to eq(1)
     end
   end
 end

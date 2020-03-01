@@ -23,16 +23,16 @@ describe 'custom type conversion' do
         alias_method :call, :to_ruby
       end
 
-      include Neo4j::Shared::Typecaster
+      include ActiveGraph::Shared::Typecaster
     end
 
-    stub_active_node_class('RangeConvertPerson') do
+    stub_node_class('RangeConvertPerson') do
       property :my_range, type: Range
     end
   end
 
   it 'registers' do
-    expect(Neo4j::Shared::TypeConverters::CONVERTERS).to have_key(Range)
+    expect(ActiveGraph::Shared::TypeConverters::CONVERTERS).to have_key(Range)
   end
 
   before { RangeConvertPerson.create!(my_range: 1..30) }

@@ -1,17 +1,16 @@
 describe 'has_one' do
   before(:each) do
-    delete_db
     clear_model_memory_caches
   end
 
   describe 'has_one(:parent).from(:children)' do
     before(:each) do
-      stub_active_node_class('HasOneA') do
+      stub_node_class('HasOneA') do
         property :name
         has_many :out, :children, type: nil, model_class: 'HasOneB'
       end
 
-      stub_active_node_class('HasOneB') do
+      stub_node_class('HasOneB') do
         property :name
         has_one :in, :parent, origin: :children, model_class: 'HasOneA'
       end
@@ -27,7 +26,7 @@ describe 'has_one' do
 
       describe 'with chainable: true option' do
         it 'returns an empty association proxy object' do
-          expect(unsaved_node.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+          expect(unsaved_node.parent(chainable: true)).to be_a ActiveGraph::Node::HasN::AssociationProxy
         end
       end
     end
@@ -52,9 +51,9 @@ describe 'has_one' do
         a.children << b
         a.children << c
 
-        expect(c.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(c.parent(chainable: true)).to be_a ActiveGraph::Node::HasN::AssociationProxy
         expect(c.parent(chainable: true).first).to eq(a)
-        expect(b.parent(chainable: true)).to be_a Neo4j::ActiveNode::HasN::AssociationProxy
+        expect(b.parent(chainable: true)).to be_a ActiveGraph::Node::HasN::AssociationProxy
         expect(b.parent(chainable: true).first).to eq(a)
         expect(a.children.to_a).to match_array([b, c])
       end
@@ -129,11 +128,11 @@ describe 'has_one' do
 
   describe 'has_one(:parent).from(Folder.files)' do
     before(:each) do
-      stub_active_node_class('Folder1') do
+      stub_node_class('Folder1') do
         has_many :out, :files, type: nil, model_class: 'File1'
       end
 
-      stub_active_node_class('File1') do
+      stub_node_class('File1') do
         has_one :in, :parent, model_class: 'Folder1', origin: :files
       end
     end
@@ -152,7 +151,7 @@ describe 'has_one' do
 
   describe 'has_one(:manager).from(:subordinates)' do
     before(:each) do
-      stub_active_node_class('Person') do
+      stub_node_class('Person') do
         has_many :out, :subordinates, type: nil, model_class: self
         has_one :in, :manager, model_class: self, origin: :subordinates
       end
@@ -193,7 +192,7 @@ describe 'has_one' do
 
   describe 'association "getter" options' do
     before(:each) do
-      stub_active_node_class('Person') do
+      stub_node_class('Person') do
         has_many :out, :subordinates, type: nil, model_class: self
         has_one :in, :manager, model_class: self, origin: :subordinates
       end
@@ -229,11 +228,11 @@ describe 'has_one' do
 
   describe 'id methods' do
     before(:each) do
-      stub_active_node_class('Post') do
+      stub_node_class('Post') do
         has_many :in, :comments, type: :COMMENTS_ON
       end
 
-      stub_active_node_class('Comment') do
+      stub_node_class('Comment') do
         has_one :out, :post, type: :COMMENTS_ON
       end
     end
@@ -251,7 +250,7 @@ describe 'has_one' do
   describe 'checking for double definitions of associations' do
     it 'should raise an error if an assocation is defined twice' do
       expect do
-        stub_active_node_class('DoubledAssociation') do
+        stub_node_class('DoubledAssociation') do
           has_one :in, :the_name, type: :the_name
           has_one :out, :the_name, type: :the_name2
         end
@@ -260,7 +259,7 @@ describe 'has_one' do
 
     it 'should allow for redefining of an association in a subclass' do
       expect do
-        stub_active_node_class('DoubledAssociation') do
+        stub_node_class('DoubledAssociation') do
           has_one :in, :the_name, type: :the_name
         end
 

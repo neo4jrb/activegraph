@@ -1,8 +1,8 @@
-describe Neo4j::ActiveNode::Validations do
+describe ActiveGraph::Node::Validations do
   before(:each) do
-    stub_active_node_class('Comment')
+    stub_node_class('Comment')
 
-    stub_active_node_class('Post') do
+    stub_node_class('Post') do
       property :name, type: String
       has_many :out, :comments, type: :COMMENT
 

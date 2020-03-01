@@ -1,108 +1,111 @@
-describe Neo4j::ActiveNode::Validations do
+describe ActiveGraph::Node::Validations do
   before(:each) do
-    delete_db
     clear_model_memory_caches
-
-    stub_active_node_class('Foo') do
-      property :name
-
-      validates_uniqueness_of :name
-    end
   end
 
   context 'validating uniqueness of' do
-    it 'should not fail if object is new' do
-      o = Foo.new
-      expect(o).not_to have_error_on(:name)
-    end
+    context 'with default' do
+      before do
+        stub_node_class('Foo') do
+          property :name
 
-    it 'should not fail when new object is out of scope' do
-      stub_active_node_class('OtherClazz') do
-        property :name
-        property :adult
-        validates_uniqueness_of :name, scope: :adult
+          validates_uniqueness_of :name
+        end
       end
-      o = OtherClazz.new('name' => 'joe', :adult => true)
-      expect(o.save).to be true
 
-      o2 = OtherClazz.new('name' => 'joe', :adult => false)
-      expect(o2).to be_valid
-    end
+      it 'should not fail if object is new' do
+        o = Foo.new
+        expect(o).not_to have_error_on(:name)
+      end
 
-    it 'should work with i18n taken message' do
-      Foo.create(name: 'joe')
-      o = Foo.create(name: 'joe')
-      expect(o).to have_error_on(:name, 'has already been taken')
-    end
+      it 'should not fail when new object is out of scope' do
+        stub_node_class('OtherClazz') do
+          property :name
+          property :adult
+          validates_uniqueness_of :name, scope: :adult
+        end
+        o = OtherClazz.new('name' => 'joe', :adult => true)
+        expect(o.save).to be true
 
-    it 'should allow to update an object' do
-      o = Foo.new('name' => 'joe')
-      expect(o.save).to be true
-      o.name = 'joe'
-      expect(o.valid?).to be true
-      expect(o).not_to have_error_on(:name)
-    end
+        o2 = OtherClazz.new('name' => 'joe', :adult => false)
+        expect(o2).to be_valid
+      end
 
-    it 'should fail if object name is not unique' do
-      o = Foo.new('name' => 'joe')
-      expect(o.save).to be true
+      it 'should work with i18n taken message' do
+        Foo.create(name: 'joe')
+        o = Foo.create(name: 'joe')
+        expect(o).to have_error_on(:name, 'has already been taken')
+      end
 
-      allow(Foo) \
+      it 'should allow to update an object' do
+        o = Foo.new('name' => 'joe')
+        expect(o.save).to be true
+        o.name = 'joe'
+        expect(o.valid?).to be true
+        expect(o).not_to have_error_on(:name)
+      end
+
+      it 'should fail if object name is not unique' do
+        o = Foo.new('name' => 'joe')
+        expect(o.save).to be true
+
+        allow(Foo) \
         .to receive(:first) \
         .with(name: 'joe') \
         .and_return(o)
 
-      o2 = Foo.new('name' => 'joe')
-      expect(o2).to have_error_on(:name)
-    end
-
-    it 'should allow multiple blank entries if :allow_blank => true' do
-      stub_active_node_class('OtherClazz') do
-        property :name
-        validates_uniqueness_of :name, allow_blank: :true
+        o2 = Foo.new('name' => 'joe')
+        expect(o2).to have_error_on(:name)
       end
 
-      o = OtherClazz.new('name' => '')
-      expect(o.save).to be true
+      it 'should allow multiple blank entries if :allow_blank => true' do
+        stub_node_class('OtherClazz') do
+          property :name
+          validates_uniqueness_of :name, allow_blank: :true
+        end
 
-      allow(OtherClazz) \
+        o = OtherClazz.new('name' => '')
+        expect(o.save).to be true
+
+        allow(OtherClazz) \
         .to receive(:first) \
         .with(name: '') \
         .and_return(o)
 
-      o2 = OtherClazz.new('name' => '')
-      expect(o2).not_to have_error_on(:name)
-    end
-
-    it 'should allow multiple nil entries if :allow_nil => true' do
-      stub_active_node_class('OtherClazz') do
-        property :name
-        validates_uniqueness_of :name, allow_nil: :true
+        o2 = OtherClazz.new('name' => '')
+        expect(o2).not_to have_error_on(:name)
       end
 
-      o = OtherClazz.new('name' => nil)
-      expect(o.save).to be true
+      it 'should allow multiple nil entries if :allow_nil => true' do
+        stub_node_class('OtherClazz') do
+          property :name
+          validates_uniqueness_of :name, allow_nil: :true
+        end
 
-      o2 = OtherClazz.new('name' => nil)
-      expect(o2).not_to have_error_on(:name)
-    end
+        o = OtherClazz.new('name' => nil)
+        expect(o.save).to be true
 
-    it 'should allow entries that differ only in case by default' do
-      stub_active_node_class('OtherClazz') do
-        property :name
-        validates_uniqueness_of :name
+        o2 = OtherClazz.new('name' => nil)
+        expect(o2).not_to have_error_on(:name)
       end
 
-      o = OtherClazz.new('name' => 'BLAMMO')
-      expect(o.save).to be true
+      it 'should allow entries that differ only in case by default' do
+        stub_node_class('OtherClazz') do
+          property :name
+          validates_uniqueness_of :name
+        end
 
-      o2 = OtherClazz.new('name' => 'blammo')
-      expect(o2).not_to have_error_on(:name)
+        o = OtherClazz.new('name' => 'BLAMMO')
+        expect(o.save).to be true
+
+        o2 = OtherClazz.new('name' => 'blammo')
+        expect(o2).not_to have_error_on(:name)
+      end
     end
 
     context 'with :case_sensitive => false' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           validates_uniqueness_of :name, case_sensitive: false
         end
@@ -145,7 +148,7 @@ describe Neo4j::ActiveNode::Validations do
 
     context 'scoped by a single attribute' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           property :scope
           validates_uniqueness_of :name, scope: :scope
@@ -181,7 +184,7 @@ describe Neo4j::ActiveNode::Validations do
 
     context 'scoped by a multiple attributes' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           property :first_scope
           property :second_scope

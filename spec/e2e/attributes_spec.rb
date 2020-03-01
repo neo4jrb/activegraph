@@ -1,6 +1,6 @@
-describe Neo4j::ActiveNode do
+describe ActiveGraph::Node do
   before do
-    stub_active_node_class('SimpleClass') do
+    stub_node_class('SimpleClass') do
       property :name
     end
   end
@@ -43,7 +43,7 @@ describe Neo4j::ActiveNode do
       subject { SimpleClass.new(unknown: 'foo') }
 
       it 'does not allow setting undeclared properties' do
-        expect { subject }.to raise_error Neo4j::Shared::Property::UndefinedPropertyError
+        expect { subject }.to raise_error ActiveGraph::Shared::Property::UndefinedPropertyError
       end
     end
   end
@@ -80,7 +80,7 @@ describe Neo4j::ActiveNode do
       let(:method_name) { :foo }
 
       it do
-        expect { subject }.to raise_error Neo4j::UnknownAttributeError
+        expect { subject }.to raise_error ActiveGraph::UnknownAttributeError
       end
     end
   end

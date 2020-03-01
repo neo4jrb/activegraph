@@ -18,8 +18,8 @@ Contents:
 
    RakeTasks
 
-   ActiveNode
-   ActiveRel
+   Node
+   Relationship
 
    Properties
    UniqueIDs

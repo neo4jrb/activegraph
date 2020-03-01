@@ -1,4 +1,4 @@
-class <%= @migration_class_name.underscore.camelize %> < Neo4j::Migrations::Base
+class <%= @migration_class_name.underscore.camelize %> < ActiveGraph::Migrations::Base
   def up
 <% @schema.each do |type, data|
      data.each do |element| %>

@@ -8,7 +8,7 @@
 #id_property_type: :auto
 #id_property_type_value: :uuid
 
-# Example, (probably more useful directly on Neo4j::ActiveNode classes instead as a global configuration)
+# Example, (probably more useful directly on ActiveGraph::Node classes instead as a global configuration)
 #id_property: title_id
 #id_property_type: :on
 #id_property_type_value: :some_method
@@ -20,19 +20,16 @@
 identity_map: false
 
 # TODO
-# When using the Neo4j::Model you can let neo4j automatically set timestamps when updating/creating nodes.
+# When using the ActiveGraph::Model you can let neo4j automatically set timestamps when updating/creating nodes.
 # If set to true neo4j.rb automatically timestamps create and update operations if the model has properties named created_at/created_on or updated_at/updated_on
 # (similar to ActiveRecord).
 timestamps: true
 
-# Store a property on objects to cache their ActiveNode/ActiveRel class. It prevents each object load from requiring two database queries.
+# Store a property on objects to cache their Node/Relationship class. It prevents each object load from requiring two database queries.
 # Strings shorter than 44 characters are classified, so this will have almost no impact on disk footprint. See http://docs.neo4j.org/chunked/stable/short-strings.html.
-# Alternatively, call class method Neo4j::ActiveNode:cache_class to set this on specific models.
+# Alternatively, call class method ActiveGraph::Node:cache_class to set this on specific models.
 # By default, this property is called _classname, set as symbol to override.
 cache_class_names: true
 # class_name_property:  :_classname
 
 transform_rel_type: :upcase
-
-# Enforce has_one relationship. When same reationship is created on reverse object with another object, raise the error.
-enforce_has_one: false
