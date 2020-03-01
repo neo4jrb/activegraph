@@ -1,4 +1,4 @@
-# Welcome to Neo4j.rb
+# Welcome to Active Graph (f.k.a. Neo4j.rb)
 
 ## Code Status
 
