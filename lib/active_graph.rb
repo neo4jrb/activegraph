@@ -4,6 +4,7 @@ require 'active_graph/version'
 require 'active_graph/core'
 require 'active_graph/core/query_ext' # From this gem
 
+require 'active_graph/transactions'
 require 'active_graph/base'
 require 'active_graph/model_schema'
 

@@ -100,8 +100,6 @@ module ActiveGraph::Shared
 
         def to_ruby(value)
           value.respond_to?(:to_date) ? value.to_date : Time.at(value).utc.to_date
-        rescue Exception => e
-          raise e
         end
 
         alias to_db to_ruby

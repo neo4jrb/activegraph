@@ -3,7 +3,6 @@ $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
 require 'active_graph/version'
 
-
 Gem::Specification.new do |s|
   s.name     = 'activegraph'
   s.version  = ActiveGraph::VERSION

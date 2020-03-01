@@ -2,6 +2,8 @@ module ActiveGraph
   # To contain any base login for Node/Relationship which
   # is external to the main classes
   module Base
+    include ActiveGraph::Transactions
+
     at_exit do
       @driver&.close
     end
@@ -12,6 +14,10 @@ module ActiveGraph
         (@driver ||= establish_driver).tap do |driver|
           fail 'No driver defined!' if driver.nil?
         end
+      end
+
+      def driver
+        current_driver.driver
       end
 
       def on_establish_driver(&block)

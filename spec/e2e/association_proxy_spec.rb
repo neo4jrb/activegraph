@@ -404,7 +404,7 @@ describe 'Association Proxy' do
       person1.update(children: [person2, person3.id])
 
       expect(person3.as(:p).parent.count).to eq(1)
-      expect { Person.find(person2.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+      expect { Person.find(person2.id) }.not_to raise_error
     end
 
     it 'deletes rel in case of inverse has_one rel and two relationships with same type' do

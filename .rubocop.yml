@@ -15,7 +15,7 @@ AllCops:
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/HashSyntax:
   Enabled: true
-  EnforcedStyle: ruby19
+  EnforcedStyle: ruby25
 
 # Cop supports --auto-correct.
 Layout/SpaceInsideHashLiteralBraces:

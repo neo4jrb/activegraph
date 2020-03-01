@@ -79,7 +79,7 @@ module ActiveGraph::Shared
     def extract_writer_methods!(attributes)
       return attributes if attributes.blank?
       {}.tap do |writer_method_props|
-        attributes.each_key do |key|
+        attributes.keys.each do |key|
           writer_method_props[key] = attributes.delete(key) if self.respond_to?("#{key}=")
         end
       end

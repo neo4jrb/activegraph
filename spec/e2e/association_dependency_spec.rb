@@ -151,7 +151,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes only orphans' do
           node.bands = [other_band]
           expect { Band.find(orphan_band.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-          expect { Band.find(non_orphan_band.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+          expect { Band.find(non_orphan_band.id) }.not_to raise_error
         end
       end
 
@@ -175,7 +175,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes dependent model node without cascade' do
           stop.poorly_modeled_things = [bad_model_2]
           expect { BadModel.find(bad_model.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-          expect { Stop.find(stop_2.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+          expect { Stop.find(stop_2.id) }.not_to raise_error
         end
       end
 
@@ -188,7 +188,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes only orphans' do
           stop.comments = [comment_3]
           expect { Comment.find(comment_1.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-          expect { Comment.find(comment_2.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+          expect { Comment.find(comment_2.id) }.not_to raise_error
         end
       end
     end
@@ -217,7 +217,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes only orphans' do
           rel_1.destroy
           expect { BadModel.find(bad_model_1.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-           expect { BadModel.find(bad_model_2.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+           expect { BadModel.find(bad_model_2.id) }.not_to raise_error
         end
       end
 
@@ -242,7 +242,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes only orphans' do
           rel_1.destroy
           expect { BadModel.find(bad_model_1.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-          expect { BadModel.find(bad_model_2.id) }.not_to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+          expect { BadModel.find(bad_model_2.id) }.not_to raise_error
         end
       end
     end
