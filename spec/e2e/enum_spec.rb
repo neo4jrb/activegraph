@@ -1,9 +1,9 @@
-describe Neo4j::ActiveNode do
+describe ActiveGraph::Node do
   before(:each) do
     create_index :StoredFile, :type, type: :exact
     create_index :StoredFile, :size, type: :exact
     create_index :StoredFile, :flag, type: :exact
-    stub_active_node_class('StoredFile') do
+    stub_node_class('StoredFile') do
       enum type: [:unknown, :image, :video], _default: :unknown
       enum size: {big: 100, medium: 7, small: 2}, _prefix: :dimension
       enum flag: [:clean, :dangerous], _suffix: true
@@ -12,11 +12,11 @@ describe Neo4j::ActiveNode do
       has_one :in, :uploader, rel_class: :UploaderRel
     end
 
-    stub_active_node_class('User') do
+    stub_node_class('User') do
       has_many :out, :files, rel_class: :UploaderRel
     end
 
-    stub_active_rel_class('UploaderRel') do
+    stub_relationship_class('UploaderRel') do
       from_class :User
       to_class :StoredFile
       type 'uploaded'
@@ -84,7 +84,7 @@ describe Neo4j::ActiveNode do
       file = StoredFile.new
       file.type = :audio
       expect { file.save! }.to raise_error(
-        Neo4j::Shared::Enum::InvalidEnumValueError,
+        ActiveGraph::Shared::Enum::InvalidEnumValueError,
         'Case-insensitive (downcased) value passed to an enum property must match one of the enum keys'
       )
     end
@@ -92,7 +92,7 @@ describe Neo4j::ActiveNode do
     it 'respects local _case_sensitive option' do
       file = StoredFile.new
       file.type_format = :png
-      expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
+      expect { file.save! }.to raise_error(ActiveGraph::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
 
       file.type_format = :Png
       file.save!
@@ -113,7 +113,7 @@ describe Neo4j::ActiveNode do
         it 'respects global _case_sensitive = true default' do
           file = StoredFile.new
           file.type = :VIdeO
-          expect { file.save! }.to raise_error(Neo4j::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
+          expect { file.save! }.to raise_error(ActiveGraph::Shared::Enum::InvalidEnumValueError, 'Value passed to an enum property must match one of the enum keys')
         end
 
         it 'still accepts valid params' do
@@ -238,11 +238,11 @@ describe Neo4j::ActiveNode do
       create_index :ConflictingModel, :enum2, type: :exact
 
       expect do
-        stub_active_node_class('ConflictingModel') do
+        stub_node_class('ConflictingModel') do
           enum enum1: [:a, :b, :c]
           enum enum2: [:c, :d]
         end
-      end.to raise_error(Neo4j::Shared::Enum::ConflictingEnumMethodError)
+      end.to raise_error(ActiveGraph::Shared::Enum::ConflictingEnumMethodError)
     end
   end
 
@@ -263,7 +263,7 @@ describe Neo4j::ActiveNode do
   describe 'required index behavior' do
     before do
       create_index(:Incomplete, :foo, type: :exact)
-      stub_active_node_class('Incomplete') do
+      stub_node_class('Incomplete') do
         enum foo: [:a, :b]
         enum bar: [:c, :d]
       end

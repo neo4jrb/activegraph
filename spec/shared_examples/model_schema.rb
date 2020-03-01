@@ -1,12 +1,12 @@
 shared_examples 'logs id_property constraint option false warning' do |model|
   it('logs id_property constraint option false warning') do
-    expect(@active_base_logger).to have_received(:warn).with(/WARNING: The constraint option for id_property is no longer supported \(Used on #{model}/)
+    expect(@base_logger).to have_received(:warn).with(/WARNING: The constraint option for id_property is no longer supported \(Used on #{model}/)
   end
 end
 
 shared_examples 'does not log id_property constraint option false warning' do |model|
   it('does not log id_property constraint option false warning') do
-    expect(@active_base_logger).not_to have_received(:warn).with(/WARNING: The constraint option for id_property is no longer supported \(Used on #{model}/)
+    expect(@base_logger).not_to have_received(:warn).with(/WARNING: The constraint option for id_property is no longer supported \(Used on #{model}/)
   end
 end
 
@@ -14,7 +14,7 @@ shared_examples 'logs schema option warning' do |index_or_constraint, model, pro
   it("logs a warning that the #{index_or_constraint} definition for #{model}.#{property_name} is no longer needed") do
     model.to_s.constantize.first
 
-    expect(@active_base_logger).to have_received(:warn)
+    expect(@base_logger).to have_received(:warn)
       .with(/WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model} for #{property_name}/)
   end
 end
@@ -23,7 +23,7 @@ shared_examples 'does not log schema option warning' do |index_or_constraint, mo
   it("does not log a warning that the #{index_or_constraint} definition for #{model} is no longer needed") do
     model.to_s.constantize.first
 
-    expect(@active_base_logger).not_to have_received(:warn).with(
+    expect(@base_logger).not_to have_received(:warn).with(
       /WARNING: The #{index_or_constraint} option is no longer supported \(Defined on #{model}#{" for #{property_name}" if property_name}/)
   end
 end

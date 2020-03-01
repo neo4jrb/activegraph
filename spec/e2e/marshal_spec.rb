@@ -1,7 +1,7 @@
-describe Neo4j::Shared::Marshal, :ffi_only do
-  describe 'ActiveNode' do
+describe ActiveGraph::Shared::Marshal, :ffi_only do
+  describe 'Node' do
     before do
-      stub_active_node_class('Parent')
+      stub_node_class('Parent')
 
       stub_named_class('Child', Parent) do
         property :foo
@@ -20,15 +20,15 @@ describe Neo4j::Shared::Marshal, :ffi_only do
       expect(unmarshaled.neo_id).to eq(neo_id)
       expect(unmarshaled.foo).to eq('bar')
       expect(unmarshaled.labels).to match_array([:Parent, :Child])
-      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Core::Node)
+      expect(unmarshaled._persisted_obj).to be_a(ActiveGraph::Core::Node)
     end
   end
 
-  describe 'ActiveRel' do
+  describe 'Relationship' do
     before do
-      stub_active_node_class('Person')
+      stub_node_class('Person')
 
-      stub_active_rel_class('HasParent') do
+      stub_relationship_class('HasParent') do
         from_class :Person
         to_class :Person
 
@@ -46,7 +46,7 @@ describe Neo4j::Shared::Marshal, :ffi_only do
       expect(unmarshaled.neo_id).to eq(neo_id)
       expect(unmarshaled.foo).to eq('bar')
       expect(unmarshaled.type).to eq('HAS_PARENT')
-      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Core::Relationship)
+      expect(unmarshaled._persisted_obj).to be_a(ActiveGraph::Core::Relationship)
     end
   end
 end

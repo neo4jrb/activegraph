@@ -11,7 +11,7 @@ In either ``config/application.rb`` or one of the environment configurations (e.
 Other Ruby apps
 ~~~~~~~~~~~~~~~
 
-You can set configuration variables directly in the Neo4j configuration class like so: ``Neo4j::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
+You can set configuration variables directly in the Neo4j configuration class like so: ``ActiveGraph::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
 
 Variables
 ~~~~~~~~~
@@ -28,9 +28,9 @@ Variables
   **class_name_property**
     **Default:** ``:_classname``
 
-    Which property should be used to determine the ``ActiveNode`` class to wrap the node in
+    Which property should be used to determine the ``Node`` class to wrap the node in
 
-    If there is no value for this property on a node the node`s labels will be used to determine the ``ActiveNode`` class
+    If there is no value for this property on a node the node`s labels will be used to determine the ``Node`` class
 
     .. seealso:: :ref:`activenode-wrapping`
 
@@ -44,21 +44,21 @@ Variables
   **include_root_in_json**
     **Default:** ``true``
 
-    When serializing ``ActiveNode`` and ``ActiveRel`` objects, should there be a root in the JSON of the model name.
+    When serializing ``Node`` and ``Relationship`` objects, should there be a root in the JSON of the model name.
 
     .. seealso:: http://api.rubyonrails.org/classes/ActiveModel/Serializers/JSON.html
 
   **logger**
     **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
-    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``ActiveNode`` and ``ActiveRel`` modules).
+    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``Node`` and ``Relationship`` modules).
 
   **module_handling**
     **Default:** ``:none``
 
     **Available values:** ``:demodulize``, ``:none``, ``proc``
 
-    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of an ``ActiveNode`` model name to the node label or an ``ActiveRel`` model to the relationship type, so `MyModule::MyClass` results in a label with the same name.
+    Determines what, if anything, should be done to module names when a model's class is set. By default, there is a direct mapping of an ``Node`` model name to the node label or an ``Relationship`` model to the relationship type, so `MyModule::MyClass` results in a label with the same name.
 
     The `:demodulize` option uses ActiveSupport's method of the same name to strip off modules. If you use a `proc`, it will the class name as an argument and you should return a string that modifies it as you see fit.
 
@@ -70,12 +70,12 @@ Variables
   **record_timestamps**
     **Default:** ``false``
 
-    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all ActiveNode and ActiveRel models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
+    A Rails-inspired configuration to manage inclusion of the Timestamps module. If set to true, all Node and Relationship models will include the Timestamps module and have ``:created_at`` and ``:updated_at`` properties.
 
   **skip_migration_check**
     **Default:** ``false``
 
-    Prevents the ``neo4j`` gem from raising ``Neo4j::PendingMigrationError`` in web requests when migrations haven't been run.  For environments (like testing) where you need to use the ``neo4j:schema:load`` rake task to build the database instead of migrations.  Automatically set to ``true`` in Rails test environments by default
+    Prevents the ``neo4j`` gem from raising ``ActiveGraph::PendingMigrationError`` in web requests when migrations haven't been run.  For environments (like testing) where you need to use the ``neo4j:schema:load`` rake task to build the database instead of migrations.  Automatically set to ``true`` in Rails test environments by default
 
   .. _configuration-class_name_property:
 
@@ -89,7 +89,7 @@ Variables
 
     **Available values:** ``:upcase``, ``:downcase``, ``:legacy``, ``:none``
 
-    Determines how relationship types for ``ActiveRel`` models are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an ``ActiveRel`` model of ``HasPost`` then the relationship type in the database will be ``HAS_POST``
+    Determines how relationship types for ``Relationship`` models are transformed when stored in the database.  By default this is upper-case to match with Neo4j convention so if you specify an ``Relationship`` model of ``HasPost`` then the relationship type in the database will be ``HAS_POST``
 
     ``:legacy``
       Causes the type to be downcased and preceded by a `#`
@@ -113,7 +113,7 @@ The ``neo4j-core`` gem instruments a handful of events so that users can subscri
 
 .. code-block:: ruby
 
-  Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
+  ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
     puts message
   end
 
@@ -131,15 +131,15 @@ The argument to the block (``message`` in this case) will be an ANSI formatted s
 
 All methods and their corresponding events:
 
-  **Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query**
+  **ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query**
     **neo4j.core.cypher_query**
 
-  **Neo4j::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
+  **ActiveGraph::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
     **neo4j.core.http.request**
 
-  **Neo4j::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
+  **ActiveGraph::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
     **neo4j.core.bolt.request**
 
-  **Neo4j::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
+  **ActiveGraph::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
     **neo4j.core.embedded.transaction**
 

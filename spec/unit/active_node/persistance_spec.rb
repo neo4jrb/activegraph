@@ -1,15 +1,15 @@
-describe Neo4j::ActiveNode::Persistence do
+describe ActiveGraph::Node::Persistence do
   let(:node) { double('a persisted node', exist?: true) }
 
   let(:clazz) do
     Class.new do
-      include Neo4j::Shared
-      include Neo4j::Shared::Identity
-      include Neo4j::ActiveNode::Query
-      include Neo4j::ActiveNode::Persistence
-      include Neo4j::ActiveNode::Unpersisted
-      include Neo4j::ActiveNode::HasN
-      include Neo4j::ActiveNode::Property
+      include ActiveGraph::Shared
+      include ActiveGraph::Shared::Identity
+      include ActiveGraph::Node::Query
+      include ActiveGraph::Node::Persistence
+      include ActiveGraph::Node::Unpersisted
+      include ActiveGraph::Node::HasN
+      include ActiveGraph::Node::Property
 
       property :name
       property :age, type: Integer
@@ -27,7 +27,7 @@ describe Neo4j::ActiveNode::Persistence do
     end
 
     it 'raises an error when given a property which is not defined' do
-      expect { clazz.new(unknown: true) }.to raise_error(Neo4j::Shared::Property::UndefinedPropertyError)
+      expect { clazz.new(unknown: true) }.to raise_error(ActiveGraph::Shared::Property::UndefinedPropertyError)
     end
   end
 
@@ -61,7 +61,7 @@ describe Neo4j::ActiveNode::Persistence do
   describe 'props_for_create' do
     let(:node) { clazz.new }
     before do
-      clazz.send(:include, Neo4j::ActiveNode::IdProperty)
+      clazz.send(:include, ActiveGraph::Node::IdProperty)
       clazz.id_property :uuid, auto: :uuid, constraint: false
     end
 

@@ -1,11 +1,11 @@
 orm_adapter_path = `bundle show orm_adapter`.chomp
 require File.join(orm_adapter_path, 'spec/orm_adapter/example_app_shared')
 
-module Neo4j
+module ActiveGraph
   module OrmSpec
     describe '[Neo4j orm adapter]', type: :integration do
       #      describe "the OrmAdapter class" do
-      #        subject { Neo4j::ActiveNode::OrmAdapter }
+      #        subject { ActiveGraph::Node::OrmAdapter }
       #
       #        specify "#model_classes should return all of the model classes (that are not in except_classes)" do
       #          subject.model_classes.should include(User, Note)
@@ -19,7 +19,7 @@ module Neo4j
           create_index :User, :name, type: :exact
           create_index :User, :rating, type: :exact
 
-          stub_active_node_class('User') do
+          stub_node_class('User') do
             property :name
             property :rating, type: Integer
 
@@ -27,7 +27,7 @@ module Neo4j
           end
 
           create_index :Note, :body, type: :exact
-          stub_active_node_class('Note') do
+          stub_node_class('Note') do
             property :body
 
             has_one :in, :owner, type: :notes, model_class: 'User'

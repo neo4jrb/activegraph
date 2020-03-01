@@ -13,7 +13,7 @@ shared_context 'after_commit' do |company_variable, options|
   let(:transactions_count) { options[:transactions_count] }
   let(:fail_transaction) { options[:fail_transaction] }
 
-  let(:transactions) { Array.new(transactions_count) { Neo4j::ActiveBase.new_transaction } }
+  let(:transactions) { Array.new(transactions_count) { ActiveGraph::Base.new_transaction } }
   let(:close_inner_transactions!) { transactions.reverse.first(transactions_count - 1).each(&:close) }
   let(:to_or_not_to) { options[:fail_transaction] ? :not_to : :to }
 

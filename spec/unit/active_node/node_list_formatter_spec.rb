@@ -1,4 +1,4 @@
-module Neo4j::ActiveNode
+module ActiveGraph::Node
   describe NodeListFormatter do
     let(:max_elements) { 5 }
 

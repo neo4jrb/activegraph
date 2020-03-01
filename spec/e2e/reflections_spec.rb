@@ -1,6 +1,6 @@
 describe 'reflections' do
   before do
-    stub_active_node_class('MyClass') do
+    stub_node_class('MyClass') do
       has_many :in,  :in_things, model_class: self, type: 'things'
       has_many :out, :out_things, model_class: self, type: 'things'
 
@@ -10,7 +10,7 @@ describe 'reflections' do
       has_one :out, :one_thing, model_class: self, type: 'one_thing'
     end
 
-    stub_active_rel_class('RelClass') do
+    stub_relationship_class('RelClass') do
       from_class :any
       to_class :any
       type 'things'
@@ -35,7 +35,7 @@ describe 'reflections' do
 
   it 'returns information about a given association' do
     reflection = clazz.reflect_on_association(:in_things)
-    expect(reflection).to be_a(Neo4j::ActiveNode::Reflection::AssociationReflection)
+    expect(reflection).to be_a(ActiveGraph::Node::Reflection::AssociationReflection)
     expect(reflection.klass).to eq clazz
     expect(reflection.class_name).to eq clazz.name
     expect(reflection.type).to eq :things

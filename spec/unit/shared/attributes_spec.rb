@@ -1,5 +1,5 @@
 # Originally part of ActiveAttr, https://github.com/cgriego/active_attr
-module Neo4j::Shared
+module ActiveGraph::Shared
   describe Attributes do
     subject(:model) { model_class.new }
     let(:last_name) { 'Poweski' }
@@ -56,7 +56,7 @@ module Neo4j::Shared
       context 'a dangerous attribute' do
         before { allow(model_class).to receive(:dangerous_attribute?).and_return(true) }
 
-        it { expect { model_class.property(:address) }.to raise_error Neo4j::DangerousAttributeError }
+        it { expect { model_class.property(:address) }.to raise_error ActiveGraph::DangerousAttributeError }
       end
 
       context 'a harmless attribute' do
@@ -222,7 +222,7 @@ module Neo4j::Shared
         it 'raises when setting an undefined attribute' do
           expect do
             model.send(method, :initials, 'BP')
-          end.to raise_error Neo4j::UnknownAttributeError, 'unknown attribute: initials'
+          end.to raise_error ActiveGraph::UnknownAttributeError, 'unknown attribute: initials'
         end
       end
     end

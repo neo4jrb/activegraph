@@ -2,13 +2,13 @@ describe 'Node Wrapping' do
   before(:each) do
     clear_model_memory_caches
 
-    stub_active_node_class('Post')
+    stub_node_class('Post')
 
-    stub_active_node_class('GitHub') do
+    stub_node_class('GitHub') do
       self.mapped_label_name = 'GitHub'
     end
 
-    stub_active_node_class('StackOverflow') do
+    stub_node_class('StackOverflow') do
       self.mapped_label_name = 'StackOverflow'
     end
 
@@ -39,10 +39,10 @@ describe 'Node Wrapping' do
     let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
     before do
-      Neo4j::ActiveBase.new_query.create("(n#{label_string})").exec
+      ActiveGraph::Base.new_query.create("(n#{label_string})").exec
     end
 
-    let(:result) { Neo4j::ActiveBase.new_query.match("(n#{label_string})").pluck(:n).first }
+    let(:result) { ActiveGraph::Base.new_query.match("(n#{label_string})").pluck(:n).first }
 
     context 'constantize errors' do
       let(:labels) { %w[MissingClass] }
@@ -54,7 +54,7 @@ describe 'Node Wrapping' do
         let(:error_class) { NameError }
 
         it 'should ignore the label' do
-          expect(result).to be_kind_of(::Neo4j::Core::Node)
+          expect(result).to be_kind_of(::ActiveGraph::Core::Node)
         end
       end
 
@@ -63,18 +63,18 @@ describe 'Node Wrapping' do
         let(:error_class) { LoadError }
 
         it 'should ignore the label' do
-          expect(result).to be_kind_of(::Neo4j::Core::Node)
+          expect(result).to be_kind_of(::ActiveGraph::Core::Node)
         end
       end
     end
 
     {
-      %w(ExtraneousLabel) => '::Neo4j::Core::Node',
+      %w(ExtraneousLabel) => '::ActiveGraph::Core::Node',
       %w(Post) => 'Post',
 
       %w(ExtraneousLabel Post) => 'Post',
 
-      %w(SomeOtherClass) => '::Neo4j::Core::Node',
+      %w(SomeOtherClass) => '::ActiveGraph::Core::Node',
       %w(SomeOtherClass Post) => 'Post',
 
       %w(User GitHub) => 'GitHubUser',

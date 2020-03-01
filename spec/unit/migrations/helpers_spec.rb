@@ -1,19 +1,19 @@
-describe Neo4j::Migrations::Helpers do
+describe ActiveGraph::Migrations::Helpers do
   include described_class
-  include Neo4j::Migrations::Helpers::Schema
-  include Neo4j::Migrations::Helpers::IdProperty
-  include Neo4j::Migrations::Helpers::Relationships
+  include ActiveGraph::Migrations::Helpers::Schema
+  include ActiveGraph::Migrations::Helpers::IdProperty
+  include ActiveGraph::Migrations::Helpers::Relationships
 
   before do
     clear_model_memory_caches
 
-    stub_active_node_class('Bookcase') do
+    stub_node_class('Bookcase') do
       has_many :out, :books, type: :has_books
     end
 
     create_constraint(:Book, :name, type: :unique)
     create_index(:Book, :author_name, type: :exact)
-    stub_active_node_class('Book') do
+    stub_node_class('Book') do
       property :name
       property :author_name
     end
@@ -108,7 +108,7 @@ describe Neo4j::Migrations::Helpers do
   end
 
   def label_object
-    Neo4j::Core::Label.new(:Book)
+    ActiveGraph::Core::Label.new(:Book)
   end
 
   describe '#add_constraint' do
@@ -163,8 +163,8 @@ describe Neo4j::Migrations::Helpers do
         execute 'CREATE (d:`Dog`)'
       end
 
-      stub_active_node_class('Cat') {}
-      stub_active_node_class('Dog') do
+      stub_node_class('Cat') {}
+      stub_node_class('Dog') do
         id_property :my_id, on: :generate_id
 
         def generate_id

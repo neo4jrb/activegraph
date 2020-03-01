@@ -1,6 +1,6 @@
-describe Neo4j::ActiveNode::Initialize do
+describe ActiveGraph::Node::Initialize do
   before do
-    stub_active_node_class('MyModel') do
+    stub_node_class('MyModel') do
       property :name, type: String
     end
   end
@@ -11,7 +11,7 @@ describe Neo4j::ActiveNode::Initialize do
     let(:keys) { attributes.keys }
 
     it '@attributes are AttributeSet' do
-      expect(attributes).to be_kind_of(Neo4j::AttributeSet)
+      expect(attributes).to be_kind_of(ActiveGraph::AttributeSet)
     end
 
     it 'sets @attributes with the expected properties' do

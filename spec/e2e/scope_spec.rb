@@ -1,10 +1,10 @@
-# module Neo4j::ActiveNode::Scope
+# module ActiveGraph::Node::Scope
 
-describe 'Neo4j::NodeMixin::Scope' do
+describe 'ActiveGraph::NodeMixin::Scope' do
   before do
     clear_model_memory_caches
 
-    stub_active_node_class('Person') do
+    stub_node_class('Person') do
       property :name
       property :score
       property :level_num

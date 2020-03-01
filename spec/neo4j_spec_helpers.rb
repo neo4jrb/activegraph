@@ -7,7 +7,7 @@ module Neo4jSpecHelpers
 
   self.expect_queries_count = 0
 
-  Neo4j::Transaction.subscribe_to_query do |_message|
+  ActiveGraph::Transaction.subscribe_to_query do |_message|
     self.expect_queries_count += 1
   end
 
@@ -22,19 +22,19 @@ module Neo4jSpecHelpers
   end
 
   def new_query
-    Neo4j::ActiveBase.new_query
+    ActiveGraph::Base.new_query
   end
 
   def current_driver
-    Neo4j::ActiveBase.current_driver
+    ActiveGraph::Base.current_driver
   end
 
   def neo4j_query(*args)
-    Neo4j::Transaction.query(*args)
+    ActiveGraph::Transaction.query(*args)
   end
 
   def log_queries!
-    Neo4j::Transaction.subscribe_to_query(&method(:puts))
+    ActiveGraph::Transaction.subscribe_to_query(&method(:puts))
   end
 
   def action_controller_params(args)
@@ -44,10 +44,10 @@ module Neo4jSpecHelpers
   class_methods do
     def let_config(var_name, value)
       around do |example|
-        old_value = Neo4j::Config[var_name]
-        Neo4j::Config[var_name] = value
+        old_value = ActiveGraph::Config[var_name]
+        ActiveGraph::Config[var_name] = value
         example.run
-        Neo4j::Config[var_name] = old_value
+        ActiveGraph::Config[var_name] = old_value
       end
     end
 

@@ -1,12 +1,12 @@
 require 'rails/generators/named_base'
 require 'rails/generators/active_model'
 
-module Neo4j
+module ActiveGraph
   module Generators #:nodoc:
   end
 end
 
-module Neo4j::Generators::MigrationHelper
+module ActiveGraph::Generators::MigrationHelper
   extend ActiveSupport::Concern
 
   def base_migration_file_name(file_name, prefix = '')
@@ -53,7 +53,7 @@ module Neo4j::Generators::MigrationHelper
   end
 end
 
-module Neo4j::Generators::SourcePathHelper
+module ActiveGraph::Generators::SourcePathHelper
   extend ActiveSupport::Concern
 
   module ClassMethods
@@ -65,7 +65,7 @@ module Neo4j::Generators::SourcePathHelper
 end
 
 
-class Neo4j::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
+class ActiveGraph::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
   def self.all(klass)
     "#{klass}.all"
   end

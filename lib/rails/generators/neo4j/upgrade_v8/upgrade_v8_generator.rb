@@ -1,10 +1,10 @@
-require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
+require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'active_graph.rb')
 
-module Neo4j
+module ActiveGraph
   module Generators
     class UpgradeV8Generator < ::Rails::Generators::Base
-      include ::Neo4j::Generators::SourcePathHelper
-      include ::Neo4j::Generators::MigrationHelper
+      include ::ActiveGraph::Generators::SourcePathHelper
+      include ::ActiveGraph::Generators::MigrationHelper
 
       def create_upgrade_v8_file
         @schema = load_all_models_schema!
@@ -20,11 +20,11 @@ module Neo4j
       def load_all_models_schema!
         Rails.application.eager_load!
         initialize_all_models!
-        Neo4j::ModelSchema.legacy_model_schema_informations
+        ActiveGraph::ModelSchema.legacy_model_schema_informations
       end
 
       def initialize_all_models!
-        models = Neo4j::ActiveNode.loaded_classes
+        models = ActiveGraph::Node.loaded_classes
         models.map(&:ensure_id_property_info!)
       end
     end

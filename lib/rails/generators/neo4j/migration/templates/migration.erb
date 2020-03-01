@@ -1,9 +1,9 @@
-class <%= @migration_class_name.underscore.camelize %> < Neo4j::Migrations::Base
+class <%= @migration_class_name.underscore.camelize %> < ActiveGraph::Migrations::Base
   def up
     <%= @content %>
   end
 
   def down
-    raise Neo4j::IrreversibleMigration
+    raise ActiveGraph::IrreversibleMigration
   end
 end

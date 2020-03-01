@@ -5,7 +5,7 @@ describe 'Association Proxy' do
 
   context 'simple relationships' do
     before do
-      stub_active_node_class('Student') do
+      stub_node_class('Student') do
         property :name
         has_many :out, :lessons, rel_class: :LessonEnrollment
         has_many :in, :exams, model_class: :Exam, origin: :students
@@ -13,7 +13,7 @@ describe 'Association Proxy' do
         has_many :out, :homework, type: :HOMEWORK, model_class: %w[Lesson Exam]
       end
 
-      stub_active_rel_class('LessonEnrollment') do
+      stub_relationship_class('LessonEnrollment') do
         from_class :Student
         to_class :Lesson
         type :has_studet
@@ -21,14 +21,14 @@ describe 'Association Proxy' do
         property :grade
       end
 
-      stub_active_node_class('Lesson') do
+      stub_node_class('Lesson') do
         property :subject
         property :level, type: Integer
         has_many :in, :students, model_class: :Student, origin: :lessons
         has_many :out, :exams_given, type: nil, model_class: :Exam
       end
 
-      stub_active_node_class('Exam') do
+      stub_node_class('Exam') do
         property :name
         has_many :in, :lessons, model_class: :Lesson, origin: :exams_given
         has_many :out, :students, type: :has_student, model_class: :Student
@@ -225,7 +225,7 @@ describe 'Association Proxy' do
 
     describe 'support relationship type as label' do
       before do
-        stub_active_node_class('Roster') do
+        stub_node_class('Roster') do
           has_many :out, :students, type: :student
         end
       end
@@ -304,7 +304,7 @@ describe 'Association Proxy' do
 
   context 'multi relationships' do
     before do
-      stub_active_node_class('Person') do
+      stub_node_class('Person') do
         property :name
 
         has_many :out, :knows, model_class: 'Person', type: nil
@@ -315,14 +315,14 @@ describe 'Association Proxy' do
         has_many :out, :owner_comments, type: :comments, model_class: 'Comment'
       end
 
-      stub_active_node_class('Post') do
+      stub_node_class('Post') do
         property :name
 
         has_one :out, :owner, origin: :posts, model_class: 'Person'
         has_many :in, :comments, type: :posts
       end
 
-      stub_active_node_class('Comment') do
+      stub_node_class('Comment') do
         property :text
 
         has_one :out, :owner, origin: :comments, model_class: 'Person'
@@ -404,7 +404,7 @@ describe 'Association Proxy' do
       person1.update(children: [person2, person3.id])
 
       expect(person3.as(:p).parent.count).to eq(1)
-      expect { Person.find(person2.id) }.not_to raise_error(Neo4j::ActiveNode::Labels::RecordNotFound)
+      expect { Person.find(person2.id) }.not_to raise_error
     end
 
     it 'deletes rel in case of inverse has_one rel and two relationships with same type' do

@@ -1,4 +1,4 @@
-class SchemaAndDataUpdateWithoutTransactions < Neo4j::Migrations::Base
+class SchemaAndDataUpdateWithoutTransactions < ActiveGraph::Migrations::Base
   disable_transactions!
 
   def up
@@ -7,6 +7,6 @@ class SchemaAndDataUpdateWithoutTransactions < Neo4j::Migrations::Base
   end
 
   def down
-    fail Neo4j::IrreversibleMigration
+    fail ActiveGraph::IrreversibleMigration
   end
 end

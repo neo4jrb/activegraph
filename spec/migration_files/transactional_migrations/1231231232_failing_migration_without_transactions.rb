@@ -1,4 +1,4 @@
-class FailingMigrationWithoutTransactions < Neo4j::Migrations::Base
+class FailingMigrationWithoutTransactions < ActiveGraph::Migrations::Base
   disable_transactions!
 
   def up

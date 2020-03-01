@@ -1,4 +1,4 @@
-describe Neo4j::ActiveNode::Validations do
+describe ActiveGraph::Node::Validations do
   before(:each) do
     clear_model_memory_caches
   end
@@ -6,7 +6,7 @@ describe Neo4j::ActiveNode::Validations do
   context 'validating uniqueness of' do
     context 'with default' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
 
           validates_uniqueness_of :name
@@ -19,7 +19,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       it 'should not fail when new object is out of scope' do
-        stub_active_node_class('OtherClazz') do
+        stub_node_class('OtherClazz') do
           property :name
           property :adult
           validates_uniqueness_of :name, scope: :adult
@@ -59,7 +59,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       it 'should allow multiple blank entries if :allow_blank => true' do
-        stub_active_node_class('OtherClazz') do
+        stub_node_class('OtherClazz') do
           property :name
           validates_uniqueness_of :name, allow_blank: :true
         end
@@ -77,7 +77,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       it 'should allow multiple nil entries if :allow_nil => true' do
-        stub_active_node_class('OtherClazz') do
+        stub_node_class('OtherClazz') do
           property :name
           validates_uniqueness_of :name, allow_nil: :true
         end
@@ -90,7 +90,7 @@ describe Neo4j::ActiveNode::Validations do
       end
 
       it 'should allow entries that differ only in case by default' do
-        stub_active_node_class('OtherClazz') do
+        stub_node_class('OtherClazz') do
           property :name
           validates_uniqueness_of :name
         end
@@ -105,7 +105,7 @@ describe Neo4j::ActiveNode::Validations do
 
     context 'with :case_sensitive => false' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           validates_uniqueness_of :name, case_sensitive: false
         end
@@ -148,7 +148,7 @@ describe Neo4j::ActiveNode::Validations do
 
     context 'scoped by a single attribute' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           property :scope
           validates_uniqueness_of :name, scope: :scope
@@ -184,7 +184,7 @@ describe Neo4j::ActiveNode::Validations do
 
     context 'scoped by a multiple attributes' do
       before do
-        stub_active_node_class('Foo') do
+        stub_node_class('Foo') do
           property :name
           property :first_scope
           property :second_scope

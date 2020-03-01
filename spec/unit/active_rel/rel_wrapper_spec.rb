@@ -1,4 +1,4 @@
-describe Neo4j::RelWrapping do
+describe ActiveGraph::RelWrapping do
   let(:id) { 1 }
   let(:type) { :DEFAULT }
   let(:properties) { {} }
@@ -6,13 +6,13 @@ describe Neo4j::RelWrapping do
   let(:end_node_id) { 2 }
 
   let(:rel) { double(start_node_id: start_node_id, end_node_id: end_node_id, type: type, rel_type: type, props: properties) }
-  subject { Neo4j::RelWrapping.wrapper(rel) }
+  subject { ActiveGraph::RelWrapping.wrapper(rel) }
 
   it { should eq(rel) }
 
-  context 'HasFoo ActiveRel class defined' do
+  context 'HasFoo Relationship class defined' do
     before do
-      stub_active_rel_class('HasFoo') do
+      stub_relationship_class('HasFoo') do
         property :bar
         property :biz
       end

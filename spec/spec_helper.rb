@@ -27,13 +27,13 @@ require 'fileutils'
 require 'tmpdir'
 require 'logger'
 
-require 'neo4j/core'
-require 'neo4j'
+require 'active_graph/core'
+require 'active_graph'
 require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
-require 'neo4j/core/driver'
+require 'active_graph/core/driver'
 
 require 'dryspec/helpers'
 require 'neo4j_spec_helpers'
@@ -86,39 +86,39 @@ end
 Dir["#{File.dirname(__FILE__)}/shared_examples/**/*.rb"].each { |f| require f }
 
 def clear_model_memory_caches
-  Neo4j::ActiveRel::Types::WRAPPED_CLASSES.clear
-  Neo4j::ActiveNode::Labels::WRAPPED_CLASSES.clear
-  Neo4j::ActiveNode::Labels.clear_wrapped_models
+  ActiveGraph::Relationship::Types::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels::WRAPPED_CLASSES.clear
+  ActiveGraph::Node::Labels.clear_wrapped_models
 end
 
-def delete_db(executor = Neo4j::ActiveBase)
+def delete_db(executor = ActiveGraph::Base)
   executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
 end
 
 def delete_schema
-  Neo4j::Core::Label.drop_constraints
-  Neo4j::Core::Label.drop_indexes
+  ActiveGraph::Core::Label.drop_constraints
+  ActiveGraph::Core::Label.drop_indexes
 end
 
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_active_node_class(class_name, with_constraint = true, &block)
-    stub_const class_name, active_node_class(class_name, with_constraint, &block)
+  def stub_node_class(class_name, with_constraint = true, &block)
+    stub_const class_name, node_class(class_name, with_constraint, &block)
   end
 
-  def stub_active_rel_class(class_name, &block)
-    stub_const class_name, active_rel_class(class_name, &block)
+  def stub_relationship_class(class_name, &block)
+    stub_const class_name, relationship_class(class_name, &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
     stub_const class_name, named_class(class_name, superclass, &block)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
-  def active_node_class(class_name, with_constraint = true, &block)
+  def node_class(class_name, with_constraint = true, &block)
     named_class(class_name) do
-      include Neo4j::ActiveNode
+      include ActiveGraph::Node
 
       module_eval(&block) if block
     end.tap { |model| create_id_property_constraint(model, with_constraint) }
@@ -130,9 +130,9 @@ module ActiveNodeRelStubHelpers
     create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
   end
 
-  def active_rel_class(class_name, &block)
+  def relationship_class(class_name, &block)
     named_class(class_name) do
-      include Neo4j::ActiveRel
+      include ActiveGraph::Relationship
 
       module_eval(&block) if block
     end
@@ -158,13 +158,13 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_constraint(label_name, property, options = {})
-    Neo4j::ActiveBase.label_object(label_name).create_constraint(property, options)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::Base.label_object(label_name).create_constraint(property, options)
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
-    Neo4j::ActiveBase.label_object(label_name).create_index(property, options)
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::Base.label_object(label_name).create_index(property, options)
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 end
 
@@ -190,7 +190,7 @@ end
 
 server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
 
-Neo4j::ActiveBase.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
+ActiveGraph::Base.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 
@@ -210,22 +210,22 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
-    Neo4j::ModelSchema::MODEL_INDEXES.clear
-    Neo4j::ModelSchema::MODEL_CONSTRAINTS.clear
-    Neo4j::ModelSchema::REQUIRED_INDEXES.clear
-    Neo4j::ActiveNode.loaded_classes.clear
-    Neo4j::ModelSchema.reload_models_data!
+    ActiveGraph::ModelSchema::MODEL_INDEXES.clear
+    ActiveGraph::ModelSchema::MODEL_CONSTRAINTS.clear
+    ActiveGraph::ModelSchema::REQUIRED_INDEXES.clear
+    ActiveGraph::Node.loaded_classes.clear
+    ActiveGraph::ModelSchema.reload_models_data!
   end
 
   config.before(:all) do
-    Neo4j::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
+    ActiveGraph::Config[:id_property] = ENV['NEO4J_ID_PROPERTY'].try :to_sym
   end
 
   config.before(:each) do
     delete_db
     delete_schema
-    @active_base_logger = spy('ActiveBase logger')
-    allow(Neo4j::ActiveBase).to receive(:logger).and_return(@active_base_logger)
+    @base_logger = spy('Base logger')
+    allow(ActiveGraph::Base).to receive(:logger).and_return(@base_logger)
   end
 
   # TODO marshalling java objects, is it necessary?

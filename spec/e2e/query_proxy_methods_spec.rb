@@ -3,30 +3,30 @@ describe 'query_proxy_methods' do
   before(:each) do
     clear_model_memory_caches
 
-    stub_active_node_class('Student') do
+    stub_node_class('Student') do
       property :name
       has_many :out, :lessons, model_class: 'Lesson', rel_class: 'EnrolledIn'
       has_many :out, :things, model_class: false, type: 'lessons'
     end
 
-    stub_active_node_class('Lesson') do
+    stub_node_class('Lesson') do
       property :name
       has_many :in, :students, model_class: 'Student', rel_class: 'EnrolledIn'
       has_many :in, :teachers, model_class: 'Teacher', origin: :lessons
     end
 
-    stub_active_node_class('Teacher') do
+    stub_node_class('Teacher') do
       property :name
       property :age, type: Integer
       has_many :out, :lessons, model_class: 'Lesson', type: 'teaching_lesson'
       scope :ident, -> { as(identity) }
     end
 
-    stub_active_node_class('EmptyClass') do
+    stub_node_class('EmptyClass') do
       has_many :out, :lessons, type: nil, model_class: 'Lesson'
     end
 
-    stub_active_rel_class('EnrolledIn') do
+    stub_relationship_class('EnrolledIn') do
       from_class 'Student'
       to_class 'Lesson'
       type 'lessons'
@@ -46,7 +46,7 @@ describe 'query_proxy_methods' do
   let!(:mr_adams) { Teacher.create }
 
   shared_examples 'is initialized correctly with associations' do
-    it { should be_a(Neo4j::ActiveNode) }
+    it { should be_a(ActiveGraph::Node) }
     its(:name) { should eq(student_name) }
     its(:lessons) { should include(philosophy) }
   end
@@ -75,7 +75,7 @@ describe 'query_proxy_methods' do
   end
 
   shared_examples 'is initialized correctly with attributes' do
-    it { should be_a(Neo4j::ActiveNode) }
+    it { should be_a(ActiveGraph::Node) }
     its(:name) { should eq(teacher_name) }
     its(:age) { should eq(teacher_age) }
   end
@@ -124,7 +124,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'returns the node after creating' do
-      expect(philosophy.students.find_or_create_by(name: 'Jacob')).to be_a(Neo4j::ActiveNode)
+      expect(philosophy.students.find_or_create_by(name: 'Jacob')).to be_a(ActiveGraph::Node)
     end
 
     it 'does not look outside of scope' do
@@ -265,7 +265,7 @@ describe 'query_proxy_methods' do
       end
 
       it 'raises an error if something other than a neo id is given' do
-        expect { Lesson.exists?(:fooooo) }.to raise_error(Neo4j::InvalidParameterError)
+        expect { Lesson.exists?(:fooooo) }.to raise_error(ActiveGraph::InvalidParameterError)
       end
     end
 
@@ -325,7 +325,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'raises an exception if a bad parameter is passed' do
-      expect { @john.lessons.count(:foo) }.to raise_error(Neo4j::InvalidParameterError)
+      expect { @john.lessons.count(:foo) }.to raise_error(ActiveGraph::InvalidParameterError)
     end
 
     it 'works on an object earlier in the chain' do
@@ -368,7 +368,7 @@ describe 'query_proxy_methods' do
 
     context 'when building the query' do
       before do
-        @subscription = Neo4j::Transaction.subscribe_to_query do |query|
+        @subscription = ActiveGraph::Transaction.subscribe_to_query do |query|
           expect(query).to include('DISTINCT')
         end
       end
@@ -575,9 +575,9 @@ describe 'query_proxy_methods' do
 
     describe 'match_to' do
       it 'returns a QueryProxy object' do
-        expect(@john.lessons.match_to(@history)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
-        expect(@john.lessons.match_to(@history.id)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
-        expect(@john.lessons.match_to(nil)).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+        expect(@john.lessons.match_to(@history)).to be_a(ActiveGraph::Node::Query::QueryProxy)
+        expect(@john.lessons.match_to(@history.id)).to be_a(ActiveGraph::Node::Query::QueryProxy)
+        expect(@john.lessons.match_to(nil)).to be_a(ActiveGraph::Node::Query::QueryProxy)
       end
 
       context 'with a valid node' do
@@ -819,7 +819,7 @@ describe 'query_proxy_methods' do
     end
 
     it 'returns a QueryProxy object' do
-      expect(@john.lessons.branch { teachers }).to be_a(Neo4j::ActiveNode::Query::QueryProxy)
+      expect(@john.lessons.branch { teachers }).to be_a(ActiveGraph::Node::Query::QueryProxy)
     end
 
     it 'keeps identity to the external chain' do

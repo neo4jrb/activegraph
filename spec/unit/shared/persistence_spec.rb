@@ -1,12 +1,12 @@
-describe Neo4j::Shared::Persistence do
+describe ActiveGraph::Shared::Persistence do
   before do
     stub_const('MyModel', Class.new do
-                            include Neo4j::Shared::Persistence
-                            include Neo4j::Shared::Property
+                            include ActiveGraph::Shared::Persistence
+                            include ActiveGraph::Shared::Property
 
                             property :name
                             property :age, type: Integer
-                            property :active, type: Neo4j::Shared::Boolean, default: false
+                            property :active, type: ActiveGraph::Shared::Boolean, default: false
 
                             def self.extract_association_attributes!(props)
                               props

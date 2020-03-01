@@ -1,10 +1,10 @@
-require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'neo4j.rb')
+require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'active_graph.rb')
 
-module Neo4j
+module ActiveGraph
   module Generators
     class MigrationGenerator < ::Rails::Generators::NamedBase
-      include ::Neo4j::Generators::SourcePathHelper
-      include ::Neo4j::Generators::MigrationHelper
+      include ::ActiveGraph::Generators::SourcePathHelper
+      include ::ActiveGraph::Generators::MigrationHelper
 
       def create_migration_file
         migration_template 'migration.erb'

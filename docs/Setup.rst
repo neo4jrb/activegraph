@@ -64,7 +64,7 @@ In ``application.rb``:
 
 .. code-block:: ruby
 
-  require 'neo4j/railtie'
+  require 'active_graph/railtie'
 
 .. note::
 
@@ -137,7 +137,7 @@ You can also use your Rails configuration.  The following example can be put int
   # Or, for the beta version of the bolt driver. Make sure to add `gem neo4j-ruby-driver` to your Gemfile
 
   config.neo4j.session.type = :embedded
-  config.neo4j.session.options = { adaptor_class: Neo4j::Core::CypherSession::Adaptors::Driver }
+  config.neo4j.session.options = { adaptor_class: ActiveGraph::Core::CypherSession::Adaptors::Driver }
 
 Neo4j requires authentication by default but if you install using the built-in :doc:`rake tasks </RakeTasks>`) authentication is disabled.  If you are using authentication you can configure it like this:
 
@@ -164,11 +164,11 @@ The ``config.neo4j.session.options`` is simply passed into the ``Bolt`` adaptor 
 
   cert_store = OpenSSL::X509::Store.new
   cert_store.add_file('/the/path/to/your/neo4j.cert')
-  bolt_adaptor = Neo4j::Core::CypherSession::Adaptors::Bolt.new('bolt://neo4j:password@host:port', timeout: 10, ssl: {cert_store: cert_store})
+  bolt_adaptor = ActiveGraph::Core::CypherSession::Adaptors::Bolt.new('bolt://neo4j:password@host:port', timeout: 10, ssl: {cert_store: cert_store})
 
 Inside of the gem, the ``ssl`` option is simply passed into the ``set_params`` method called on a ``OpenSSL::SSL::SSLContext.new`` object.  If you need a more advanced configuration please refer to the documentation for the Ruby ``OpenSSL`` API.
 
-SSL / TLS is configured to be used by default, but if you need to disable it you can define ``{ssl: false}`` either in ``config.neo4j.session.options`` in Rails or in the options passed to a new ``Neo4j::Core::CypherSession::Adaptors::Bolt``
+SSL / TLS is configured to be used by default, but if you need to disable it you can define ``{ssl: false}`` either in ``config.neo4j.session.options`` in Rails or in the options passed to a new ``ActiveGraph::Core::CypherSession::Adaptors::Bolt``
 
 Configuring Faraday (HTTP only)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -200,12 +200,12 @@ If you are just using the ``neo4j-core`` gem, the configurator can also be set v
 
 .. code-block:: ruby
 
-  require 'neo4j/core/cypher_session/adaptors/http'
+  require 'active_graph/core/cypher_session/adaptors/http'
   faraday_configurator = proc do |faraday|
     faraday.adapter :typhoeus
   end
-  require 'neo4j/core/cypher_session/adaptors/http'
-  http_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://neo4j:pass@localhost:7474', faraday_configurator: faraday_configurator)
+  require 'active_graph/core/cypher_session/adaptors/http'
+  http_adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://neo4j:pass@localhost:7474', faraday_configurator: faraday_configurator)
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
@@ -225,7 +225,7 @@ If using only ``neo4j-core`` you can optionally include the rake tasks (:doc:`do
   # Both are optional
 
   # To provide tasks to install/start/stop/configure Neo4j
-  require 'neo4j/rake_tasks'
+  require 'active_graph/rake_tasks'
   # Comes from the `neo4j-rake_tasks` gem
 
 
@@ -246,7 +246,7 @@ In Ruby
 .. code-block:: ruby
 
   # In JRuby or MRI, using Neo4j Server mode. When the railtie is included, this happens automatically.
-  Neo4j::Session.open(:http)
+  ActiveGraph::Session.open(:http)
 
 Embedded mode in JRuby
 ``````````````````````
@@ -255,35 +255,35 @@ In jRuby you can access the data in server mode as above.  If you want to run th
 
 .. code-block:: ruby
 
-  require 'neo4j/core/cypher_session/adaptors/embedded'
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::Embedded.new('/file/path/to/graph.db')
-  neo4j_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
+  require 'active_graph/core/cypher_session/adaptors/embedded'
+  neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::Embedded.new('/file/path/to/graph.db')
+  neo4j_session = ActiveGraph::Core::CypherSession.new(neo4j_adaptor)
 
 Embedded mode means that Neo4j is running inside your jRuby process.  This allows for direct access to the Neo4j Java APIs for faster and more direct querying.
 
-Using the ``neo4j`` gem (``ActiveNode`` and ``ActiveRel``) without Rails
+Using the ``neo4j`` gem (``Node`` and ``Relationship``) without Rails
 ````````````````````````````````````````````````````````````````````````
 
-To define your own session for the ``neo4j`` gem you create a ``Neo4j::Core::CypherSession`` object and establish it as the current session for the ``neo4j`` gem with the ``ActiveBase`` module (this is done automatically in Rails):
+To define your own session for the ``neo4j`` gem you create a ``ActiveGraph::Core::CypherSession`` object and establish it as the current session for the ``neo4j`` gem with the ``Base`` module (this is done automatically in Rails):
 
 .. code-block:: ruby
 
-  require 'neo4j/core/cypher_session/adaptors/http'
-  neo4j_adaptor = Neo4j::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
-  Neo4j::ActiveBase.on_establish_session { Neo4j::Core::CypherSession.new(neo4j_adaptor) }
+  require 'active_graph/core/cypher_session/adaptors/http'
+  neo4j_adaptor = ActiveGraph::Core::CypherSession::Adaptors::HTTP.new('http://user:pass@host:7474')
+  ActiveGraph::Base.on_establish_session { ActiveGraph::Core::CypherSession.new(neo4j_adaptor) }
 
 You could instead use the following, but ``on_establish_session`` will establish a new session for each thread for thread-safety and thus the above is recommended in general unless you know what you are doing:
 
 .. code-block:: ruby
 
-  Neo4j::ActiveBase.current_session = Neo4j::Core::CypherSession.new(neo4j_adaptor)
+  ActiveGraph::Base.current_session = ActiveGraph::Core::CypherSession.new(neo4j_adaptor)
 
 What if I'm integrating with a pre-existing Neo4j database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When trying to get the ``neo4j`` gem to integrate with a pre-existing Neo4j database instance (common in cases of migrating data from a legacy SQL database into a Neo4j-powered rails app), remember that every ``ActiveNode`` model is required to have an ID property with a ``unique`` constraint upon it, and that unique ID property will default to ``uuid`` unless you override it to use a different ID property.
+When trying to get the ``neo4j`` gem to integrate with a pre-existing Neo4j database instance (common in cases of migrating data from a legacy SQL database into a Neo4j-powered rails app), remember that every ``Node`` model is required to have an ID property with a ``unique`` constraint upon it, and that unique ID property will default to ``uuid`` unless you override it to use a different ID property.
 
-This commonly leads to getting a ``Neo4j::DeprecatedSchemaDefinitionError`` in Rails when attempting to access a node populated into a Neo4j database directly via Cypher (i.e. when Rails didn't create the node itself). To solve or avoid this problem, be certain to define and constrain as unique a uuid property (or whatever other property you want Rails to treat as the unique ID property) in Cypher when loading the legacy data or use the methods discussed in :doc:`Unique IDs </UniqueIDs>`.
+This commonly leads to getting a ``ActiveGraph::DeprecatedSchemaDefinitionError`` in Rails when attempting to access a node populated into a Neo4j database directly via Cypher (i.e. when Rails didn't create the node itself). To solve or avoid this problem, be certain to define and constrain as unique a uuid property (or whatever other property you want Rails to treat as the unique ID property) in Cypher when loading the legacy data or use the methods discussed in :doc:`Unique IDs </UniqueIDs>`.
 
 Heroku
 ~~~~~~

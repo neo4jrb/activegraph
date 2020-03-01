@@ -1,30 +1,30 @@
-describe Neo4j::Shared::TypeConverters do
+describe ActiveGraph::Shared::TypeConverters do
   describe 'converters' do
     it 'has converters for DateTime' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[DateTime]).to eq(Neo4j::Shared::TypeConverters::DateTimeConverter)
+      expect(described_class::CONVERTERS[DateTime]).to eq(described_class::DateTimeConverter)
     end
 
     it 'has converters for Time' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Time]).to eq(Neo4j::Shared::TypeConverters::TimeConverter)
+      expect(described_class::CONVERTERS[Time]).to eq(described_class::TimeConverter)
     end
 
     it 'has converters for Date' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Date]).to eq(Neo4j::Shared::TypeConverters::DateConverter)
+      expect(described_class::CONVERTERS[Date]).to eq(described_class::DateConverter)
     end
 
     it 'has converters for JSON' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[JSON]).to eq(Neo4j::Shared::TypeConverters::JSONConverter)
+      expect(described_class::CONVERTERS[JSON]).to eq(described_class::JSONConverter)
     end
 
     it 'has converters for YAML' do
-      expect(Neo4j::Shared::TypeConverters::CONVERTERS[Hash]).to eq(Neo4j::Shared::TypeConverters::YAMLConverter)
+      expect(described_class::CONVERTERS[Hash]).to eq(described_class::YAMLConverter)
     end
   end
 
   describe 'to_ruby' do
     it 'converts if there is a converter' do
       date_time = Time.utc(2011, 3, 2, 10, 0, 0).to_i
-      converter_value = Neo4j::Shared::TypeConverters.to_other(:to_ruby, date_time, DateTime)
+      converter_value = described_class.to_other(:to_ruby, date_time, DateTime)
       expect(converter_value).to be_a(DateTime)
       expect(converter_value.year).to eq(2011)
       expect(converter_value.month).to eq(3)
@@ -33,29 +33,29 @@ describe Neo4j::Shared::TypeConverters do
     end
 
     it 'returns the same value if there is no converter' do
-      expect(Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer)).to eq(42)
+      expect(described_class.to_other(:to_ruby, 42, Integer)).to eq(42)
     end
   end
 
   describe 'to_db' do
     it 'converts if there is a converter' do
       date_time = DateTime.civil(2011, 3, 4, 1, 2, 3, 0)
-      converter_value = Neo4j::Shared::TypeConverters.to_other(:to_db, date_time, DateTime)
+      converter_value = described_class.to_other(:to_db, date_time, DateTime)
       expect(converter_value).to be_a(Integer)
     end
 
     it 'returns the same value if there is no converter' do
-      expect(Neo4j::Shared::TypeConverters.to_other(:to_ruby, 42, Integer)).to eq(42)
+      expect(described_class.to_other(:to_ruby, 42, Integer)).to eq(42)
     end
 
     it 'returns the same value if it is already of the expected type' do
       timestamp = DateTime.now.to_i
-      expect(Neo4j::Shared::TypeConverters.to_other(:to_db, timestamp, DateTime)).to eq timestamp
+      expect(described_class.to_other(:to_db, timestamp, DateTime)).to eq timestamp
     end
   end
 
   describe 'Integer' do
-    subject { Neo4j::Shared::TypeConverters::IntegerConverter }
+    subject { described_class::IntegerConverter }
 
     it 'translates from and to database' do
       db_value = subject.to_db('1')
@@ -68,7 +68,7 @@ describe Neo4j::Shared::TypeConverters do
   end
 
   describe 'Float' do
-    subject { Neo4j::Shared::TypeConverters::FloatConverter }
+    subject { described_class::FloatConverter }
 
     it 'translates from and to database' do
       db_value = subject.to_db('1')
@@ -81,7 +81,7 @@ describe Neo4j::Shared::TypeConverters do
   end
 
   describe 'String' do
-    subject { Neo4j::Shared::TypeConverters::StringConverter }
+    subject { described_class::StringConverter }
 
     describe '#to_db and #to_ruby' do
       it 'calls to_s on the object' do
@@ -93,11 +93,11 @@ describe Neo4j::Shared::TypeConverters do
 
   # These tests originally from ActiveAttr gem
   describe 'Boolean' do
-    subject { Neo4j::Shared::TypeConverters::BooleanConverter }
+    subject { described_class::BooleanConverter }
 
     describe '#converted?' do
       def converted?(value)
-        Neo4j::Shared::TypeConverters::BooleanConverter.converted?(value)
+        described_class::BooleanConverter.converted?(value)
       end
 
       it do
@@ -245,14 +245,14 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  describe Neo4j::Shared::TypeConverters::JSONConverter do
-    subject { Neo4j::Shared::TypeConverters::JSONConverter }
+  describe ActiveGraph::Shared::TypeConverters::JSONConverter do
+    subject { described_class }
 
     let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
-      db_value = Neo4j::Shared::TypeConverters::JSONConverter.to_db(links)
-      ruby_value = Neo4j::Shared::TypeConverters::JSONConverter.to_ruby(db_value)
+      db_value = described_class.to_db(links)
+      ruby_value = described_class.to_ruby(db_value)
       expect(db_value.class).to eq String
       expect(ruby_value.class).to eq Hash
       expect(ruby_value['neo4j']).to eq 'http://www.neo4j.org'
@@ -260,7 +260,7 @@ describe Neo4j::Shared::TypeConverters do
 
     context 'various type combinations' do
       before do
-        stub_active_node_class('JsonData') do
+        stub_node_class('JsonData') do
           property :serialized_property
           serialize :serialized_property
         end
@@ -292,22 +292,22 @@ describe Neo4j::Shared::TypeConverters do
     end
   end
 
-  describe Neo4j::Shared::TypeConverters::YAMLConverter do
-    subject { Neo4j::Shared::TypeConverters::YAMLConverter }
+  describe ActiveGraph::Shared::TypeConverters::YAMLConverter do
+    subject { described_class }
 
     let(:links) { {neo4j: 'http://www.neo4j.org', neotech: 'http://www.neotechnology.com/'} }
 
     it 'translates from and to database' do
-      db_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_db(links)
-      ruby_value = Neo4j::Shared::TypeConverters::YAMLConverter.to_ruby(db_value)
+      db_value = described_class.to_db(links)
+      ruby_value = described_class.to_ruby(db_value)
       expect(db_value.class).to eq String
       expect(ruby_value.class).to eq Hash
       expect(ruby_value[:neo4j]).to eq 'http://www.neo4j.org'
     end
   end
 
-  describe Neo4j::Shared::TypeConverters::DateTimeConverter do
-    subject { Neo4j::Shared::TypeConverters::DateTimeConverter }
+  describe ActiveGraph::Shared::TypeConverters::DateTimeConverter do
+    subject { described_class }
 
     before(:each) do
       @dt = 1_352_538_487
@@ -334,8 +334,8 @@ describe Neo4j::Shared::TypeConverters do
 
     it 'translate from and to database' do
       value = DateTime.parse('2012-11-10T09:08:07+00:00') # only utc support
-      db_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_db(value)
-      ruby_value = Neo4j::Shared::TypeConverters::DateTimeConverter.to_ruby(db_value)
+      db_value = described_class.to_db(value)
+      ruby_value = described_class.to_ruby(db_value)
       expect(ruby_value.class).to eq(DateTime)
       expect(ruby_value.to_s).to eq(value.to_s)
     end

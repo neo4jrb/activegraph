@@ -1,10 +1,10 @@
-describe 'Neo4j::ActiveNode' do
+describe 'ActiveGraph::Node' do
   before do
     clear_model_memory_caches
   end
 
   let!(:clazz) do
-    stub_active_node_class('Clazz')
+    stub_node_class('Clazz')
   end
 
   let(:label_name) do
@@ -35,7 +35,7 @@ describe 'Neo4j::ActiveNode' do
     describe 'property :age, index: :exact, constraint: :unique' do
       it 'raises an error, cannot set both index and constraint' do
         expect { Clazz.property :age, index: :exact, constraint: :unique }
-          .to raise_error(Neo4j::InvalidPropertyOptionsError)
+          .to raise_error(ActiveGraph::InvalidPropertyOptionsError)
       end
     end
 
@@ -51,7 +51,7 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'constraint' do
     let!(:clazz_with_constraint) do
-      stub_active_node_class('ClazzWithConstraint') do
+      stub_node_class('ClazzWithConstraint') do
         property :name
         property :age
         constraint :name, type: :unique
@@ -82,8 +82,8 @@ describe 'Neo4j::ActiveNode' do
     let(:subclass_indexes) { [] }
     let(:subclass_with_constraint) { true }
 
-    def define_active_node_class(name, model_properties, model_constraints, model_indexes, with_constraint = true)
-      stub_active_node_class(name.to_s, with_constraint) do
+    def define_node_class(name, model_properties, model_constraints, model_indexes, with_constraint = true)
+      stub_node_class(name.to_s, with_constraint) do
         model_properties.each { |args| property(*Array(args)) }
         model_constraints.each { |args| constraint(*Array(args)) }
         model_indexes.each { |args| index(*Array(args)) }
@@ -91,11 +91,11 @@ describe 'Neo4j::ActiveNode' do
     end
 
     let!(:clazz) do
-      define_active_node_class(:Clazz, properties, constraints, indexes, with_constraint)
+      define_node_class(:Clazz, properties, constraints, indexes, with_constraint)
     end
 
     let!(:other_class) do
-      define_active_node_class(:SubClazz, subclass_properties, subclass_constraints, subclass_indexes, subclass_with_constraint)
+      define_node_class(:SubClazz, subclass_properties, subclass_constraints, subclass_indexes, subclass_with_constraint)
     end
 
     it_behaves_like 'does not raise schema error', :Clazz
@@ -175,12 +175,12 @@ describe 'Neo4j::ActiveNode' do
 
   describe 'setting association values via initialize' do
     let!(:clazz) do
-      stub_active_node_class('Clazz') do
+      stub_node_class('Clazz') do
         property :name
         has_one :out, :foo, type: nil
       end
 
-      stub_active_node_class('Foo')
+      stub_node_class('Foo')
     end
 
     it 'indicates whether a property is indexed' do
@@ -189,14 +189,14 @@ describe 'Neo4j::ActiveNode' do
       expect(o.name).to eq('Jim')
       expect do
         expect(o.foo).to be_nil
-      end.to raise_error(Neo4j::RecordNotFound)
+      end.to raise_error(ActiveGraph::RecordNotFound)
 
       o.save!
 
       expect(o.name).to eq('Jim')
       expect do
         expect(o.foo).to be_nil
-      end.to raise_error(Neo4j::RecordNotFound)
+      end.to raise_error(ActiveGraph::RecordNotFound)
     end
   end
 
@@ -217,7 +217,7 @@ describe 'Neo4j::ActiveNode' do
 
       context 'with no results' do
         it 'raises an error' do
-          expect { Clazz.find(8_675_309) }.to raise_error { Neo4j::RecordNotFound }
+          expect { Clazz.find(8_675_309) }.to raise_error { ActiveGraph::RecordNotFound }
         end
       end
     end
@@ -233,7 +233,7 @@ describe 'Neo4j::ActiveNode' do
 
       context 'with no results' do
         it 'raises an error' do
-          expect { Clazz.find[8_675_309] }.to raise_error { Neo4j::RecordNotFound }
+          expect { Clazz.find[8_675_309] }.to raise_error { ActiveGraph::RecordNotFound }
         end
       end
     end
