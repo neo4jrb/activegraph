@@ -19,6 +19,7 @@ cache: bundler
 jdk: openjdk11
 rvm:
   - 2.7.0
+  - jruby-9.2.8.0
   - jruby-9.2.11.0
 env:
   global:
@@ -39,3 +40,7 @@ matrix:
       jdk: openjdk8
       env: NEO4J_VERSION=community-3.4.17 ACTIVE_MODEL_VERSION=5.2.3
 
+    - rvm: jruby-9.2.8.0
+      env: driver=java NEO4J_VERSION=enterprise-4.0.0
+    - rvm: jruby-9.2.11.0
+      env: driver=java NEO4J_VERSION=enterprise-4.0.0
