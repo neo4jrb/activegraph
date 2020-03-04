@@ -497,6 +497,10 @@ The available options are:
 
 The two orphan-destruction options are unique to Neo4j.rb. As an example of when you'd use them, imagine you are modeling tours, routes, and stops along those routes. A tour can have multiple routes, a route can have multiple stops, a stop can be in multiple routes but must have at least one. When a route is destroyed, ``:delete_orphans`` would delete only those related stops that have no other routes.
 
+The above callbacks are executed on association deletion and on node deletion for all associations of that node. The `delete` callbacks
+are executed only once and do not propage further down the graph. The `destroy` callbacks are executed recursively until no more callbacks are found.
+
+
 .. seealso::
 
   .. raw:: html
@@ -511,6 +515,20 @@ The two orphan-destruction options are unique to Neo4j.rb. As an example of when
   #has_many http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_many-instance_method
   and
   #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_one-instance_method
+
+Preserving has_one Integrity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On creation of any relationship (with `ActiveRel.create` or with the generated association methods) that would create more than
+one relationship where `:has_one` has been defined the previous relationship is removed. Optionally there is configuration option (which one?)
+that causes an exception instead of automatic removal in case of the has_one constraint violation. Silently ignoring the violations is no longer supported.
+
+In details that means before an operation adding or assigning 1 or more associations `ass`
+on node `a` with a label `A` to node `b` with a label `B`
+1. if `ass` is has_one any `ass` on any node with a label `A` and target node `b` and not part of the main operation
+is destroyed (subject to dependent callbacks)
+2. if the reverse reverse association `rev_ass` is has_one, any `rev_ass` between node `b` and any node with a Label `A`
+and not part of the main operation is destroyed (subject to dependent callbacks).
 
 Association Options
 ~~~~~~~~~~~~~~~~~~~~~~
