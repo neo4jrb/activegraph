@@ -35,7 +35,7 @@ module Rails
           let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
 
           it 'calls ActiveGraph::Base' do
-            expect(ActiveGraph::Base).to have_received(:new_driver).with('bolt://localhost:7472', {})
+            expect(ActiveGraph::Base).to have_received(:new_driver).with('bolt://localhost:7472', Object, {})
           end
         end
       end

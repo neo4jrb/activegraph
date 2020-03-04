@@ -58,11 +58,13 @@ module ActiveGraph
     end
 
     def setup!(neo4j_config = empty_config)
-      url, path, options = final_driver_config!(neo4j_config).values_at(:url, :path, :options)
-      options ||= {}
+      url, path, auth_token, username, password, config, options =
+        final_driver_config!(neo4j_config).values_at(:url, :path, :auth_token, :username, :password, :config, :options)
+      auth_token ||= username ? Neo4j::Driver::AuthTokens.basic(username, password) : Neo4j::Driver::AuthTokens.none
+      options ||= config || {}
       register_neo4j_cypher_logging
 
-      ActiveGraph::Base.new_driver( url || path || default_driver_path_or_url, options)
+      ActiveGraph::Base.new_driver(url || path || default_driver_path_or_url, auth_token, options)
     end
 
     def final_driver_config!(neo4j_config)

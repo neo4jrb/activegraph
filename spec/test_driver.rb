@@ -10,15 +10,9 @@ class TestDriver < ActiveGraph::Core::Driver
     close_all
   end
 
-  default_url('bolt://neo4:neo4j@localhost:7687')
-
-  validate_uri do |uri|
-    uri.scheme == 'bolt'
-  end
-
   class << self
-    def new_instance(url, options = {})
-      cache[url] ||= super(url, options.merge(encryption: false))
+    def new_instance(url, auth_token, options = {})
+      cache[url] ||= super(url, auth_token, options.merge(encryption: false))
     end
 
     def close_all

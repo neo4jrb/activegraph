@@ -14,7 +14,7 @@ module ActiveGraph
         def subscribe_to_request
           ActiveSupport::Notifications.subscribe('neo4j.core.bolt.request') do |_, start, finish, _id, _payload|
             ms = (finish - start) * 1000
-            yield " #{ANSI::BLUE}BOLT:#{ANSI::CLEAR} #{ANSI::YELLOW}#{ms.round}ms#{ANSI::CLEAR} #{Base.current_driver.url_without_password}"
+            yield " #{ANSI::BLUE}BOLT:#{ANSI::CLEAR} #{ANSI::YELLOW}#{ms.round}ms#{ANSI::CLEAR} #{Base.current_driver.url}"
           end
         end
 

@@ -1,42 +1,25 @@
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_graph/core/logging'
-require 'active_graph/core/has_uri'
 require 'active_graph/version'
 
 module ActiveGraph
   module Core
     class Driver
-      include HasUri
-
-      USER_AGENT_STRING = "neo4j-gem/#{::ActiveGraph::VERSION} (https://github.com/neo4jrb/neo4j)"
+      USER_AGENT_STRING = "activegraph-gem/#{::ActiveGraph::VERSION} (https://github.com/neo4jrb/activegraph)"
 
       attr_accessor :wrap_level
-      attr_reader :options, :driver
+      attr_reader :options, :driver, :url
       delegate :close, to: :driver
 
-      default_url('bolt://neo4:neo4j@localhost:7687')
-
-      validate_uri do |uri|
-        uri.scheme == 'bolt'
-      end
-
       class << self
-        def new_instance(url, options = {})
-          uri = URI(url)
-          user = uri.user
-          password = uri.password
-          auth_token = if user
-                         Neo4j::Driver::AuthTokens.basic(user, password)
-                       else
-                         Neo4j::Driver::AuthTokens.none
-                       end
+        def new_instance(url, auth_token,  options = {})
           Neo4j::Driver::GraphDatabase.driver(url, auth_token, options)
         end
       end
 
-      def initialize(url, options = {}, extended_options = {})
-        self.url = url
-        @driver = self.class.new_instance(url, options)
+      def initialize(url, auth_token = Neo4j::Driver::AuthTokens.none, options = {}, extended_options = {})
+        @url = url
+        @driver = self.class.new_instance(url, auth_token, options)
         @options = extended_options
       end
 

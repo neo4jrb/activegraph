@@ -28,10 +28,10 @@ module ActiveGraph
         @establish_driver_block.call if @establish_driver_block
       end
 
-      def new_driver(url, options = {})
+      def new_driver(url, auth_token, options = {})
         verbose_query_logs = ActiveGraph::Config.fetch(:verbose_query_logs, false)
         ActiveGraph::Core::Driver
-          .new(url, options, verbose_query_logs: verbose_query_logs)
+          .new(url, auth_token, options, verbose_query_logs: verbose_query_logs)
       end
 
       def transaction
