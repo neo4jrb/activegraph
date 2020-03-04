@@ -20,8 +20,8 @@ describe ActiveGraph::Core::Driver do
 
   describe '#initialize' do
     let_context(url: 'url') { subject_should_raise ArgumentError, /Invalid address format/ }
-    let_context(url: :symbol) { subject_should_raise ArgumentError, /bad argument/ }
-    let_context(url: 123) { subject_should_raise ArgumentError, /bad argument/ }
+    let_context(url: :symbol) { subject_should_raise ArgumentError }
+    let_context(url: 123) { subject_should_raise ArgumentError }
 
     let_context(url: "http://localhost:#{port}") do
       subject_should_raise Neo4j::Driver::Exceptions::ClientException, /Unsupported URI scheme/
