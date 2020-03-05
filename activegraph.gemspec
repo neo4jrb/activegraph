@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name     = 'activegraph'
   s.version  = ActiveGraph::VERSION
 
-  s.required_ruby_version = ((RUBY_PLATFORM == 'java') ? '>= 1.9.3' : '>= 2.1.9')
+  s.required_ruby_version = '>= 2.5'
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg, Heinrich Klobuczek'
   s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com, heinrich@mail.com'
