@@ -25,8 +25,8 @@ env:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
     - NEO4J_URL="bolt://localhost:7472"
   matrix:
-    - NEO4J_VERSION=enterprise-3.5.14
-    - NEO4J_VERSION=enterprise-4.0.0
+    - NEO4J_VERSION=enterprise-3.5.16
+    - NEO4J_VERSION=enterprise-4.0.1
 matrix:
   include:
     - jdk:
@@ -40,4 +40,4 @@ matrix:
       env: NEO4J_VERSION=community-3.4.17 ACTIVE_MODEL_VERSION=5.2.3
 
     - rvm: jruby-9.2.11.0
-      env: driver=java NEO4J_VERSION=enterprise-4.0.0
+      env: driver=java NEO4J_VERSION=enterprise-4.0.1

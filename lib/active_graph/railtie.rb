@@ -7,7 +7,9 @@ require 'active_graph/core/driver'
 module ActiveGraph
   class Railtie < ::Rails::Railtie
     def empty_config
-      ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.driver = ActiveSupport::OrderedOptions.new }
+      ActiveSupport::OrderedOptions.new.tap do |cfg|
+        cfg.driver = ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.config = ActiveSupport::OrderedOptions.new }
+      end
     end
 
     config.neo4j = empty_config
@@ -58,13 +60,12 @@ module ActiveGraph
     end
 
     def setup!(neo4j_config = empty_config)
-      url, path, auth_token, username, password, config, options =
-        final_driver_config!(neo4j_config).values_at(:url, :path, :auth_token, :username, :password, :config, :options)
+      url, path, auth_token, username, password, config =
+        final_driver_config!(neo4j_config).values_at(:url, :path, :auth_token, :username, :password, :config)
       auth_token ||= username ? Neo4j::Driver::AuthTokens.basic(username, password) : Neo4j::Driver::AuthTokens.none
-      options ||= config || {}
       register_neo4j_cypher_logging
 
-      ActiveGraph::Base.new_driver(url || path || default_driver_path_or_url, auth_token, options)
+      ActiveGraph::Base.new_driver(url || path || default_driver_path_or_url, auth_token, config)
     end
 
     def final_driver_config!(neo4j_config)
