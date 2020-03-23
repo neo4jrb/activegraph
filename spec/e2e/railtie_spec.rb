@@ -4,7 +4,6 @@ module Rails
   describe 'railtie' do
     require 'active_graph/railtie'
 
-
     around(:each) do |example|
       main_spec_driver = ActiveGraph::Base.current_driver
       example.run
@@ -14,8 +13,7 @@ module Rails
     describe '#setup!' do
       let(:driver_path) {}
       let(:cfg) do
-        ActiveSupport::OrderedOptions.new.tap do |c|
-          c.driver = ActiveSupport::OrderedOptions.new
+        ActiveGraph::Railtie.empty_config.dup.tap do |c|
           c.driver.path = driver_path if driver_path
         end
       end
