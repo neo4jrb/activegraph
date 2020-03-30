@@ -4,6 +4,7 @@ require 'active_graph/version'
 require 'active_graph/core'
 require 'active_graph/core/query_ext' # From this gem
 
+require 'active_support/core_ext/module/attribute_accessors_per_thread'
 require 'active_graph/transactions'
 require 'active_graph/base'
 require 'active_graph/model_schema'
@@ -118,3 +119,5 @@ if defined?(Rails)
   require 'rails/generators'
   require 'rails/generators/neo4j_generator'
 end
+
+Neo4j::Driver::Transaction.prepend ActiveGraph::Transaction

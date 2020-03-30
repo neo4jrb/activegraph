@@ -102,10 +102,10 @@ describe ActiveGraph::Core::Query do
 
     before(:each) do
       5.times do
-        ActiveGraph::Transaction.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Base.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
       2.times do
-        ActiveGraph::Transaction.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Base.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
     end
 

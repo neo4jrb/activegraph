@@ -72,7 +72,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      ActiveGraph::Transaction.query('CREATE (n:`User`) return n')
+      ActiveGraph::Base.query('CREATE (n:`User`) return n')
       user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
@@ -97,7 +97,7 @@ describe 'migration tasks' do
       create_constraint :Song, :my_id, type: :unique
 
       Song.id_property :my_id, on: :custom_id
-      ActiveGraph::Transaction.query('CREATE (n:`Song`) return n')
+      ActiveGraph::Base.query('CREATE (n:`Song`) return n')
       user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

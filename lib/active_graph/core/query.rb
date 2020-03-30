@@ -237,7 +237,7 @@ module ActiveGraph
       def response
         return @response if @response
 
-        @response = ActiveGraph::Transaction.query(self, transaction: Transaction.root, wrap_level: (:core_entity if unwrapped?))
+        @response = ActiveGraph::Base.query(self, wrap_level: (:core_entity if unwrapped?))
       end
 
       def raise_if_cypher_error!(response)

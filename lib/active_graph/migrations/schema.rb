@@ -7,11 +7,11 @@ module ActiveGraph
            indexes: fetch_index_descriptions(driver).sort}
         end
 
-        def synchronize_schema_data(driver, schema_data, remove_missing)
+        def synchronize_schema_data(schema_data, remove_missing)
           queries = []
           queries += drop_and_create_queries(fetch_constraint_descriptions(driver), schema_data[:constraints], remove_missing)
           queries += drop_and_create_queries(fetch_index_descriptions(driver), schema_data[:indexes], remove_missing)
-          driver.queries do
+          ActiveGraph::Base.queries do
             queries.each { |query| append query }
           end
         end

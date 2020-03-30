@@ -93,10 +93,9 @@ module ActiveGraph::Node
     end
 
     # The pending associations are cleared during the save process, so it's necessary to
-    # build the processable hash before it begins. If there are nodes and associations that
-    # need to be created after the node is saved, a new transaction is started.
+    # build the processable hash before it begins.
     def cascade_save
-      self.class.run_transaction(pending_deferred_creations?) do
+      ActiveGraph::Base.transaction do
         yield.tap { process_unpersisted_nodes! }
       end
     end

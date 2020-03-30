@@ -1,8 +1,13 @@
+require 'active_graph/core/querable'
+require 'active_graph/core/schema'
+
 module ActiveGraph
   # To contain any base login for Node/Relationship which
   # is external to the main classes
   module Base
     include ActiveGraph::Transactions
+    include ActiveGraph::Core::Querable
+    extend ActiveGraph::Core::Schema
 
     at_exit do
       @driver&.close
@@ -34,12 +39,10 @@ module ActiveGraph
           .new(url, auth_token, options, verbose_query_logs: verbose_query_logs)
       end
 
-      def transaction
-        current_transaction || Transaction
-      end
-
       def query(*args)
-        transaction.query(*args)
+        transaction do
+          super(*args)
+        end
       end
 
       # Should support setting driver via config options
@@ -48,15 +51,9 @@ module ActiveGraph
         @driver = driver
       end
 
-      def run_transaction(run_in_tx = true)
-        Transaction.run(current_driver, run_in_tx) do |tx|
-          yield tx
-        end
-      end
-
-      def new_transaction
+      def validating_transaction(&block)
         validate_model_schema!
-        ActiveGraph::Transaction.new
+        transaction(&block)
       end
 
       def new_query(options = {})
@@ -66,15 +63,10 @@ module ActiveGraph
 
       def magic_query(*args)
         if args.empty? || args.map(&:class) == [Hash]
-          Base.new_query(*args)
+          new_query(*args)
         else
-          Base.current_driver.query(*args)
+          query(*args)
         end
-      end
-
-      def current_transaction
-        validate_model_schema!
-        Transaction.root
       end
 
       def label_object(label_name)

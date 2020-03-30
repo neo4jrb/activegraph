@@ -76,6 +76,7 @@ COMMENT
       check_neo4j_version_3 do
         require 'active_graph/migrations/schema'
 
+        # TODO: Incorrect
         schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data(ActiveGraph::Base.transaction)
 
         runner = ActiveGraph::Migrations::Runner.new
@@ -97,13 +98,13 @@ COMMENT
 
         schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
 
-        ActiveGraph::Transaction.subscribe_to_query(&method(:puts))
+        ActiveGraph::Base.subscribe_to_query(&method(:puts))
 
-        ActiveGraph::Base.run_transaction do
-          ActiveGraph::Migrations::Schema.synchronize_schema_data(ActiveGraph::Base.transaction, schema_data, args[:remove_missing])
+        ActiveGraph::Base.transaction do
+          ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
         end
 
-        ActiveGraph::Base.run_transaction do
+        ActiveGraph::Base.transaction do
           runner = ActiveGraph::Migrations::Runner.new
           runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
         end

@@ -7,7 +7,7 @@ module Neo4jSpecHelpers
 
   self.expect_queries_count = 0
 
-  ActiveGraph::Transaction.subscribe_to_query do |_message|
+  ActiveGraph::Base.subscribe_to_query do |_message|
     self.expect_queries_count += 1
   end
 
@@ -30,7 +30,7 @@ module Neo4jSpecHelpers
   end
 
   def neo4j_query(*args)
-    ActiveGraph::Transaction.query(*args)
+    ActiveGraph::Base.query(*args)
   end
 
   def log_queries!

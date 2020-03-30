@@ -99,8 +99,8 @@ module ActiveGraph
       logger_proc = ->(message) do
         (ActiveGraph::Config[:logger] ||= Rails.logger).debug message
       end
-      ActiveGraph::Transaction.subscribe_to_query(&logger_proc)
-      ActiveGraph::Transaction.subscribe_to_request(&logger_proc)
+      ActiveGraph::Base.subscribe_to_query(&logger_proc)
+      ActiveGraph::Base.subscribe_to_request(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end

@@ -76,7 +76,7 @@ module ActiveGraph
       end
 
       def constraints(_options = {})
-        ActiveGraph::Transaction.constraints.select do |definition|
+        ActiveGraph::Base.constraints.select do |definition|
           definition[:label] == @name.to_sym
         end
       end
@@ -109,13 +109,13 @@ module ActiveGraph
 
       class << self
         def indexes
-          ActiveGraph::Transaction.indexes
+          ActiveGraph::Base.indexes
         end
 
         def drop_indexes
           indexes.each do |definition|
             begin
-              ActiveGraph::Transaction.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
+              ActiveGraph::Base.query("DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})")
             rescue Neo4j::Driver::Exceptions::DatabaseException
               # This will error on each constraint. Ignore and continue.
               next
@@ -124,11 +124,10 @@ module ActiveGraph
         end
 
         def drop_constraints
-          ActiveGraph::Transaction.named_constraints.each do |constraint|
-            ActiveGraph::Transaction.query("DROP CONSTRAINT #{constraint.name}")
-          end
-          ActiveGraph::Transaction.constraints.each do |definition|
-            ActiveGraph::Transaction.query("DROP CONSTRAINT ON (n:`#{definition[:label]}`) ASSERT n.`#{definition[:properties][0]}` IS UNIQUE")
+          ActiveGraph::Base.transaction do |tx|
+            tx.run('CALL db.constraints').each do |record|
+              tx.run("DROP #{record.keys.include?(:name) ? "CONSTRAINT #{record[:name]}" : record[:description]}")
+            end
           end
         end
 
@@ -147,7 +146,7 @@ module ActiveGraph
       end
 
       def schema_query(cypher)
-        ActiveGraph::Transaction.transaction { |tx| tx.query(cypher, {}) }
+        ActiveGraph::Base.query(cypher, {})
       end
 
       def validate_index_options!(options)

@@ -719,7 +719,7 @@ describe 'ActiveGraph::Node' do
       query = new_query.match(p: :Person)
                        .where(p: {neo_id: person.neo_id})
                        .return('p.datetime AS datetime')
-      ActiveGraph::Transaction.query(query).first.datetime
+      ActiveGraph::Base.query(query).first.datetime
     end
 
     it 'saves as date/time string by default' do
