@@ -29,11 +29,6 @@ env:
     - NEO4J_VERSION=enterprise-4.0.3
 matrix:
   include:
-    - jdk:
-      before_script:
-      script: "bundle exec rubocop"
-      env: "RUBOCOP=true"
-
     # Testing older versions of ActiveModel
     - rvm: 2.5.7
       jdk: openjdk8
