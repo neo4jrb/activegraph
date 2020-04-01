@@ -10,14 +10,13 @@ describe 'ActiveGraph::Transaction' do
     before { Clazz }
 
     it 'returns a wrapped node inside and outside of transaction' do
-      begin
-        tx = ActiveGraph::Base.new_transaction
+      a = nil
+      b = nil
+      ActiveGraph::Base.transaction do
         a = Clazz.create name: 'a'
         b = Clazz.create name: 'b'
         a.thing = b
         expect(a.thing).to eq b
-      ensure
-        tx.close
       end
       expect(a.thing).to eq(b)
     end

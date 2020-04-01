@@ -89,14 +89,10 @@ module ActiveGraph::Shared
       @_create_or_updating = true
       apply_default_values
       result = _persisted_obj ? update_model : create_model
-      current_transaction = ActiveGraph::Base.current_transaction
 
-      current_transaction.mark_failed if result == false && current_transaction
+      ActiveGraph::Base.transaction(&:failure) if result == false
 
       result != false
-    rescue => e
-      current_transaction.mark_failed if current_transaction
-      raise e
     ensure
       @_create_or_updating = nil
     end
@@ -180,10 +176,10 @@ module ActiveGraph::Shared
     # Updates this resource with all the attributes from the passed-in Hash and requests that the record be saved.
     # If saving fails because the resource is invalid then false will be returned.
     def update(attributes)
-      self.class.run_transaction do |tx|
+      ActiveGraph::Base.transaction do |tx|
         self.attributes = process_attributes(attributes)
         saved = save
-        tx.mark_failed unless saved
+        tx.failure unless saved
         saved
       end
     end
@@ -197,7 +193,7 @@ module ActiveGraph::Shared
 
     def update_db_properties(hash)
       fail ::ActiveGraph::Error, 'can not update on a new record object' unless persisted?
-      self.class.run_transaction do
+      ActiveGraph::Base.transaction do
         db_values = props_for_db(hash)
         neo4j_query(query_as(:n).set(n: db_values))
         db_values.each_pair { |k, v| self.public_send(:"#{k}=", v) }
@@ -210,7 +206,7 @@ module ActiveGraph::Shared
 
     # Same as {#update_attributes}, but raises an exception if saving fails.
     def update!(attributes)
-      self.class.run_transaction do
+      ActiveGraph::Base.transaction do
         self.attributes = process_attributes(attributes)
         save!
       end
@@ -224,12 +220,6 @@ module ActiveGraph::Shared
         "#{model_cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}"
       else
         "#{model_cache_key}/#{neo_id}"
-      end
-    end
-
-    module ClassMethods
-      def run_transaction(run_in_tx = true)
-        ActiveGraph::Base.run_transaction(run_in_tx) { |tx| yield tx }
       end
     end
 

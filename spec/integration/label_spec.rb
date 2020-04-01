@@ -16,7 +16,7 @@ describe 'Labels' do
       end
 
       def self.neo4j_driver
-        current_driver
+        driver
       end
 
       extend ActiveGraph::Node::Query::ClassMethods

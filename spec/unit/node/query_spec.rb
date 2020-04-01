@@ -16,7 +16,7 @@ describe ActiveGraph::Node::Query do
       end
 
       def self.neo4j_driver
-        current_driver
+        driver
       end
     end
   end

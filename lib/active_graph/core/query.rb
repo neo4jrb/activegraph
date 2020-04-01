@@ -68,8 +68,6 @@ module ActiveGraph
       end
 
       def initialize(options = {})
-        @driver = options[:driver]
-
         @options = options
         @clauses = []
         @_params = {}
@@ -237,7 +235,7 @@ module ActiveGraph
       def response
         return @response if @response
 
-        @response = ActiveGraph::Transaction.query(self, transaction: Transaction.root, wrap_level: (:core_entity if unwrapped?))
+        @response = ActiveGraph::Base.query(self, wrap_level: (:core_entity if unwrapped?))
       end
 
       def raise_if_cypher_error!(response)
@@ -374,7 +372,7 @@ module ActiveGraph
       end
 
       def &(other)
-        self.class.new(driver: @driver).tap do |new_query|
+        self.class.new.tap do |new_query|
           new_query.options = options.merge(other.options)
           new_query.clauses = clauses + other.clauses
         end.params(other._params)

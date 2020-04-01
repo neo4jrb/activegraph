@@ -32,7 +32,7 @@ module ActiveGraph
       def model_constraints
         return @model_constraints if @model_constraints
 
-        constraints = ActiveGraph::Transaction.constraints.each_with_object({}) do |row, result|
+        constraints = ActiveGraph::Base.constraints.each_with_object({}) do |row, result|
           result[row[:label]] ||= []
           result[row[:label]] << row[:properties]
         end
@@ -43,7 +43,7 @@ module ActiveGraph
       def model_indexes
         return @model_indexes if @model_indexes
 
-        indexes = ActiveGraph::Transaction.indexes.each_with_object({}) do |row, result|
+        indexes = ActiveGraph::Base.indexes.each_with_object({}) do |row, result|
           result[row[:label]] ||= []
           result[row[:label]] << row[:properties]
         end

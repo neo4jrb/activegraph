@@ -33,12 +33,9 @@ require 'unique_class'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 
-require 'active_graph/core/driver'
-
 require 'dryspec/helpers'
 require 'neo4j_spec_helpers'
 require 'action_controller'
-require 'test_driver'
 
 class MockLogger
   def debug(*_args)
@@ -188,9 +185,15 @@ module FixingRSpecHelpers
   end
 end
 
-server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
+ActiveGraph::Config[:logger_level] = Logger::DEBUG if ENV['DEBUG']
 
-ActiveGraph::Base.driver = TestDriver.new(server_url) # , logger_level: Logger::DEBUG)
+def set_default_driver
+  server_url = ENV['NEO4J_URL'] || 'bolt://localhost:6998'
+  ActiveGraph::Base.driver =
+    Neo4j::Driver::GraphDatabase.driver(server_url, Neo4j::Driver::AuthTokens.none, encryption: false)
+end
+
+set_default_driver
 
 RSpec::Matchers.define_negated_matcher :not_change, :change
 

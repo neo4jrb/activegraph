@@ -205,7 +205,7 @@ module ActiveGraph
           fail 'Can only create relationships on associations' if !@association
           other_nodes = _nodeify!(*other_nodes)
 
-          ActiveGraph::Base.run_transaction do
+          ActiveGraph::Base.transaction do
             other_nodes.each do |other_node|
               if other_node.neo_id
                 other_node.try(:delete_reverse_has_one_core_rel, association)

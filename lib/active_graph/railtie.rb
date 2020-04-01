@@ -2,7 +2,6 @@ require 'active_support/notifications'
 require 'rails/railtie'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
-require 'active_graph/core/driver'
 
 module ActiveGraph
   class Railtie < ::Rails::Railtie
@@ -65,7 +64,7 @@ module ActiveGraph
       auth_token ||= username ? Neo4j::Driver::AuthTokens.basic(username, password) : Neo4j::Driver::AuthTokens.none
       register_neo4j_cypher_logging
 
-      ActiveGraph::Base.new_driver(url || path || default_driver_path_or_url, auth_token, config)
+      Neo4j::Driver::GraphDatabase.driver(url || path || default_driver_path_or_url, auth_token, config)
     end
 
     def final_driver_config!(neo4j_config)
@@ -99,8 +98,8 @@ module ActiveGraph
       logger_proc = ->(message) do
         (ActiveGraph::Config[:logger] ||= Rails.logger).debug message
       end
-      ActiveGraph::Transaction.subscribe_to_query(&logger_proc)
-      ActiveGraph::Transaction.subscribe_to_request(&logger_proc)
+      ActiveGraph::Base.subscribe_to_query(&logger_proc)
+      ActiveGraph::Base.subscribe_to_request(&logger_proc)
 
       @neo4j_cypher_logging_registered = true
     end

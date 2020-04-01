@@ -27,12 +27,9 @@ describe 'wrapped nodes in transactions' do
 
     Student.create(name: 'John')
     Teacher.create(name: 'Mr Jones')
-    begin
-      tx = ActiveGraph::Base.new_transaction
+    ActiveGraph::Base.transaction do
       @john = Student.first
       @jones = Teacher.first
-    ensure
-      tx.close
     end
   end
 
@@ -60,27 +57,21 @@ describe 'wrapped nodes in transactions' do
     end
 
     it 'will load rels within a tranaction' do
-      begin
-        tx = ActiveGraph::Base.new_transaction
-        retrieved_rel = @john.teachers.each_rel do |r|
+      retrieved_rel = ActiveGraph::Base.transaction do
+        @john.teachers.each_rel do |r|
           expect(r).to be_a(StudentTeacher)
         end
-      ensure
-        tx.close
       end
       expect(retrieved_rel.first).to be_a(StudentTeacher)
     end
 
     it 'does not create an additional relationship after load then save' do
       starting_count = @john.teachers.rels.count
-      begin
-        tx = ActiveGraph::Base.new_transaction
+      ActiveGraph::Base.transaction do
         @john.teachers.each_rel do |r|
           r.appreciation = 9001
           r.save
         end
-      ensure
-        tx.close
       end
       @john.reload
       expect(@john.teachers.rels.count).to eq starting_count

@@ -23,9 +23,7 @@ module ActiveGraph
       end
 
       def query
-        # `nil` drivers are just a workaround until
-        # we phase out `Query` objects containing drivers
-        ActiveGraph::Core::Query.new(driver: nil)
+        ActiveGraph::Core::Query.new
       end
     end
   end

@@ -1,7 +1,6 @@
 require 'active_graph/transaction'
 require 'active_graph/core/instrumentable'
 require 'active_graph/core/query'
-require 'active_graph/core/driver'
 require 'active_graph/core/responses'
 
 require 'neo4j_ruby_driver'

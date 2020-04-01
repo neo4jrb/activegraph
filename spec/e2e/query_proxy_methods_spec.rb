@@ -368,7 +368,7 @@ describe 'query_proxy_methods' do
 
     context 'when building the query' do
       before do
-        @subscription = ActiveGraph::Transaction.subscribe_to_query do |query|
+        @subscription = ActiveGraph::Base.subscribe_to_query do |query|
           expect(query).to include('DISTINCT')
         end
       end

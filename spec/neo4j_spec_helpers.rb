@@ -7,7 +7,7 @@ module Neo4jSpecHelpers
 
   self.expect_queries_count = 0
 
-  ActiveGraph::Transaction.subscribe_to_query do |_message|
+  ActiveGraph::Base.subscribe_to_query do |_message|
     self.expect_queries_count += 1
   end
 
@@ -25,12 +25,12 @@ module Neo4jSpecHelpers
     ActiveGraph::Base.new_query
   end
 
-  def current_driver
-    ActiveGraph::Base.current_driver
+  def driver
+    ActiveGraph::Base.driver
   end
 
   def neo4j_query(*args)
-    ActiveGraph::Transaction.query(*args)
+    ActiveGraph::Base.query(*args)
   end
 
   def log_queries!
@@ -73,16 +73,5 @@ module Neo4jSpecHelpers
         ENV[var_name.to_s] = old_value
       end
     end
-  end
-
-  def test_bolt_url
-    ENV['NEO4J_URL']
-  end
-
-  def test_driver_adaptor(url, extra_options = {})
-    options = {}
-    options[:logger_level] = Logger::DEBUG if ENV['DEBUG']
-
-    TestDriver.new(url, options.merge(extra_options))
   end
 end
