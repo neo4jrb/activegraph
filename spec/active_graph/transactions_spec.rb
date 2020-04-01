@@ -116,7 +116,11 @@ describe ActiveGraph::Transactions do
             Student.create
           end
           session.write_transaction { |tx| tx.run(write_query) }
-          session.run(read_query, {}, timeout: 1.minute)
+          if ActiveGraph::Base.version >= '3,5'
+            session.run(read_query, {}, timeout: 1.minute)
+          else
+            session.run(read_query)
+          end
         end
       end.not_to raise_error
     end
