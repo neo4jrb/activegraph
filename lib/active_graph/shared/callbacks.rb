@@ -20,16 +20,14 @@ module ActiveGraph
       end
 
       def destroy #:nodoc:
-        tx = ActiveGraph::Base.new_transaction
-        tx.root.after_commit { run_callbacks(:destroy_commit) {} }
-        run_callbacks(:destroy) { super }
+        ActiveGraph::Base.validating_transaction do |tx|
+          tx.after_commit { run_callbacks(:destroy_commit) {} }
+          run_callbacks(:destroy) { super }
+        end
       rescue
         @_deleted = false
         @attributes = @attributes.dup
-        tx.mark_failed if tx
         raise
-      ensure
-        tx.close if tx
       end
 
       def touch #:nodoc:
@@ -51,15 +49,15 @@ module ActiveGraph
       end
 
       def create_model #:nodoc:
-        self.class.run_transaction do |tx|
-          tx.root.after_commit { run_callbacks(:create_commit) {} }
+        ActiveGraph::Base.transaction do |tx|
+          tx.after_commit { run_callbacks(:create_commit) {} }
           run_callbacks(:create) { super }
         end
       end
 
       def update_model(*) #:nodoc:
-        self.class.run_transaction do |tx|
-          tx.root.after_commit { run_callbacks(:update_commit) {} }
+        ActiveGraph::Base.transaction do |tx|
+          tx.after_commit { run_callbacks(:update_commit) {} }
           run_callbacks(:update) { super }
         end
       end

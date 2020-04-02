@@ -152,10 +152,10 @@ module ActiveGraph
           fail 'Method invalid when called on Class objects' unless source_object
           result = self.where(params).first
           return result unless result.nil?
-          ActiveGraph::Base.run_transaction do
+          ActiveGraph::Base.transaction do
             node = model.create(params)
             self << node
-            return node
+            node
           end
         end
 

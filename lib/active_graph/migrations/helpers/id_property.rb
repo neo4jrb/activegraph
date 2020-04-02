@@ -27,23 +27,20 @@ module ActiveGraph
         end
 
         def id_batch_set(label, id_property, new_ids, count)
-          tx = ActiveGraph::Base.new_transaction
-
-          execute("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
+          ActiveGraph::Base.transaction do
+            execute("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
             with COLLECT(n) as nodes, #{new_ids} as ids
             FOREACH(i in range(0,#{count - 1})|
               FOREACH(node in [nodes[i]]|
                 SET node.#{id_property} = ids[i]))
             RETURN distinct(true)
             LIMIT #{count}")
-
-          count
-        rescue ActiveGraph::Server::CypherResponse::ResponseError, Faraday::TimeoutError
+            count
+          end
+        rescue ActiveGraph::Server::CypherResponse::ResponseError
           new_max_per_batch = (max_per_batch * 0.8).round
           output "Error querying #{max_per_batch} nodes. Trying #{new_max_per_batch}"
           new_max_per_batch
-        ensure
-          tx.close
         end
 
         def print_status(last_time_taken, max_per_batch, nodes_left)

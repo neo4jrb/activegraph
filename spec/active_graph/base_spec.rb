@@ -1,14 +1,9 @@
 require 'spec_helper'
-require 'active_graph/transaction'
 
-describe ActiveGraph::Transaction do
-  # let(:url) { ENV['NEO4J_URL'] }
-  # let(:driver) { TestDriver.new(url) }
-  #
+describe ActiveGraph::Base do
+  before { described_class.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
 
-  before { ActiveGraph::Transaction.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
-
-  subject { ActiveGraph::Transaction }
+  subject { described_class }
 
   describe '#query' do
     it 'Can make a query' do
@@ -45,7 +40,7 @@ describe ActiveGraph::Transaction do
 
   describe 'transactions' do
     def create_object_by_id(id, tx)
-      tx.query('CREATE (t:Temporary {id: $id})', id: id)
+      subject.query('CREATE (t:Temporary {id: $id})', id: id)
     end
 
     def get_object_by_id(id)
@@ -55,9 +50,9 @@ describe ActiveGraph::Transaction do
 
     it 'logs one query per query_set in transaction' do
       expect_queries(1) do
-        tx = subject.transaction
-        create_object_by_id(1, tx)
-        tx.close
+        subject.transaction do |tx|
+          create_object_by_id(1, tx)
+        end
       end
       expect(get_object_by_id(1)).to be_a(Neo4j::Driver::Types::Node)
 
@@ -71,17 +66,17 @@ describe ActiveGraph::Transaction do
 
     it 'allows for rollback' do
       expect_queries(1) do
-        tx = subject.transaction
-        create_object_by_id(3, tx)
-        tx.mark_failed
-        tx.close
+        subject.transaction do |tx|
+          create_object_by_id(3, tx)
+          tx.failure
+        end
       end
       expect(get_object_by_id(3)).to be_nil
 
       expect_queries(1) do
         subject.transaction do |tx|
           create_object_by_id(4, tx)
-          tx.mark_failed
+          tx.failure
         end
       end
       expect(get_object_by_id(4)).to be_nil
@@ -141,44 +136,48 @@ describe ActiveGraph::Transaction do
     describe 'after_commit hook' do
       it 'gets called when the root transaction is closed' do
         data = false
-        tx1 = subject.transaction
-        tx2 = subject.transaction
-        tx3 = subject.transaction
-        tx3.root.after_commit { data = true }
-        tx3.close
-        tx2.close
-        expect { tx1.close }.to change { data }.to(true)
+        expect do
+          subject.transaction do |tx1|
+            subject.transaction do |tx2|
+              subject.transaction do |tx3|
+                tx3.after_commit { data = true }
+              end
+            end
+          end
+        end.to change { data }.to(true)
         expect(data).to be_truthy
       end
 
       it 'is ignored when the root transaction fails' do
         data = false
-        tx1 = subject.transaction
-        tx2 = subject.transaction
-        tx3 = subject.transaction
-        tx3.root.after_commit { data = true }
-        tx1.mark_failed
-        tx3.close
-        tx2.close
-        expect { tx1.close }.not_to change { data }
+        expect do
+          subject.transaction do |tx1|
+            subject.transaction do |tx2|
+              subject.transaction do |tx3|
+                tx3.after_commit { data = true }
+              end
+            end
+            tx1.failure
+          end
+        end.not_to change { data }
         expect(data).to be_falsey
       end
 
       it 'is ignored when a child transaction fails' do
         data = false
-        tx1 = subject.transaction
-        tx2 = subject.transaction
-        tx3 = subject.transaction
-        tx3.root.after_commit { data = true }
-        tx3.mark_failed
-        tx3.close
-        tx2.close
-        expect { tx1.close }.not_to change { data }
+        expect do
+          subject.transaction do |tx1|
+            subject.transaction do |tx2|
+              subject.transaction do |tx3|
+                tx3.after_commit { data = true }
+                tx3.failure
+              end
+            end
+          end
+        end.not_to change { data }
         expect(data).to be_falsey
       end
     end
-    # it 'does not allow transactions in the wrong order' do
-    #   expect { driver.end_transaction }.to raise_error(RuntimeError, /Cannot close transaction without starting one/)
   end
 
   describe 'results' do
@@ -225,7 +224,7 @@ describe ActiveGraph::Transaction do
     end
 
     describe 'parameter input and output' do
-      subject { ActiveGraph::Transaction.query('WITH $param AS param RETURN param', param: param).first.param }
+      subject { ActiveGraph::Base.query('WITH $param AS param RETURN param', param: param).first.param }
 
       [
         # Integers
@@ -356,7 +355,7 @@ describe ActiveGraph::Transaction do
       before { create_constraint(:Album, :uuid, type: :unique) }
 
       it 'raises an error' do
-        ActiveGraph::Transaction.query("CREATE (:Album {uuid: 'dup'})").to_a
+        described_class.query("CREATE (:Album {uuid: 'dup'})").to_a
         expect do
           described_class.query("CREATE (:Album {uuid: 'dup'})").to_a
         end.to raise_error(::ActiveGraph::Core::SchemaErrors::ConstraintValidationFailedError)
@@ -366,7 +365,7 @@ describe ActiveGraph::Transaction do
     describe 'Invalid input error' do
       it 'raises an error' do
         expect do
-          ActiveGraph::Transaction.query("CRATE (:Album {uuid: 'dup'})").to_a
+          described_class.query("CRATE (:Album {uuid: 'dup'})").to_a
         end.to raise_error(::ActiveGraph::Core::CypherError, /Invalid input 'A'/)
       end
     end
@@ -374,7 +373,7 @@ describe ActiveGraph::Transaction do
     describe 'Clause ordering error' do
       it 'raises an error' do
         expect do
-          ActiveGraph::Transaction.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
+          described_class.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
         end.to raise_error(::ActiveGraph::Core::CypherError, /RETURN can only be used at the end of the query/)
       end
     end
@@ -394,7 +393,7 @@ describe ActiveGraph::Transaction do
 
     describe 'constraints' do
       let(:label) {}
-      subject { ActiveGraph::Transaction.constraints }
+      subject { described_class.constraints }
 
       it do
         should match_array([
@@ -407,7 +406,7 @@ describe ActiveGraph::Transaction do
 
     describe 'indexes' do
       let(:label) {}
-      subject { ActiveGraph::Transaction.indexes }
+      subject { ActiveGraph::Base.indexes }
 
       it do
         should match_array([

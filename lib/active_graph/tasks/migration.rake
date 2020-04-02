@@ -9,8 +9,8 @@ if !defined?(Rails) && !Rake::Task.task_defined?('environment')
     require 'ostruct'
     neo4j_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
     $LOAD_PATH.unshift File.dirname('./')
-    ActiveGraph::Base.on_establish_session do
-      ActiveGraph::Base.new_driver(neo4j_url)
+    ActiveGraph::Base.on_establish_driver do
+      Neo4j::Driver::GraphDatabase.driver(neo4j_url)
     end
   end
 end
@@ -64,7 +64,7 @@ namespace :neo4j do
 COMMENT
 
     def check_neo4j_version_3
-      if ActiveGraph::Base.transaction.version > '3.0.0'
+      if ActiveGraph::Base.version > '3.0.0'
         yield
       else
         puts 'WARNING: This task does not work for versions of Neo4j before 3.0.0'
@@ -76,7 +76,7 @@ COMMENT
       check_neo4j_version_3 do
         require 'active_graph/migrations/schema'
 
-        schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data(ActiveGraph::Base.transaction)
+        schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data
 
         runner = ActiveGraph::Migrations::Runner.new
         schema_data[:versions] = runner.complete_migration_versions.sort
@@ -97,13 +97,13 @@ COMMENT
 
         schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
 
-        ActiveGraph::Transaction.subscribe_to_query(&method(:puts))
+        ActiveGraph::Base.subscribe_to_query(&method(:puts))
 
-        ActiveGraph::Base.run_transaction do
-          ActiveGraph::Migrations::Schema.synchronize_schema_data(ActiveGraph::Base.transaction, schema_data, args[:remove_missing])
+        ActiveGraph::Base.transaction do
+          ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
         end
 
-        ActiveGraph::Base.run_transaction do
+        ActiveGraph::Base.transaction do
           runner = ActiveGraph::Migrations::Runner.new
           runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
         end

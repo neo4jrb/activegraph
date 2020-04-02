@@ -24,11 +24,6 @@ module ActiveGraph
         end
       end
 
-      def named_constraints
-        result = query('CALL db.constraints()', {}, skip_instrumentation: true)
-        result.columns.include?(:name) ? result : []
-      end
-
       private
 
       def v4_filter(row)

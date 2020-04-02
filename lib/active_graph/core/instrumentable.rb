@@ -1,6 +1,7 @@
 require 'active_support/concern'
 require 'active_support/notifications'
 require 'active_graph/ansi'
+require 'active_graph/core/logging'
 
 module ActiveGraph
   module Core
@@ -14,7 +15,7 @@ module ActiveGraph
         def subscribe_to_request
           ActiveSupport::Notifications.subscribe('neo4j.core.bolt.request') do |_, start, finish, _id, _payload|
             ms = (finish - start) * 1000
-            yield " #{ANSI::BLUE}BOLT:#{ANSI::CLEAR} #{ANSI::YELLOW}#{ms.round}ms#{ANSI::CLEAR} #{Base.current_driver.url}"
+            yield " #{ANSI::BLUE}BOLT:#{ANSI::CLEAR} #{ANSI::YELLOW}#{ms.round}ms#{ANSI::CLEAR}"
           end
         end
 
@@ -27,7 +28,7 @@ module ActiveGraph
             source_line, line_number = Logging.first_external_path_and_line(caller_locations)
 
             yield " #{ANSI::CYAN}#{query.context || 'CYPHER'}#{ANSI::CLEAR} #{cypher} #{params_string}" +
-              ("\n   ↳ #{source_line}:#{line_number}" if Base.current_driver.options[:verbose_query_logs] && source_line).to_s
+              ("\n   ↳ #{source_line}:#{line_number}" if ActiveGraph::Config.fetch(:verbose_query_logs, false) && source_line).to_s
           end
         end
       end

@@ -356,7 +356,7 @@ describe 'Relationship' do
     let(:f1) { FromClass.create }
     let(:t1) { ToClass.create }
     let(:result) do
-      ActiveGraph::Transaction.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
+      ActiveGraph::Base.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
     context 'with a rel type requiring backticks' do

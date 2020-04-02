@@ -63,11 +63,11 @@ module ActiveGraph
       end
 
       def migration_transaction(&block)
-        ActiveGraph::Base.run_transaction(transactions?, &block)
+        transactions? ? ActiveGraph::Base.transaction(&block) : block.call
       end
 
       def log_queries
-        subscriber = ActiveGraph::Transaction.subscribe_to_query(&method(:output))
+        subscriber = ActiveGraph::Base.subscribe_to_query(&method(:output))
         yield
       ensure
         ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber

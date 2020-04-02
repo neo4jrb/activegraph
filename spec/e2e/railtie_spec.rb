@@ -4,11 +4,7 @@ module Rails
   describe 'railtie' do
     require 'active_graph/railtie'
 
-    around(:each) do |example|
-      main_spec_driver = ActiveGraph::Base.current_driver
-      example.run
-      ActiveGraph::Base.driver = main_spec_driver
-    end
+    after(:context) { set_default_driver }
 
     describe '#setup!' do
       let(:driver_path) {}
@@ -22,7 +18,7 @@ module Rails
 
       context 'no errors' do
         before do
-          stub_const('ActiveGraph::Base', spy('ActiveGraph::Base'))
+          stub_const('Neo4j::Driver::GraphDatabase', spy('Neo4j::Driver::GraphDatabase'))
 
           expect do
             ActiveGraph::Railtie.setup!(cfg)
@@ -33,7 +29,7 @@ module Rails
           let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
 
           it 'calls ActiveGraph::Base' do
-            expect(ActiveGraph::Base).to have_received(:new_driver).with('bolt://localhost:7472', Object, {})
+            expect(Neo4j::Driver::GraphDatabase).to have_received(:driver).with('bolt://localhost:7472', Object, {})
           end
         end
       end

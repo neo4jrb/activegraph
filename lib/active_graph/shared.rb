@@ -14,7 +14,7 @@ module ActiveGraph
 
       # remove?
       def neo4j_driver
-        ActiveGraph::Base.current_driver
+        ActiveGraph::Base.driver
       end
 
       # remove?

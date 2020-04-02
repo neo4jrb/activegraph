@@ -97,15 +97,14 @@ describe ActiveGraph::Core::Query do
   end
 
   describe 'batch finding' do
-    let!(:driver) { test_driver_adaptor(test_bolt_url) }
     let(:query_object) { ActiveGraph::Core::Query.new }
 
     before(:each) do
       5.times do
-        ActiveGraph::Transaction.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Base.query('CREATE (n:Foo {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
       2.times do
-        ActiveGraph::Transaction.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
+        ActiveGraph::Base.query('CREATE (n:Bar {uuid: $uuid})', uuid: SecureRandom.uuid)
       end
     end
 

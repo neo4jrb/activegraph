@@ -46,6 +46,7 @@ module ActiveGraph
     include ActiveGraph::Node::Enum
     include ActiveGraph::Shared::PermittedAttributes
     include ActiveGraph::Node::DependentCallbacks
+    include ActiveGraph::Transactions
 
     def initialize(args = nil)
       self.class.ensure_id_property_info! # So that we make sure all objects have an id_property

@@ -19,6 +19,7 @@ module ActiveGraph
     include ActiveGraph::Relationship::Types
     include ActiveGraph::Shared::Enum
     include ActiveGraph::Shared::PermittedAttributes
+    include ActiveGraph::Transactions
 
     class FrozenRelError < ActiveGraph::Error; end
 
