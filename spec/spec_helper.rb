@@ -122,9 +122,9 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_id_property_constraint(model, with_constraint)
-    return if model.id_property_info[:type][:constraint] == false || !with_constraint
-
-    create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
+    unless model.id_property_info[:type][:constraint] == false || !with_constraint || model.id_property_name == :neo_id
+      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
+    end
   end
 
   def relationship_class(class_name, &block)

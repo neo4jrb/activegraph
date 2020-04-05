@@ -10,18 +10,6 @@ module ActiveGraph
     include ActiveModel::Serializers::JSON
 
     module ClassMethods
-      # TODO: Deprecate neo4j_driver_name(name)
-
-      # remove?
-      def neo4j_driver
-        ActiveGraph::Base.driver
-      end
-
-      # remove?
-      def current_transaction
-        ActiveGraph::Base.current_transaction
-      end
-
       # This should be used everywhere.  Should make it easy
       # to support a driver-per-model system
       def neo4j_query(*args)

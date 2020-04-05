@@ -7,16 +7,14 @@ module ActiveGraph::Relationship
     module ClassMethods
       # Returns the object with the specified neo4j id.
       # @param [String,Integer] id of node to find
-      # @param [Neo4j::Driver] driver optional
-      def find(id, driver = self.neo4j_driver)
+      def find(id)
         fail "Unknown argument #{id.class} in find method (expected String or Integer)" if !(id.is_a?(String) || id.is_a?(Integer))
-        find_by_id(id, driver)
+        find_by_id(id)
       end
 
       # Loads the relationship using its neo_id.
-      def find_by_id(key, driver = nil)
-        options = driver ? {driver: driver} : {}
-        query ||= ActiveGraph::Base.new_query(options)
+      def find_by_id(key)
+        query = ActiveGraph::Base.new_query
         result = query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first
         fail RecordNotFound.new("Couldn't find #{name} with 'id'=#{key.inspect}", name, key) if result.blank?
         result.r

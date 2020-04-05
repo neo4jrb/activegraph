@@ -379,4 +379,21 @@ describe 'association creation' do
       end
     end
   end
+
+  describe 'no queries with unpersited objects' do
+    let!(:math) { Lesson.create(subject: 'Math') }
+    let(:chris) { Student.new(name: 'Chris', favorite_class_id: math.id, lesson_ids: [math.id]) }
+
+    it 'does not execute a query on new' do
+      expect_queries(0) { chris }
+      expect(chris).to be_valid
+      expect(chris.favorite_class).to eq math
+      expect(chris.lessons).to eq [math]
+      expect(chris.save).to be true
+      expect(chris.favorite_class).to eq math
+      expect(chris.favorite_class = Lesson.new(subject: 'Biology')).to be_persisted
+      expect(chris.favorite_class = Lesson.new(subject: 'Chemistry')).not_to eq math
+      expect(chris.reload.lessons).to  include math
+    end
+  end
 end

@@ -10,7 +10,7 @@ module ActiveGraph
       def defer_create(association_name, object, options = {})
         clear_deferred_nodes_for_association(association_name) if options[:clear]
 
-        deferred_nodes_for_association(association_name) << object
+        deferred_nodes_for_association(association_name).concat(Array(object))
       end
 
       def deferred_nodes_for_association(association_name)

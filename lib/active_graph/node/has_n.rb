@@ -441,13 +441,7 @@ module ActiveGraph::Node
       end
 
       def define_has_many_setter(name)
-        define_method("#{name}=") do |other_nodes|
-          association_proxy_cache.clear
-
-          clear_deferred_nodes_for_association(name)
-
-          ActiveGraph::Base.transaction { association_proxy(name).replace_with(other_nodes) }
-        end
+        define_setter(name, "#{name}=")
       end
 
       def define_has_many_id_methods(name)
@@ -455,13 +449,23 @@ module ActiveGraph::Node
           association_proxy(name).result_ids
         end
 
-        define_method_unless_defined("#{name.to_s.singularize}_ids=") do |ids|
-          clear_deferred_nodes_for_association(name)
-          association_proxy(name).replace_with(Array(ids).reject(&:blank?))
-        end
+        define_setter(name, "#{name.to_s.singularize}_ids=")
 
         define_method_unless_defined("#{name.to_s.singularize}_neo_ids") do
           association_proxy(name).pluck(:neo_id)
+        end
+      end
+
+      def define_setter(name, setter_name)
+        define_method_unless_defined(setter_name) do |others|
+          association_proxy_cache.clear # TODO: Should probably just clear for this association...
+          clear_deferred_nodes_for_association(name)
+          others = Array(others).reject(&:blank?)
+          if persisted?
+            ActiveGraph::Base.transaction { association_proxy(name).replace_with(others) }
+          else
+            defer_create(name, others, clear: true)
+          end
         end
       end
 
@@ -492,9 +496,7 @@ module ActiveGraph::Node
           association_proxy(name).result_ids.first
         end
 
-        define_method_unless_defined("#{name}_id=") do |id|
-          association_proxy(name).replace_with(id)
-        end
+        define_setter(name, "#{name}_id=")
 
         define_method_unless_defined("#{name}_neo_id") do
           association_proxy(name).pluck(:neo_id).first
@@ -520,17 +522,7 @@ module ActiveGraph::Node
       end
 
       def define_has_one_setter(name)
-        define_method("#{name}=") do |other_node|
-          if persisted?
-            other_node.save if other_node.respond_to?(:persisted?) && !other_node.persisted?
-            association_proxy_cache.clear # TODO: Should probably just clear for this association...
-            ActiveGraph::Base.transaction { association_proxy(name).replace_with(other_node) }
-            # handle_non_persisted_node(other_node)
-          else
-            defer_create(name, other_node, clear: true)
-            other_node
-          end
-        end
+        define_setter(name, "#{name}=")
       end
 
       def define_class_method(*args, &block)
@@ -545,8 +537,7 @@ module ActiveGraph::Node
         query_proxy = previous_query_proxy || default_association_query_proxy
         ActiveGraph::Node::Query::QueryProxy.new(association_target_class(name),
                                                  associations[name],
-                                                 {driver: neo4j_driver,
-                                                  query_proxy: query_proxy,
+                                                 {query_proxy: query_proxy,
                                                   context: "#{query_proxy.context || self.name}##{name}",
                                                   optional: query_proxy.optional?,
                                                   association_labels: options[:labels],
@@ -578,7 +569,7 @@ module ActiveGraph::Node
 
       def default_association_query_proxy
         ActiveGraph::Node::Query::QueryProxy.new("::#{self.name}".constantize, nil,
-                                                 driver: neo4j_driver, query_proxy: nil, context: self.name.to_s)
+                                                 query_proxy: nil, context: self.name.to_s)
       end
 
       def build_association(macro, direction, name, options)
