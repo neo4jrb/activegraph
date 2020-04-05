@@ -394,7 +394,7 @@ module ActiveGraph
 
       protected
 
-      attr_accessor :driver, :options, :_params
+      attr_accessor :options, :_params
 
       def add_clauses(clauses)
         @clauses += clauses

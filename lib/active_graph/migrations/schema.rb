@@ -9,8 +9,8 @@ module ActiveGraph
 
         def synchronize_schema_data(schema_data, remove_missing)
           queries = []
-          queries += drop_and_create_queries(fetch_constraint_descriptions(driver), schema_data[:constraints], remove_missing)
-          queries += drop_and_create_queries(fetch_index_descriptions(driver), schema_data[:indexes], remove_missing)
+          queries += drop_and_create_queries(fetch_constraint_descriptions, schema_data[:constraints], remove_missing)
+          queries += drop_and_create_queries(fetch_index_descriptions, schema_data[:indexes], remove_missing)
           ActiveGraph::Base.queries do
             queries.each { |query| append query }
           end
@@ -18,11 +18,11 @@ module ActiveGraph
 
         private
 
-        def fetch_constraint_descriptions(driver)
+        def fetch_constraint_descriptions
           ActiveGraph::Base.query('CALL db.constraints()').map(&:description)
         end
 
-        def fetch_index_descriptions(driver)
+        def fetch_index_descriptions
           result = ActiveGraph::Base.query('CALL db.indexes()')
           if result.columns.include?(:description)
             v3_indexes(result)

@@ -21,8 +21,8 @@ module ActiveGraph
       # Creates a neo4j constraint on a property
       # See http://docs.neo4j.org/chunked/stable/query-constraints.html
       # @example
-      #   label = ActiveGraph::Label.create(:person, driver)
-      #   label.create_constraint(:name, {type: :unique}, driver)
+      #   label = ActiveGraph::Label.create(:person)
+      #   label.create_constraint(:name, {type: :unique})
       #
       def create_constraint(property, constraints)
         cypher = case constraints[:type]
@@ -41,9 +41,9 @@ module ActiveGraph
       # Drops a neo4j constraint on a property
       # See http://docs.neo4j.org/chunked/stable/query-constraints.html
       # @example
-      #   label = ActiveGraph::Label.create(:person, driver)
-      #   label.create_constraint(:name, {type: :unique}, driver)
-      #   label.drop_constraint(:name, {type: :unique}, driver)
+      #   label = ActiveGraph::Label.create(:person)
+      #   label.create_constraint(:name, {type: :unique})
+      #   label.drop_constraint(:name, {type: :unique})
       #
       def drop_constraint(property, constraint)
         cypher = case constraint[:type]
@@ -97,16 +97,6 @@ module ActiveGraph
 
       private
 
-      # Store schema threads on the driver so that we can easily wait for all
-      # threads on a driver regardless of label
-      def schema_threads
-        self.class.schema_threads
-      end
-
-      def schema_threads=(array)
-        self.class.set_schema_threads(array)
-      end
-
       class << self
         def indexes
           ActiveGraph::Base.indexes
@@ -129,19 +119,6 @@ module ActiveGraph
               tx.run("DROP #{record.keys.include?(:name) ? "CONSTRAINT #{record[:name]}" : record[:description]}")
             end
           end
-        end
-
-        def wait_for_schema_changes
-          schema_threads.map(&:join)
-          set_schema_threads(driver, [])
-        end
-
-        def schema_threads
-          ActiveGraph::Transaction.instance_variable_get('@_schema_threads') || []
-        end
-
-        def set_schema_threads(array)
-          ActiveGraph::Transaction.instance_variable_set('@_schema_threads', array)
         end
       end
 
