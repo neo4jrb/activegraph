@@ -11,6 +11,7 @@ describe 'Association Proxy' do
         has_many :in, :exams, model_class: :Exam, origin: :students
         has_one :out, :favorite_lesson, type: nil, model_class: :Lesson
         has_many :out, :homework, type: :HOMEWORK, model_class: %w[Lesson Exam]
+        has_many :out, :friends, type: :friend, model_class: :Student
       end
 
       stub_relationship_class('LessonEnrollment') do
@@ -41,6 +42,8 @@ describe 'Association Proxy' do
     let(:math_exam) { Exam.create(name: 'Math Exam') }
     let(:science_exam) { Exam.create(name: 'Science Exam') }
     let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
+    let(:leszek) { Student.create(name: 'Leszek', friends: [lukasz]) }
+    let(:lukasz) { Student.create(name: 'Lukasz') }
 
     before do
       [math, science].each { |lesson| billy.lessons << lesson }
@@ -49,6 +52,17 @@ describe 'Association Proxy' do
       science.exams_given << science_exam
       science.exams_given << science_exam2
       billy.favorite_lesson = math
+    end
+
+    context 'self referencing relationships' do
+      before { leszek }
+      it 'fire only one query' do
+        expect_queries(1) do
+          Student.all.with_associations(:friends).each do |student|
+            student.friends.to_a
+          end
+        end
+      end
     end
 
     it 'allows associations to respond to to_ary' do
