@@ -42,8 +42,8 @@ describe 'Association Proxy' do
     let(:math_exam) { Exam.create(name: 'Math Exam') }
     let(:science_exam) { Exam.create(name: 'Science Exam') }
     let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
-    let(:leszek) { Student.create(name: 'Leszek', friends: [lukasz]) }
-    let(:lukasz) { Student.create(name: 'Lukasz') }
+    let(:leszek) { Student.create(name: 'Leszek', friends: [zinto]) }
+    let(:zinto) { Student.create(name: 'Zinto') }
 
     before do
       [math, science].each { |lesson| billy.lessons << lesson }
@@ -57,8 +57,9 @@ describe 'Association Proxy' do
     context 'self referencing relationships' do
       before { leszek }
       it 'fire only one query' do
+        ActiveGraph::Base.subscribe_to_query(&method(:puts))
         expect_queries(1) do
-          Student.all.with_associations(:friends).each do |student|
+          Student.all.order(:name).with_associations(:friends).each do |student|
             student.friends.to_a
           end
         end
