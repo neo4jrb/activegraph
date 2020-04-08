@@ -578,7 +578,7 @@ describe 'ActiveGraph::Node' do
 
       person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = $neo_id RETURN p',
                             {neo_id: person.neo_id},
-                            wrap_level: :core_entity).first.p
+                            wrap: false).first.p
       expect(person2.props).to match hash_including age: 22, name: 'andreas'
     end
 
@@ -795,7 +795,8 @@ describe 'ActiveGraph::Node' do
             it 'reuses or resets' do
               expect(Cat.as(:c).named_jim.pluck(:c)).to eq([jim])
               expect(Cat.as(:c).all.named_jim.pluck(:c)).to eq([jim])
-              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }.to raise_error ActiveGraph::Core::CypherError
+              expect { Cat.as(:c).all(:another_variable).named_jim.pluck(:c) }
+                .to raise_error Neo4j::Driver::Exceptions::ClientException, /Variable `c` not defined/
               expect(Cat.as(:c).all(:another_variable).named_jim.pluck(:another_variable)).to eq [jim]
             end
           end

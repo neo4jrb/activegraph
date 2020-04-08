@@ -117,7 +117,7 @@ load 'active_graph/tasks/migration.rake'
 require 'active_graph/node/orm_adapter'
 if defined?(Rails)
   require 'rails/generators'
-  require 'rails/generators/neo4j_generator'
+  require 'rails/generators/active_graph_generator'
 end
 
 Neo4j::Driver::Transaction.prepend ActiveGraph::Transaction

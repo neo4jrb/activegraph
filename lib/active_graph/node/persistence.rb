@@ -67,7 +67,7 @@ module ActiveGraph::Node
     # @return [ActiveGraph::Node] A CypherNode or EmbeddedNode
     def _create_node(node_props, labels = labels_for_create)
       query = "CREATE (n:`#{Array(labels).join('`:`')}`) SET n = $props RETURN n"
-      neo4j_query(query, {props: node_props}, wrap_level: :core_entity).to_a[0].n
+      neo4j_query(query, {props: node_props}, wrap: false).to_a[0].n
     end
 
     # As the name suggests, this inserts the primary key (id property) into the properties hash.

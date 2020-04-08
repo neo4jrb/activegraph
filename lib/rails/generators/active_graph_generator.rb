@@ -59,7 +59,7 @@ module ActiveGraph::Generators::SourcePathHelper
   module ClassMethods
     def source_root
       @_neo4j_source_root ||= File.expand_path(File.join(File.dirname(__FILE__),
-                                                         'neo4j', generator_name, 'templates'))
+                                                         'active_graph', generator_name, 'templates'))
     end
   end
 end

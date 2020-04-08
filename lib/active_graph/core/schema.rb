@@ -40,12 +40,12 @@ module ActiveGraph
 
       def v4?(result)
         return @v4 unless @v4.nil?
-        @v4 = result.columns.include?(:labelsOrTypes)
+        @v4 = result.keys.include?(:labelsOrTypes)
       end
 
       def v34?(result)
         return @v34 unless @v34.nil?
-        @v34 = result.columns.include?(:label)
+        @v34 = result.keys.include?(:label)
       end
 
       def properties(row)

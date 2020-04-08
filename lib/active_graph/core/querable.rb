@@ -1,14 +1,13 @@
 require 'active_graph/core/instrumentable'
 require 'active_graph/transaction'
 require 'active_graph/core/query_builder'
-require 'active_graph/core/responses'
+require 'active_graph/core/record'
 
 module ActiveGraph
   module Core
     module Querable
       extend ActiveSupport::Concern
       include Instrumentable
-      include Responses
 
       class_methods do
         def query(*args)
@@ -43,14 +42,11 @@ module ActiveGraph
           setup_queries!(queries, skip_instrumentation: options[:skip_instrumentation])
 
           ActiveSupport::Notifications.instrument('neo4j.core.bolt.request') do
-            self.wrap_level = options[:wrap_level]
             transaction do |tx|
               queries.map do |query|
-                result_from_data(tx.run(query.cypher, query.parameters))
+                tx.run(query.cypher, query.parameters).tap { |result| result.wrap = options[:wrap] != false }
               end
             end
-          rescue Neo4j::Driver::Exceptions::Neo4jException => e
-            raise ActiveGraph::Core::CypherError.new_from(e.code, e.message) # , e.stack_track.to_a
           end
         end
       end

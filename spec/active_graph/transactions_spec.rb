@@ -9,25 +9,6 @@ describe ActiveGraph::Transactions do
     stub_node_class('Student')
   end
 
-  describe '.session' do
-    it 'allows write on implicitly writable' do
-      expect { ActiveGraph::Base.session { ActiveGraph::Base.transaction { Student.create } } }.not_to raise_error
-    end
-
-    it 'allows write on explicitely writable' do
-      expect do
-        ActiveGraph::Base.session(Neo4j::Driver::AccessMode::WRITE) { ActiveGraph::Base.transaction { Student.create } }
-      end.not_to raise_error
-    end
-
-    it 'returns and accepts bookmarks' do
-      expect do
-        bookmark = ActiveGraph::Base.session { ActiveGraph::Base.write_transaction { Student.create } }
-        ActiveGraph::Base.session(bookmark) { ActiveGraph::Base.read_transaction { Student.create } }
-      end.not_to raise_error
-    end
-  end
-
   describe '.transaction' do
     context 'driver' do
       it 'executes read' do

@@ -148,7 +148,7 @@ Naming/MemoizedInstanceVariableName:
     - 'lib/neo4j/node/query/query_proxy_enumerable.rb'
     - 'lib/neo4j/shared/declared_properties.rb'
     - 'lib/neo4j/shared/property.rb'
-    - 'lib/rails/generators/neo4j_generator.rb'
+    - 'lib/rails/generators/active_graph_generator.rb'
 
 # Offense count: 12
 # Configuration parameters: MinNameLength, AllowNamesEndingInNumbers, AllowedNames, ForbiddenNames.
