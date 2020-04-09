@@ -16,7 +16,7 @@ module ActiveGraph
           @_cache = IdentityMap.new
           build_query
             .map do |record, eager_data|
-            cache_and_init(record, with_associations_tree)
+            record = cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
               eager_records.first.zip(eager_records.last).each do |eager_record|
                 add_to_cache(*eager_record, element)
