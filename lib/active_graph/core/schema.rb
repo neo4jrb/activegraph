@@ -36,7 +36,7 @@ module ActiveGraph
 
       def label(result, row)
         if v34?(result)
-          row.label
+          row[:label]
         else
           (v4?(result) ? row[:labelsOrTypes] : row[:tokenNames]).first
         end.to_sym
