@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_graph/core/result'
 require 'active_support/core_ext/module/attribute_accessors'
 
@@ -7,7 +9,7 @@ module ActiveGraph
       attr_writer :wrap
 
       def values
-         wrap(super)
+        wrap(super)
       end
 
       def first
@@ -15,11 +17,11 @@ module ActiveGraph
       end
 
       def [](key)
-         wrap(super)
+        wrap(super)
       end
 
       def to_h
-         wrap(super)
+        wrap(super)
       end
 
       private

@@ -8,7 +8,7 @@ module ActiveGraph
       end
 
       def each(&block)
-       wrap? ? wrapping_each(&block) : super
+        wrap? ? wrapping_each(&block) : super
       end
 
       private
