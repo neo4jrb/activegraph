@@ -19,7 +19,7 @@ module ActiveGraph
         private
 
         def fetch_constraint_descriptions
-          ActiveGraph::Base.query('CALL db.constraints()').map(&:description)
+          ActiveGraph::Base.query('CALL db.constraints() YIELD description').map(&:first)
         end
 
         def fetch_index_descriptions
