@@ -34,19 +34,19 @@ module ActiveGraph
         def v3_indexes(result)
           result.reject do |row|
             # These indexes are created automagically when the corresponding constraints are created
-            row.type == 'node_unique_property'
-          end.map(&:description)
+            row[:type] == 'node_unique_property'
+          end.map { |row| row[:description] }
         end
 
         def v4_indexes(result)
           result.reject do |row|
             # These indexes are created automagically when the corresponding constraints are created
-            row.uniqueness == 'UNIQUE'
+            row[:uniqueness] == 'UNIQUE'
           end.map(&method(:description))
         end
 
         def description(row)
-          "INDEX FOR (n:#{row.labelsOrTypes.first}) ON (#{row.properties.map{|prop| "n.#{prop}"}.join(', ')})"
+          "INDEX FOR (n:#{row[:labelsOrTypes].first}) ON (#{row[:properties].map { |prop| "n.#{prop}" }.join(', ')})"
         end
 
         def drop_and_create_queries(existing, specified, remove_missing)
