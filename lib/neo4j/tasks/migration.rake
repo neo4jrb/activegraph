@@ -95,11 +95,8 @@ COMMENT
         require 'neo4j/migrations/schema'
 
         args.with_defaults(remove_missing: false)
-
         schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
-
         Neo4j::Core::CypherSession::Adaptors::Base.subscribe_to_query(&method(:puts))
-
         Neo4j::ActiveBase.run_transaction do
           Neo4j::Migrations::Schema.synchronize_schema_data(Neo4j::ActiveBase.current_session, schema_data, args[:remove_missing])
         end
