@@ -102,7 +102,8 @@ COMMENT
 
         Neo4j::ActiveBase.run_transaction do
           Neo4j::Migrations::Schema.synchronize_schema_data(Neo4j::ActiveBase.current_session, schema_data, args[:remove_missing])
-
+        end
+        Neo4j::ActiveBase.run_transaction do
           runner = Neo4j::Migrations::Runner.new
           runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
         end
