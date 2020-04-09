@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.6.2] FIXME
+
+## Fixes
+
+- Perform separate tranactions around schema-load and migrations-update
+  to allow the seabolt driver to load schemas (#1599)
+
 ## [9.6.1] 2019-12-18
 
 ## Fixed
