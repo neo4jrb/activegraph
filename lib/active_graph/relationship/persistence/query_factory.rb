@@ -22,7 +22,7 @@ module ActiveGraph::Relationship::Persistence
       node_before_callbacks! do
         res = query_factory(rel, rel_id, iterative_query).query.unwrapped.return(*unpersisted_return_ids).first
         node_symbols.each { |n| wrap!(send(n), res, n) }
-        @unwrapped_rel = res.send(rel_id)
+        @unwrapped_rel = res[rel_id]
       end
     end
 
@@ -83,8 +83,8 @@ module ActiveGraph::Relationship::Persistence
     #   in, making the object reflect as "persisted".
     # @param [Symbol] key :from_node or :to_node, the object to request from the response.
     def wrap!(node, res, key)
-      return if node.persisted? || !res.respond_to?(key)
-      unwrapped = res.send(key)
+      return if node.persisted? || !res.keys.include?(key)
+      unwrapped = res[key]
       node.init_on_load(unwrapped, unwrapped.props)
     end
 

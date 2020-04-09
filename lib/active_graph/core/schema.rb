@@ -5,14 +5,14 @@ module ActiveGraph
         result = query('CALL dbms.components()', {}, skip_instrumentation: true)
 
         # BTW: community / enterprise could be retrieved via `result.first.edition`
-        result.first.versions[0]
+        result.first[:versions][0]
       end
 
       def indexes
         result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
         result.map do |row|
-          { type: row.type.to_sym, label: label(result, row), properties: properties(row), state: row.state.to_sym }
+          { type: row[:type].to_sym, label: label(result, row), properties: properties(row), state: row[:state].to_sym }
         end
       end
 
@@ -27,15 +27,15 @@ module ActiveGraph
       private
 
       def v4_filter(row)
-        row.uniqueness == 'UNIQUE'
+        row[:uniqueness] == 'UNIQUE'
       end
 
       def v3_filter(row)
-        row.type == 'node_unique_property'
+        row[:type] == 'node_unique_property'
       end
 
       def label(result, row)
-        (v34?(result) ? row.label : (v4?(result) ? row.labelsOrTypes : row.tokenNames).first).to_sym
+        (v34?(result) ? row.label : (v4?(result) ? row[:labelsOrTypes] : row[:tokenNames]).first).to_sym
       end
 
       def v4?(result)
@@ -49,7 +49,7 @@ module ActiveGraph
       end
 
       def properties(row)
-        row.properties.map(&:to_sym)
+        row[:properties].map(&:to_sym)
       end
     end
   end

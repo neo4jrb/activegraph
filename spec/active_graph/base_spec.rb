@@ -22,10 +22,10 @@ describe ActiveGraph::Base do
         append 'CREATE (n:Label2) RETURN n'
       end
 
-      expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[1].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels.to_a).to eq([:Label1])
-      expect(result[1].to_a[0].n.labels).to eq([:Label2])
+      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[1].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[0].to_a[0][:n].labels.to_a).to eq([:Label1])
+      expect(result[1].to_a[0][:n].labels).to eq([:Label2])
     end
 
     it 'allows for building with Query API' do
@@ -33,8 +33,8 @@ describe ActiveGraph::Base do
         append query.create(n: {Label1: {}}).return(:n)
       end
 
-      expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels).to eq([:Label1])
+      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[0].to_a[0][:n].labels).to eq([:Label1])
     end
   end
 
@@ -45,7 +45,7 @@ describe ActiveGraph::Base do
 
     def get_object_by_id(id)
       first = subject.query('MATCH (t:Temporary {id: $id}) RETURN t', id: id).first
-      first && first.t
+      first && first[:t]
     end
 
     it 'logs one query per query_set in transaction' do
@@ -219,11 +219,11 @@ describe ActiveGraph::Base do
 
       expect(result).to be_a(Enumerable)
       expect(result.count).to be(1)
-      expect(result.to_a[0].obj).to eq(a: 1)
+      expect(result.to_a[0][:obj]).to eq(a: 1)
     end
 
     describe 'parameter input and output' do
-      subject { ActiveGraph::Base.query('WITH $param AS param RETURN param', param: param).first.param }
+      subject { ActiveGraph::Base.query('WITH $param AS param RETURN param', param: param).first[:param] }
 
       [
         # Integers
@@ -273,7 +273,7 @@ describe ActiveGraph::Base do
         "MERGE path=(n:Foo {a: 1})-[r:foo {b: 2}]->(b:Foo)
          RETURN #{return_clause} AS result"
       end
-      subject { described_class.query(query, {}, wrap: wrap).to_a[0].result }
+      subject { described_class.query(query, {}, wrap: wrap).to_a[0][:result] }
 
       [true, false].each do |type|
         let_context wrap: type do

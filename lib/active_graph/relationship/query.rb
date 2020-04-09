@@ -17,7 +17,7 @@ module ActiveGraph::Relationship
         query = ActiveGraph::Base.new_query
         result = query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first
         fail RecordNotFound.new("Couldn't find #{name} with 'id'=#{key.inspect}", name, key) if result.blank?
-        result.r
+        result[:r]
       end
 
       # Performs a very basic match on the relationship.

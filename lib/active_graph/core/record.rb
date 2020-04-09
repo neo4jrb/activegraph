@@ -44,21 +44,6 @@ module ActiveGraph
       def wrap?
         @wrap
       end
-
-      # TODO: Remove this and :[]
-      # Too much unnecessary confusion and method names like `n.name`, `count(n)`
-      def method_missing(name, *args)
-        if respond_to_missing?(name)
-          raise ArgumentError if args.present?
-          self[name]
-        else
-          super
-        end
-      end
-
-      def respond_to_missing?(name, include_private = false)
-        keys.include?(name)
-      end
     end
   end
 end

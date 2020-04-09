@@ -20,7 +20,7 @@ module ActiveGraph
 
           primary_key_var = ActiveGraph::Core::QueryClauses::Clause.from_key_and_single_value(node_var, prop_var)
           records = query.where("#{primary_key_var} > $primary_key_offset")
-                         .params(primary_key_offset: primary_key_offset).to_a
+                      .params(primary_key_offset: primary_key_offset).to_a
         end
       end
 
@@ -36,13 +36,10 @@ module ActiveGraph
       end
 
       def primary_key_offset(last_record, node_var, prop_var)
-        last_record.send(node_var).send(prop_var)
-      rescue NoMethodError
-        begin
-          last_record.send(node_var).properties[prop_var.to_sym]
-        rescue NoMethodError
-          last_record.send("#{node_var}.#{prop_var}") # In case we're explicitly returning it
-        end
+        node = last_record[node_var]
+        return node.send(prop_var) if node&.respond_to?(prop_var)
+        return node.properties[prop_var.to_sym] if node&.respond_to?(:properties)
+        last_record["#{node_var}.#{prop_var}"] # In case we're explicitly returning it
       end
     end
   end

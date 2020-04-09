@@ -25,7 +25,7 @@ module ActiveGraph
       def count(distinct = nil)
         fail(ActiveGraph::InvalidParameterError, ':count accepts the `:distinct` symbol or nil as a parameter') unless distinct.nil? || distinct == :distinct
         q = distinct.nil? ? 'n' : 'DISTINCT n'
-        self.query_as(:n).return("count(#{q}) AS count").first.count
+        self.query_as(:n).return("count(#{q}) AS count").first[:count]
       end
 
       alias size count
@@ -39,13 +39,13 @@ module ActiveGraph
 
       def find_in_batches(options = {})
         self.query_as(:n).return(:n).find_in_batches(:n, primary_key, options) do |batch|
-          yield batch.map(&:n)
+          yield batch.map { |record| record[:n] }
         end
       end
 
       def find_each(options = {})
         self.query_as(:n).return(:n).find_each(:n, primary_key, options) do |batch|
-          yield batch.n
+          yield batch[:n]
         end
       end
 
