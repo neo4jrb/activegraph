@@ -235,7 +235,7 @@ module ActiveGraph
       def response
         return @response if @response
 
-        @response = ActiveGraph::Base.query(self, wrap_level: (:core_entity if unwrapped?))
+        @response = ActiveGraph::Base.query(self, wrap: !unwrapped?)
       end
 
       def raise_if_cypher_error!(response)
@@ -294,7 +294,7 @@ module ActiveGraph
         fail ArgumentError, 'No columns specified for Query#pluck' if columns.size.zero?
 
         query = return_query(columns)
-        columns = query.response.columns
+        columns = query.response.keys
 
         if columns.size == 1
           column = columns[0]

@@ -22,10 +22,10 @@ describe ActiveGraph::Base do
         append 'CREATE (n:Label2) RETURN n'
       end
 
-      expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[1].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels.to_a).to eq([:Label1])
-      expect(result[1].to_a[0].n.labels).to eq([:Label2])
+      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[1].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[0].to_a[0][:n].labels.to_a).to eq([:Label1])
+      expect(result[1].to_a[0][:n].labels).to eq([:Label2])
     end
 
     it 'allows for building with Query API' do
@@ -33,8 +33,8 @@ describe ActiveGraph::Base do
         append query.create(n: {Label1: {}}).return(:n)
       end
 
-      expect(result[0].to_a[0].n).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0].n.labels).to eq([:Label1])
+      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+      expect(result[0].to_a[0][:n].labels).to eq([:Label1])
     end
   end
 
@@ -45,7 +45,7 @@ describe ActiveGraph::Base do
 
     def get_object_by_id(id)
       first = subject.query('MATCH (t:Temporary {id: $id}) RETURN t', id: id).first
-      first && first.t
+      first && first[:t]
     end
 
     it 'logs one query per query_set in transaction' do
@@ -182,49 +182,48 @@ describe ActiveGraph::Base do
 
   describe 'results' do
     it 'handles array results' do
-      result = subject.query("CREATE (a {b: 'c'}) RETURN [a] AS arr")
+      hashes = subject.query("CREATE (a {b: 'c'}) RETURN [a] AS arr").map(&:to_h)
 
-      expect(result.hashes).to be_a(Array)
-      expect(result.hashes.size).to be(1)
-      expect(result.hashes[0][:arr]).to be_a(Array)
-      expect(result.hashes[0][:arr][0]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result.hashes[0][:arr][0].properties).to eq(b: 'c')
+      expect(hashes).to be_a(Array)
+      expect(hashes.size).to be(1)
+      expect(hashes[0][:arr]).to be_a(Array)
+      expect(hashes[0][:arr][0]).to be_a(Neo4j::Driver::Types::Node)
+      expect(hashes[0][:arr][0].properties).to eq(b: 'c')
     end
 
     it 'handles map results' do
-      result = subject.query("CREATE (a {b: 'c'}) RETURN {foo: a} AS map")
+      hashes = subject.query("CREATE (a {b: 'c'}) RETURN {foo: a} AS map").map(&:to_h)
 
-      expect(result.hashes).to be_a(Array)
-      expect(result.hashes.size).to be(1)
-      expect(result.hashes[0][:map]).to be_a(Hash)
-      expect(result.hashes[0][:map][:foo]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result.hashes[0][:map][:foo].properties).to eq(b: 'c')
+      expect(hashes).to be_a(Array)
+      expect(hashes.size).to be(1)
+      expect(hashes[0][:map]).to be_a(Hash)
+      expect(hashes[0][:map][:foo]).to be_a(Neo4j::Driver::Types::Node)
+      expect(hashes[0][:map][:foo].properties).to eq(b: 'c')
     end
 
     it 'handles map results with arrays' do
-      result = subject.query("CREATE (a {b: 'c'}) RETURN {foo: [a]} AS map")
+      hashes = subject.query("CREATE (a {b: 'c'}) RETURN {foo: [a]} AS map").map(&:to_h)
 
-      expect(result.hashes).to be_a(Array)
-      expect(result.hashes.size).to be(1)
-      expect(result.hashes[0][:map]).to be_a(Hash)
-      expect(result.hashes[0][:map][:foo]).to be_a(Array)
-      expect(result.hashes[0][:map][:foo][0]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result.hashes[0][:map][:foo][0].properties).to eq(b: 'c')
+      expect(hashes).to be_a(Array)
+      expect(hashes.size).to be(1)
+      expect(hashes[0][:map]).to be_a(Hash)
+      expect(hashes[0][:map][:foo]).to be_a(Array)
+      expect(hashes[0][:map][:foo][0]).to be_a(Neo4j::Driver::Types::Node)
+      expect(hashes[0][:map][:foo][0].properties).to eq(b: 'c')
     end
 
     it 'symbolizes keys for Neo4j objects' do
       result = subject.query('RETURN {a: 1} AS obj')
 
-      expect(result.hashes).to eq([{obj: {a: 1}}])
+      expect(result.map(&:to_h)).to eq([{obj: {a: 1}}])
 
-      structs = result.structs
-      expect(structs).to be_a(Array)
-      expect(structs.size).to be(1)
-      expect(structs[0].obj).to eq(a: 1)
+      expect(result).to be_a(Enumerable)
+      expect(result.count).to be(1)
+      expect(result.to_a[0][:obj]).to eq(a: 1)
     end
 
     describe 'parameter input and output' do
-      subject { ActiveGraph::Base.query('WITH $param AS param RETURN param', param: param).first.param }
+      subject { ActiveGraph::Base.query('WITH $param AS param RETURN param', param: param).first[:param] }
 
       [
         # Integers
@@ -274,10 +273,10 @@ describe ActiveGraph::Base do
         "MERGE path=(n:Foo {a: 1})-[r:foo {b: 2}]->(b:Foo)
          RETURN #{return_clause} AS result"
       end
-      subject { described_class.query(query, {}, wrap_level: wrap_level).to_a[0].result }
+      subject { described_class.query(query, {}, wrap: wrap).to_a[0][:result] }
 
-      [nil, :core_entity].each do |type|
-        let_context wrap_level: type do
+      [true, false].each do |type|
+        let_context wrap: type do
           let_context return_clause: 'n' do
             it { should be_a(Neo4j::Driver::Types::Node) }
             its(:properties) { should eq(a: 1) }
@@ -298,7 +297,7 @@ describe ActiveGraph::Base do
         end
       end
 
-      let_context wrap_level: nil do
+      let_context wrap: true do
         before do
           # Normally I don't think you wouldn't wrap nodes/relationships/paths
           # with the same class.  It's just expedient to do so in this spec
@@ -358,7 +357,7 @@ describe ActiveGraph::Base do
         described_class.query("CREATE (:Album {uuid: 'dup'})").to_a
         expect do
           described_class.query("CREATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::ActiveGraph::Core::SchemaErrors::ConstraintValidationFailedError)
+        end.to raise_error Neo4j::Driver::Exceptions::ClientException, /already exists with label/
       end
     end
 
@@ -366,7 +365,7 @@ describe ActiveGraph::Base do
       it 'raises an error' do
         expect do
           described_class.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::ActiveGraph::Core::CypherError, /Invalid input 'A'/)
+        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input 'A'/)
       end
     end
 
@@ -374,7 +373,7 @@ describe ActiveGraph::Base do
       it 'raises an error' do
         expect do
           described_class.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
-        end.to raise_error(::ActiveGraph::Core::CypherError, /RETURN can only be used at the end of the query/)
+        end.to raise_error Neo4j::Driver::Exceptions::ClientException, /RETURN can only be used at the end of the query/
       end
     end
   end

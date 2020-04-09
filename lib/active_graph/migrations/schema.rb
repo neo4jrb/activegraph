@@ -24,7 +24,7 @@ module ActiveGraph
 
         def fetch_index_descriptions
           result = ActiveGraph::Base.query('CALL db.indexes()')
-          if result.columns.include?(:description)
+          if result.keys.include?(:description)
             v3_indexes(result)
           else
             v4_indexes(result)

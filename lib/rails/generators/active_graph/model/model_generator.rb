@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'active_graph.rb')
 
 class ActiveGraph::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
@@ -61,7 +63,6 @@ class ActiveGraph::Generators::ModelGenerator < Rails::Generators::NamedBase #:n
   def indices?
     options[:indices]
   end
-
 
   def index_fragment(property)
     return if !options[:indices] || !options[:indices].include?(property)

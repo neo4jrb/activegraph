@@ -27,7 +27,7 @@ module ActiveGraph
           query_with_target(identifier) do |target|
             begin
               self.query.with(target).optional_match("(#{target})-[#{target}_rel]-()").delete("#{target}, #{target}_rel").exec
-            rescue ActiveGraph::Core::CypherError # <=- Seems hacky
+            rescue Neo4j::Driver::Exceptions::ClientException # <=- Seems hacky
               self.query.delete(target).exec
             end
             clear_source_object_cache

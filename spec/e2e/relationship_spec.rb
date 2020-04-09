@@ -384,7 +384,7 @@ describe 'Relationship' do
         end
 
         it 'should use the Relationship class' do
-          expect(result[0].value).to eq('default_value')
+          expect(result[0][:value]).to eq('default_value')
         end
       end
 

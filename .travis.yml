@@ -18,8 +18,8 @@ language: ruby
 cache: bundler
 jdk: openjdk11
 rvm:
-  - 2.7.0
-  - jruby-9.2.11.0
+  - 2.7.1
+  - jruby-9.2.11.1
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
@@ -30,7 +30,7 @@ env:
 matrix:
   include:
     # Testing older versions of ActiveModel
-    - rvm: 2.5.7
+    - rvm: 2.5.8
       jdk: openjdk8
       env: NEO4J_VERSION=community-3.4.17 ACTIVE_MODEL_VERSION=5.2.3
 
