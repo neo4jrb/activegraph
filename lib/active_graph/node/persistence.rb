@@ -55,7 +55,7 @@ module ActiveGraph::Node
     # @return true
     def create_model
       node = _create_node(props_for_create)
-      init_on_load(node, node.props)
+      init_on_load(node, node.properties)
       @deferred_nodes = nil
       true
     end

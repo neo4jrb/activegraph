@@ -40,7 +40,7 @@ describe ActiveGraph::Node::Validations do
         allow(o).to receive(:serialized_properties).and_return({})
         o.serialized_properties
         allow(clazz).to receive(:default_property_values).and_return({})
-        expect(node).to receive(:props).and_return(name: 'kalle2', age: '43')
+        expect(node).to receive(:properties).and_return(name: 'kalle2', age: '43')
         expect(o).to receive(:_create_node).with(name: 'kalle', age: 42).and_return(node)
         expect(o).to receive(:init_on_load).with(node, age: '43', name: 'kalle2')
         allow(Object).to receive(:serialized_properties_keys).and_return([])

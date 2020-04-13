@@ -4,7 +4,7 @@ module ActiveGraph
   module Relationship
     extend ActiveSupport::Concern
 
-    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@rel_type, :@_persisted_obj]
+    MARSHAL_INSTANCE_VARIABLES = [:@attributes, :@type, :@_persisted_obj]
 
     include ActiveGraph::Shared
     include ActiveGraph::Relationship::Initialize

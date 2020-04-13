@@ -47,8 +47,8 @@ module ActiveGraph::Relationship
       validate_node_classes!
       delete_has_one_rel
       rel = _create_rel
-      return self unless rel.respond_to?(:props)
-      init_on_load(rel, from_node, to_node, @rel_type)
+      return self unless rel.respond_to?(:properties)
+      init_on_load(rel, from_node, to_node, @type)
       true
     end
 

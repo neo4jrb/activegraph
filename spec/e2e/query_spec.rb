@@ -292,7 +292,7 @@ describe 'Query API' do
           expect(samuels.name).to eq('Dr. Harold Samuels')
           expect(samuels.age).to eq(34)
           expect(samuels.status).to eq('active')
-          expect(samuels._persisted_obj.props[:status]).to eq 'active'
+          expect(samuels._persisted_obj.properties[:status]).to eq 'active'
         end
 
         it 'overrides default properties on create' do

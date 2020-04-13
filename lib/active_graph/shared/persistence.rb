@@ -13,7 +13,7 @@ module ActiveGraph::Shared
       return if skip_update?
       props = props_for_update
       neo4j_query(query_as(:n).set(n: props))
-      _persisted_obj.props.merge!(props)
+      _persisted_obj.properties.merge!(props)
       changed_attributes_clear!
     end
 
@@ -30,7 +30,7 @@ module ActiveGraph::Shared
     # @return [Hash]
     def props_for_create
       inject_timestamps!
-      props_with_defaults = inject_defaults!(props)
+      props_with_defaults = inject_defaults!(properties)
       converted_props = props_for_db(props_with_defaults)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
@@ -143,7 +143,7 @@ module ActiveGraph::Shared
     end
 
     # @return [Hash] all defined and none nil properties
-    def props
+    def properties
       attributes.reject { |_, v| v.nil? }.symbolize_keys
     end
 
@@ -197,7 +197,7 @@ module ActiveGraph::Shared
         db_values = props_for_db(hash)
         neo4j_query(query_as(:n).set(n: db_values))
         db_values.each_pair { |k, v| self.public_send(:"#{k}=", v) }
-        _persisted_obj.props.merge!(db_values)
+        _persisted_obj.properties.merge!(db_values)
         changed_attributes_selective_clear!(db_values)
         true
       end

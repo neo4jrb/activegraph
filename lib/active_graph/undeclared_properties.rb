@@ -16,7 +16,7 @@ module ActiveGraph
     alias [] read_attribute
 
     def read_undeclared_property(name)
-      _persisted_obj ? _persisted_obj.props[name] : (undeclared_properties && undeclared_properties[name])
+      _persisted_obj ? _persisted_obj.properties[name] : (undeclared_properties && undeclared_properties[name])
     end
 
     def write_attribute(name, value)

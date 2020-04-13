@@ -175,12 +175,12 @@ describe ActiveGraph::Shared::Property do
 
     it 'uses type converter to serialize node' do
       instance.range = range
-      expect(instance.class.declared_properties.convert_properties_to(instance, :db, instance.props)[:range]).to eq(range.to_s)
+      expect(instance.class.declared_properties.convert_properties_to(instance, :db, instance.properties)[:range]).to eq(range.to_s)
     end
 
     it 'uses type converter to deserialize node' do
       instance.range = range.to_s
-      expect(instance.class.declared_properties.convert_properties_to(instance, :ruby, instance.props)[:range]).to eq(range)
+      expect(instance.class.declared_properties.convert_properties_to(instance, :ruby, instance.properties)[:range]).to eq(range)
     end
   end
 

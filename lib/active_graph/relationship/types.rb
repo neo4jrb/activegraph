@@ -14,7 +14,7 @@ module ActiveGraph
       # and Lesson is 'EnrolledIn'." After all, that is a big part of why we have models, right? To make our lives easier?
       #
       # A model is added to WRAPPED_CLASSES when it is initalized AND when the `type` class method is called within a model. This means that
-      # it's possible a model will be added twice: once with the rel_type version of the model name, again with the custom type. deal_with_it.gif.
+      # it's possible a model will be added twice: once with the type version of the model name, again with the custom type. deal_with_it.gif.
       WRAPPED_CLASSES = {}
 
       included do
@@ -34,16 +34,14 @@ module ActiveGraph
         # @param [Boolean] auto Should the given_type be changed in compliance with the gem's rel decorator setting?
         def type(given_type = nil, auto = false)
           case
-          when !given_type && rel_type?
-            @rel_type
+          when !given_type && type?
+            @type
           when given_type
             assign_type!(given_type, auto)
           else
             assign_type!(namespaced_model_name, true)
           end
         end
-        alias rel_type type
-        alias _type type # should be deprecated
 
         def namespaced_model_name
           case ActiveGraph::Config[:module_handling]
@@ -65,14 +63,14 @@ module ActiveGraph
           _wrapped_classes[type.to_sym] = self.name
         end
 
-        def rel_type?
-          !!@rel_type
+        def type?
+          !!@type
         end
 
         private
 
         def assign_type!(given_type, auto)
-          @rel_type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
+          @type = (auto ? decorated_rel_type(given_type) : given_type).tap do |type|
             add_wrapped_class(type)
           end
         end

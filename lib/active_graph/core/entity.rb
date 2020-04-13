@@ -2,9 +2,9 @@
 
 module ActiveGraph
   module Core
-    module Node
-      def neo_id
-        id
+    module Entity
+      def properties
+        @properties ||= super
       end
     end
   end

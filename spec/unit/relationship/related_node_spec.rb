@@ -3,13 +3,8 @@ describe ActiveGraph::Relationship::RelatedNode do
 
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
-  let(:node1) do
-    Class.new do
-      include ActiveGraph::Core::Node
-
-      def id; 1; end
-    end.new
-  end
+  let(:node1) { ActiveGraph::Base.query('CREATE (n) RETURN n').single.first }
+  let(:id) { node1.id }
   let(:rel) { double('Relationship object') }
 
   describe 'initialize' do
@@ -19,10 +14,10 @@ describe ActiveGraph::Relationship::RelatedNode do
   end
 
   context 'initialized with a node id' do
-    let(:r) { RelatedNode.new(1) }
+    let!(:r) { RelatedNode.new(id) }
 
     it 'sets @node' do
-      expect(r.instance_variable_get(:@node)).to eq 1
+      expect(r.instance_variable_get(:@node)).to eq id
     end
 
     describe 'loaded' do

@@ -104,7 +104,7 @@ describe 'Module handling from config: :module_handling option' do
       before { test_config.call(:demodulize) }
 
       it 'respects the option when setting rel type' do
-        expect(ModuleTest::RelClass._type).to eq 'REL_CLASS'
+        expect(ModuleTest::RelClass.type).to eq 'REL_CLASS'
         expect(ModuleTest::RelClass.namespaced_model_name).to eq 'RelClass'
       end
     end
@@ -113,7 +113,7 @@ describe 'Module handling from config: :module_handling option' do
       before { test_config.call(:none) }
 
       it 'uses the full Module::Class name' do
-        expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST::REL_CLASS'
+        expect(ModuleTest::RelClass.type).to eq 'MODULE_TEST::REL_CLASS'
         expect(ModuleTest::RelClass.namespaced_model_name).to eq 'ModuleTest::RelClass'
       end
     end
@@ -125,7 +125,7 @@ describe 'Module handling from config: :module_handling option' do
       end
 
       it 'modifies the type as expected' do
-        expect(ModuleTest::RelClass._type).to eq 'MODULE_TEST_FOO_REL_CLASS'
+        expect(ModuleTest::RelClass.type).to eq 'MODULE_TEST_FOO_REL_CLASS'
         expect(ModuleTest::RelClass.namespaced_model_name).to eq 'ModuleTest_FOO_RelClass'
       end
     end

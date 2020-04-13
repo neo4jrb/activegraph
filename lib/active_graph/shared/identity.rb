@@ -14,7 +14,7 @@ module ActiveGraph
 
       # @return [Integer, nil] the neo4j id of the node if persisted or nil
       def neo_id
-        _persisted_obj ? _persisted_obj.neo_id : nil
+        _persisted_obj ? _persisted_obj.id : nil
       end
 
       def id

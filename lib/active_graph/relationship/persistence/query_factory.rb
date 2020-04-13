@@ -85,7 +85,7 @@ module ActiveGraph::Relationship::Persistence
     def wrap!(node, res, key)
       return if node.persisted? || !res.keys.include?(key)
       unwrapped = res[key]
-      node.init_on_load(unwrapped, unwrapped.props)
+      node.init_on_load(unwrapped, unwrapped.properties)
     end
 
     def node_symbols

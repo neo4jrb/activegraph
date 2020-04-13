@@ -71,7 +71,7 @@ describe ActiveGraph::Node::HasN::Association do
       subject { association.arrow_cypher(var, properties, create, reverse, length) }
       before do
         class MyRel
-          def self._type
+          def self.type
             'ar_type'
           end
         end

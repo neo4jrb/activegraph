@@ -9,10 +9,10 @@ module ActiveGraph::Relationship
     # @param [ActiveGraph::Relationship] to_node_id The neo_id of the ending node of this rel
     # @param [String] type the relationship type
     def init_on_load(persisted_rel, from_node_id, to_node_id, type)
-      @rel_type = type
+      @type = type
       @_persisted_obj = persisted_rel
       changed_attributes_clear!
-      @attributes = convert_and_assign_attributes(persisted_rel.props)
+      @attributes = convert_and_assign_attributes(persisted_rel.properties)
       load_nodes(from_node_id, to_node_id)
     end
 
@@ -21,7 +21,7 @@ module ActiveGraph::Relationship
       init_on_load(unwrapped_reloaded,
                    unwrapped_reloaded.start_node_id,
                    unwrapped_reloaded.end_node_id,
-                   unwrapped_reloaded.rel_type)
+                   unwrapped_reloaded.type)
       self
     end
   end

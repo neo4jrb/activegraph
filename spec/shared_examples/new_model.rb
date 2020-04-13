@@ -11,11 +11,11 @@ shared_examples 'new model' do
     end
 
     it 'should allow access to all properties before it is saved' do
-      expect(subject.props).to be_a(Hash)
+      expect(subject.properties).to be_a(Hash)
     end
 
     it 'should allow properties to be accessed with a symbol' do
-      expect { subject.props[:test] = true }.not_to raise_error
+      expect { subject.properties[:test] = true }.not_to raise_error
     end
   end
 end

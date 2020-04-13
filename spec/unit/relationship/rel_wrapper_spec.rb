@@ -5,7 +5,7 @@ describe ActiveGraph::RelWrapping do
   let(:start_node_id) { 1 }
   let(:end_node_id) { 2 }
 
-  let(:rel) { double(start_node_id: start_node_id, end_node_id: end_node_id, type: type, rel_type: type, props: properties) }
+  let(:rel) { double(start_node_id: start_node_id, end_node_id: end_node_id, type: type, type: type, properties: properties) }
   subject { ActiveGraph::RelWrapping.wrapper(rel) }
 
   it { should eq(rel) }

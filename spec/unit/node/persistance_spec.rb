@@ -23,7 +23,7 @@ describe ActiveGraph::Node::Persistence do
   describe 'initialize' do
     it 'can take a hash of properties' do
       o = clazz.new(name: 'kalle', age: '42')
-      expect(o.props).to eq(name: 'kalle', age: 42)
+      expect(o.properties).to eq(name: 'kalle', age: 42)
     end
 
     it 'raises an error when given a property which is not defined' do
@@ -54,7 +54,7 @@ describe ActiveGraph::Node::Persistence do
     it 'does not return undefined properties' do
       o = clazz.new # name not defined
       o.age = '18'
-      expect(o.props).to eq(age: 18)
+      expect(o.properties).to eq(age: 18)
     end
   end
 

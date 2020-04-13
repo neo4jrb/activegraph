@@ -121,7 +121,7 @@ module ActiveGraph
         attr_reader :relationship_class_name
 
         def relationship_class_type
-          relationship_class._type.to_sym
+          relationship_class.type.to_sym
         end
 
         def relationship_class

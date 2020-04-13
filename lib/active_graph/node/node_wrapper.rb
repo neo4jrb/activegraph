@@ -6,7 +6,7 @@ wrapping_proc = proc do |node|
   next node if not found_class
 
   found_class.new.tap do |wrapped_node|
-    wrapped_node.init_on_load(node, node.props)
+    wrapped_node.init_on_load(node, node.properties)
   end
 end
 Neo4j::Driver::Types::Node.wrapper_callback(wrapping_proc)

@@ -174,7 +174,7 @@ module ActiveGraph::Shared
       (value.is_a?(Array) && supports_array?(key)) || !EXCLUDED_TYPES.include?(value.class)
     end
 
-    # @param [Symbol] key An undeclared property value found in the _persisted_obj.props hash.
+    # @param [Symbol] key An undeclared property value found in the _persisted_obj.properties hash.
     # Typically, this is a node's id property, which will not be registered as other properties are.
     # In the future, this should probably be reworked a bit. This class should either not know or care
     # about the id property or it should be in charge of it. In the meantime, this improves

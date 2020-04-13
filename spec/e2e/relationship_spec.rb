@@ -338,17 +338,17 @@ describe 'Relationship' do
     end
 
     it 'returns the automatic type if `type` is never called or nil' do
-      MyRelClass.instance_variable_set(:'@rel_type', nil)
+      MyRelClass.instance_variable_set(:'@type', nil)
       expect(MyRelClass.type).to eq 'MY_REL_CLASS'
     end
 
     it 'uses `type` to override the default type' do
       ActiveRelSpecTypesAutomaticRelType.type 'NEW_TYPE'
-      expect(ActiveRelSpecTypesAutomaticRelType._type).to eq 'NEW_TYPE'
+      expect(ActiveRelSpecTypesAutomaticRelType.type).to eq 'NEW_TYPE'
     end
 
     it 'uses the defined class name when inheriting' do
-      expect(ActiveRelSpecTypesInheritedRelClass._type).to eq 'ACTIVE_REL_SPEC_TYPES_INHERITED_REL_CLASS'
+      expect(ActiveRelSpecTypesInheritedRelClass.type).to eq 'ACTIVE_REL_SPEC_TYPES_INHERITED_REL_CLASS'
     end
   end
 
@@ -497,8 +497,8 @@ describe 'Relationship' do
 
       describe 'neo id queries' do
         it 'aliases #{related_node}_neo_id to #{related_node}.neo_id' do
-          expect(rel1.from_node_neo_id).to eq rel1.from_node.neo_id
-          expect(rel1.to_node_neo_id).to eq rel1.to_node.neo_id
+          expect(rel1.start_node_id).to eq rel1.from_node.neo_id
+          expect(rel1.end_node_id).to eq rel1.to_node.neo_id
         end
       end
     end

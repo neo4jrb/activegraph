@@ -16,6 +16,6 @@ module ActiveGraph::Node::Initialize
 
   def init_on_reload(reloaded)
     @attributes = nil
-    init_on_load(reloaded, reloaded.props)
+    init_on_load(reloaded, reloaded.properties)
   end
 end

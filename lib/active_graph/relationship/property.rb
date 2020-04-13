@@ -17,16 +17,13 @@ module ActiveGraph::Relationship
     alias end_node to_node
 
     %w(start_node end_node).each do |direction|
-      define_method("#{direction}_neo_id") { send(direction).neo_id if direction }
+      define_method("#{direction}_id") { send(direction).neo_id if direction }
     end
-    alias from_node_neo_id start_node_neo_id
-    alias to_node_neo_id end_node_neo_id
 
     # @return [String] a string representing the relationship type that will be created
     def type
       self.class.type
     end
-    alias rel_type type
 
     def initialize(attributes = nil)
       super(attributes)

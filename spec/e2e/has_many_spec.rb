@@ -64,7 +64,7 @@ describe 'has_many' do
     end
   end
 
-  describe 'rel_type' do
+  describe 'type' do
     it 'creates the correct type' do
       node.friends << friend1
       expect(first_rel_type(node)).to eq('FRIENDS')
@@ -170,7 +170,7 @@ describe 'has_many' do
 
         r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r.props[:since]).to eq(1994)
+        expect(r.properties[:since]).to eq(1994)
       end
 
       it 'creates new relationships when given an array of nodes and given properties' do
@@ -180,7 +180,7 @@ describe 'has_many' do
 
         expect(rs.map(&:end_node_id)).to match_array([friend1.neo_id, friend2.neo_id])
         rs.each do |r|
-          expect(r.props[:since]).to eq(1995)
+          expect(r.properties[:since]).to eq(1995)
         end
       end
     end
@@ -198,7 +198,7 @@ describe 'has_many' do
         # node.friends.create(node2, since: 1996)
         r = node_rels(node, :outgoing, 'FRIENDS').first
 
-        expect(r.props[:since]).to eq(1996)
+        expect(r.properties[:since]).to eq(1996)
         expect(r.end_node_id).to eq(p.neo_id)
       end
 
@@ -210,7 +210,7 @@ describe 'has_many' do
 
         expect(rs.map(&:end_node_id)).to match_array(peeps.map(&:neo_id))
         rs.each do |r|
-          expect(r.props[:since]).to eq(1997)
+          expect(r.properties[:since]).to eq(1997)
         end
       end
     end

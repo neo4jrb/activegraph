@@ -1,7 +1,7 @@
 def save_and_expect_rel!
   proc do
     chris.save
-    reloaded_chris = Student.find_by(chris.props)
+    reloaded_chris = Student.find_by(chris.properties)
     expect(reloaded_chris.lessons.include?(math)).to be_truthy
   end
 end

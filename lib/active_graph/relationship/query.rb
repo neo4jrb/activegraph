@@ -51,12 +51,12 @@ module ActiveGraph::Relationship
 
       def where_query
         deprecation_warning!
-        ActiveGraph::Base.new_query.match("#{cypher_string(:outbound)}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+        ActiveGraph::Base.new_query.match("#{cypher_string(:outbound)}-[r1:`#{type}`]->#{cypher_string(:inbound)}")
       end
 
       def all_query
         deprecation_warning!
-        ActiveGraph::Base.new_query.match("#{cypher_string}-[r1:`#{self._type}`]->#{cypher_string(:inbound)}")
+        ActiveGraph::Base.new_query.match("#{cypher_string}-[r1:`#{type}`]->#{cypher_string(:inbound)}")
       end
 
       def cypher_string(dir = :outbound)

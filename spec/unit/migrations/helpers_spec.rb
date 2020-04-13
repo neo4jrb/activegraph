@@ -212,10 +212,10 @@ describe ActiveGraph::Migrations::Helpers do
       query.match('(bc:`Bookcase`)').match('(b:`Book`)').create('(bc)-[r:`#has_books` { foo: "bar"}]->(b)').pluck(:r)
 
       old_rels = query.match('()-[r:`#has_books`]->()').pluck(:r)
-      expect(old_rels.map { |e| e.props[:foo] }).to eq(['bar'] * 3)
+      expect(old_rels.map { |e| e.properties[:foo] }).to eq(['bar'] * 3)
       migrate!
       new_rel = query.match('()-[r:`has_books`]->()').pluck(:r)
-      expect(new_rel.map { |e| e.props[:foo] }).to eq(['bar'] * 3)
+      expect(new_rel.map { |e| e.properties[:foo] }).to eq(['bar'] * 3)
     end
 
     it 'does not relabel relationships already in the requested format' do
@@ -238,19 +238,19 @@ describe ActiveGraph::Migrations::Helpers do
     it 'relabels a relation' do
       expect do
         relabel_relation :something, :something_else
-      end.to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something).to(:something_else)
+      end.to change { query.match('()-[r]-()').pluck(:r).first.type }.from(:something).to(:something_else)
     end
 
     it 'relabels a relation giving :from, :to and :direction' do
       expect do
         relabel_relation :something, :something_else, from: :Book, to: :Bookcase, direction: :in
-      end.to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something).to(:something_else)
+      end.to change { query.match('()-[r]-()').pluck(:r).first.type }.from(:something).to(:something_else)
     end
 
     it 'relabels nothing when giving wrong :from and :to' do
       expect do
         relabel_relation :something, :something_else, from: :Cat, to: :Dog
-      end.not_to change { query.match('()-[r]-()').pluck(:r).first.rel_type }.from(:something)
+      end.not_to change { query.match('()-[r]-()').pluck(:r).first.type }.from(:something)
     end
 
     it 'runs relabeling in batches' do

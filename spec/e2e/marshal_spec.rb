@@ -46,7 +46,7 @@ describe ActiveGraph::Shared::Marshal, :ffi_only do
       expect(unmarshaled.neo_id).to eq(neo_id)
       expect(unmarshaled.foo).to eq('bar')
       expect(unmarshaled.type).to eq('HAS_PARENT')
-      expect(unmarshaled._persisted_obj).to be_a(ActiveGraph::Core::Relationship)
+      expect(unmarshaled._persisted_obj).to be_a(Neo4j::Driver::Types::Relationship)
     end
   end
 end

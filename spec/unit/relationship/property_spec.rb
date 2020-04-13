@@ -69,16 +69,16 @@ describe ActiveGraph::Relationship::Property do
     end
 
     describe 'type' do
-      it 'sets @rel_type' do
+      it 'sets @type' do
         clazz.type 'myrel'
-        expect(clazz.instance_variable_get(:@rel_type)).to eq 'myrel'
+        expect(clazz.instance_variable_get(:@type)).to eq 'myrel'
       end
     end
 
-    describe '_type' do
+    describe 'type' do
       it 'returns the currently set rel type' do
         clazz.type 'myrel'
-        expect(clazz._type).to eq 'myrel'
+        expect(clazz.type).to eq 'myrel'
       end
     end
   end

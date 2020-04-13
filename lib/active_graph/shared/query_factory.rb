@@ -18,7 +18,7 @@ module ActiveGraph::Shared
       case
       when graph_obj.respond_to?(:labels_for_create)
         NodeQueryFactory
-      when graph_obj.respond_to?(:rel_type)
+      when graph_obj.respond_to?(:type)
         RelQueryFactory
       else
         fail "Unable to find factory for #{graph_obj}"

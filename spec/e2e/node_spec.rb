@@ -579,7 +579,7 @@ describe 'ActiveGraph::Node' do
       person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = $neo_id RETURN p',
                             {neo_id: person.neo_id},
                             wrap: false).first[:p]
-      expect(person2.props).to match hash_including age: 22, name: 'andreas'
+      expect(person2.properties).to match hash_including age: 22, name: 'andreas'
     end
 
     it 'they can be all found' do

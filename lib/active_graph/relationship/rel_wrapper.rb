@@ -1,4 +1,4 @@
-require 'active_graph/core/relationship'
+# frozen_string_literal: true
 
 wrapping_proc = proc do |relationship|
   ActiveGraph::RelWrapping.wrapper(relationship)
@@ -9,9 +9,9 @@ module ActiveGraph
   module RelWrapping
     class << self
       def wrapper(rel)
-        rel.props.symbolize_keys!
+        rel.properties.symbolize_keys!
         begin
-          most_concrete_class = class_from_type(rel.rel_type).constantize
+          most_concrete_class = class_from_type(rel.type).constantize
           return rel unless most_concrete_class < ActiveGraph::Relationship
           most_concrete_class.new
         rescue NameError => e
@@ -23,8 +23,8 @@ module ActiveGraph
         end
       end
 
-      def class_from_type(rel_type)
-        ActiveGraph::Relationship::Types::WRAPPED_CLASSES[rel_type] || ActiveGraph::Relationship::Types::WRAPPED_CLASSES[rel_type] = rel_type.to_s.downcase.camelize
+      def class_from_type(type)
+        ActiveGraph::Relationship::Types::WRAPPED_CLASSES[type] || ActiveGraph::Relationship::Types::WRAPPED_CLASSES[type] = type.to_s.downcase.camelize
       end
     end
   end

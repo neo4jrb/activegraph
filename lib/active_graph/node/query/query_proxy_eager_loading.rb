@@ -62,7 +62,7 @@ module ActiveGraph
           if rel.is_a?(ActiveGraph::Relationship)
             rel.instance_variable_set(direction == :in ? '@from_node' : '@to_node', node)
           end
-          @_cache[direction == :out ? rel.start_node_neo_id : rel.end_node_neo_id]
+          @_cache[direction == :out ? rel.start_node_id : rel.end_node_id]
             .association_proxy(element.name).add_to_cache(node, rel)
         end
 
