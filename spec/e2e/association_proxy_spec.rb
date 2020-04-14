@@ -57,7 +57,6 @@ describe 'Association Proxy' do
     context 'self referencing relationships' do
       before { leszek }
       it 'fire only one query' do
-        ActiveGraph::Base.subscribe_to_query(&method(:puts))
         expect_queries(1) do
           Student.all.order(:name).with_associations(:friends).each do |student|
             student.friends.to_a

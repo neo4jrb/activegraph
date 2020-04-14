@@ -33,10 +33,6 @@ module Neo4jSpecHelpers
     ActiveGraph::Base.query(*args)
   end
 
-  def log_queries!
-    ActiveGraph::Transaction.subscribe_to_query(&method(:puts))
-  end
-
   def action_controller_params(args)
     ActionController::Parameters.new(args)
   end
