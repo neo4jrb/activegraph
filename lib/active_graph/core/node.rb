@@ -6,6 +6,10 @@ module ActiveGraph
       def neo_id
         id
       end
+
+      def labels
+        @labels ||= super
+      end
     end
   end
 end
