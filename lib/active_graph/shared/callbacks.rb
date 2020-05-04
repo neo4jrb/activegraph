@@ -30,7 +30,7 @@ module ActiveGraph
         raise
       end
 
-      def touch #:nodoc:
+      def touch(*) #:nodoc:
         run_callbacks(:touch) { super }
       end
 

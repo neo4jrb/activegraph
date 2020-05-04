@@ -104,10 +104,17 @@ module ActiveGraph::Shared
       end
     end
 
-    def touch
+    def touch(*names)
       fail 'Cannot touch on a new record object' unless persisted?
-      update_attribute!(:updated_at, Time.now) if respond_to?(:updated_at=)
-    end
+      attributes = [:updated_at].concat(names)
+      current_time = Time.now
+      changes = {}
+      attributes.each do |column|
+        column = column.to_s       
+        changes[column] = write_attribute(column, current_time) if respond_to?((column + '=').to_sym)
+      end
+      save!
+    end   
 
     # Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
     def persisted?
