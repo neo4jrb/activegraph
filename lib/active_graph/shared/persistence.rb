@@ -110,11 +110,11 @@ module ActiveGraph::Shared
       current_time = Time.now
       changes = {}
       attributes.each do |column|
-        column = column.to_s       
+        column = column.to_s
         changes[column] = write_attribute(column, current_time) if respond_to?((column + '=').to_sym)
       end
       save!
-    end   
+    end
 
     # Returns +true+ if the record is persisted, i.e. it's not a new record and it was not destroyed
     def persisted?
