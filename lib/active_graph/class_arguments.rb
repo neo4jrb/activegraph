@@ -1,7 +1,7 @@
 module ActiveGraph
   module ClassArguments
     class << self
-      INVALID_CLASS_ARGUMENT_ERROR = 'option must by String, Symbol, false, nil, or an Array of Symbols/Strings'
+      INVALID_CLASS_ARGUMENT_ERROR = 'option must be String, Symbol, false, nil, or an Array of Symbols/Strings'
 
       def valid_argument?(class_argument)
         [NilClass, String, Symbol, FalseClass].include?(class_argument.class) ||
