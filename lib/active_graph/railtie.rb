@@ -64,7 +64,9 @@ module ActiveGraph
       auth_token ||= username ? Neo4j::Driver::AuthTokens.basic(username, password) : Neo4j::Driver::AuthTokens.none
       register_neo4j_cypher_logging
 
-      Neo4j::Driver::GraphDatabase.driver(url || path || default_driver_path_or_url, auth_token, config)
+      url ||= path || default_driver_path_or_url
+      method = url.is_a?(Enumerable) ? :routing_driver : :driver
+      Neo4j::Driver::GraphDatabase.send(method, url, auth_token, config)
     end
 
     def final_driver_config!(neo4j_config)
