@@ -20,7 +20,7 @@ describe ActiveGraph::Node do
 
   describe '.new' do
     it 'does not allow setting undeclared properties' do
-      expect(Person.new(name: 'Jim').properties).to eq(name: 'Jim')
+      expect(Person.new(name: 'Jim').props).to eq(name: 'Jim')
     end
 
     it 'undefined properties are found with the attributes method' do
@@ -49,7 +49,7 @@ describe ActiveGraph::Node do
   describe '.create' do
     it 'does not store nil values' do
       person = Person.create(name: 'Jim', age: nil)
-      expect(person.properties).to eq(name: 'Jim')
+      expect(person.props).to eq(name: 'Jim')
     end
 
     it 'stores undefined attributes' do

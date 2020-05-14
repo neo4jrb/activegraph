@@ -30,7 +30,7 @@ module ActiveGraph::Shared
     # @return [Hash]
     def props_for_create
       inject_timestamps!
-      props_with_defaults = inject_defaults!(properties)
+      props_with_defaults = inject_defaults!(props)
       converted_props = props_for_db(props_with_defaults)
       return converted_props unless self.class.respond_to?(:default_property_values)
       inject_primary_key!(converted_props)
@@ -143,7 +143,7 @@ module ActiveGraph::Shared
     end
 
     # @return [Hash] all defined and none nil properties
-    def properties
+    def props
       attributes.reject { |_, v| v.nil? }.symbolize_keys
     end
 
