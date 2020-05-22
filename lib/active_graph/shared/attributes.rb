@@ -189,7 +189,7 @@ module ActiveGraph::Shared
 
       # Assign a set of attribute definitions, used when subclassing models
       #
-      # @param [Array<ActiveGraph::Shared::DeclaredProperties>] The Array of
+      # @param [Array<ActiveGraph::Shared::DeclaredProperties>] attributes The Array of
       #   AttributeDefinition instances
       def attributes=(attributes)
         @attributes = attributes

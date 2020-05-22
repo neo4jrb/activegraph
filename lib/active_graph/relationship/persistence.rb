@@ -37,8 +37,8 @@ module ActiveGraph::Relationship
     end
 
     # Increments concurrently a numeric attribute by a centain amount
-    # @param [Symbol, String] name of the attribute to increment
-    # @param [Integer, Float] amount to increment
+    # @param [Symbol, String] attribute name of the attribute to increment
+    # @param [Integer, Float] by  amount to increment
     def concurrent_increment!(attribute, by = 1)
       increment_by_query! query_as(:r), attribute, by, :r
     end
@@ -65,7 +65,7 @@ module ActiveGraph::Relationship
 
     module ClassMethods
       # Creates a new relationship between objects
-      # @param [Hash] props the properties the new relationship should have
+      # @param [Hash] args the properties the new relationship should have
       def create(*args)
         new(*args).tap(&:save)
       end

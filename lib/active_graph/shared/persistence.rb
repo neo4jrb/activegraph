@@ -46,8 +46,8 @@ module ActiveGraph::Shared
     end
 
     # Increments a numeric attribute by a centain amount
-    # @param [Symbol, String] name of the attribute to increment
-    # @param [Integer, Float] amount to increment
+    # @param [Symbol, String] attribute name of the attribute to increment
+    # @param [Integer, Float] by amount to increment
     def increment(attribute, by = 1)
       self[attribute] ||= 0
       self[attribute] += by
@@ -55,15 +55,15 @@ module ActiveGraph::Shared
     end
 
     # Convenience method to increment numeric attribute and #save at the same time
-    # @param [Symbol, String] name of the attribute to increment
-    # @param [Integer, Float] amount to increment
+    # @param [Symbol, String] attribute name of the attribute to increment
+    # @param [Integer, Float] by amount to increment
     def increment!(attribute, by = 1)
       increment(attribute, by).update_attribute(attribute, self[attribute])
     end
 
     # Increments concurrently a numeric attribute by a centain amount
-    # @param [Symbol, String] name of the attribute to increment
-    # @param [Integer, Float] amount to increment
+    # @param [Symbol, String] _attribute name of the attribute to increment
+    # @param [Integer, Float] _by amount to increment
     def concurrent_increment!(_attribute, _by = 1)
       fail 'not_implemented'
     end

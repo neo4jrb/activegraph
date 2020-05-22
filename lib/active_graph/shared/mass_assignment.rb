@@ -19,9 +19,8 @@ module ActiveGraph::Shared
     #   person.first_name #=> "Chris"
     #   person.last_name #=> "Griego"
     #
-    # @param [Hash{#to_s => Object}, #each] attributes Attributes used to
+    # @param [Hash{#to_s => Object}, #each] new_attributes Attributes used to
     #   populate the model
-    # @param [Hash, #[]] options Options that affect mass assignment
     def assign_attributes(new_attributes = nil)
       return unless new_attributes.present?
       new_attributes.each do |name, value|

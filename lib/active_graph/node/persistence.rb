@@ -30,8 +30,8 @@ module ActiveGraph::Node
     end
 
     # Increments concurrently a numeric attribute by a centain amount
-    # @param [Symbol, String] name of the attribute to increment
-    # @param [Integer, Float] amount to increment
+    # @param [Symbol, String] attribute name of the attribute to increment
+    # @param [Integer, Float] by amount to increment
     def concurrent_increment!(attribute, by = 1)
       increment_by_query! query_as(:n), attribute, by
     end
