@@ -3,18 +3,6 @@ Rake Tasks
 
 The ``neo4j-rake_tasks`` gem includes some rake tasks which make it easy to install and manage a Neo4j server in the same directory as your Ruby project.
 
-.. warning::
-
-  The ``neo4j-rake_tasks`` gem was previously brought in as a dependency of the ``neo4j-core`` gem (which was in turn a requirement of the ``neo4j`` gem).  This meant that users of the ``neo4j`` and ``neo4j-core`` gems would have these rake tasks regardless of the need for them.  While this was useful for saving a step in a tutorial introducing Neo4j in Ruby, it led to confusion about the rake tasks and sometimes led people to use the rake tasks in production (see below).  Starting in version ``8.0.0`` of the ``neo4j-core`` gem, the ``neo4j-rake_tasks`` gem must be explicitly required if it is needed.
-
-.. warning::
-
-  Setting up a Neo4j server with the rake tasks below will disable authentication and is thus most useful for development and test environments.  Note that installing Neo4j on production can be as straightforward as downloading, unzipping, and starting your server.
-
-.. note::
-
-  If you are using zsh, you need to prefix any rake tasks with arguments with the noglob command, e.g. ``$ noglob bundle exec rake neo4j:install[community-latest]``.
-
 .. glossary::
 
   .. _rake_tasks-neo4j_generate_schema_migration:

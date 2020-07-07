@@ -21,7 +21,7 @@ module ActiveGraph
       class RecordNotFound < ActiveGraph::RecordNotFound; end
 
       # @return the labels
-      # @see Neo4j-core
+      # @see ActiveGraph::Core
       def labels
         @_persisted_obj.labels
       end
@@ -32,7 +32,7 @@ module ActiveGraph
       # end
 
       # adds one or more labels
-      # @see Neo4j-core
+      # @see ActiveGraph::Core
       def add_labels(*labels)
         labels.inject(query_as(:n)) do |query, label|
           query.set("n:`#{label}`")
@@ -43,7 +43,7 @@ module ActiveGraph
 
       # Removes one or more labels
       # Be careful, don't remove the label representing the Ruby class.
-      # @see Neo4j-core
+      # @see ActiveGraph::Core
       def remove_labels(*labels)
         labels.inject(query_as(:n)) do |query, label|
           query.remove("n:`#{label}`")

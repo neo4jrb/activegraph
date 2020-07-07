@@ -122,7 +122,7 @@ Reverts the last up migration. You can additionally pass a ``STEPS`` parameter, 
     rake neo4j:rollback
 
 neo4j:schema:dump
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Reads the current database and generates a ``db/neo4j/schema.yml`` file to track constraints, indexes, and migrations which have been run (runs automatically after the ``neo4j:migrate`` task)
 
@@ -131,7 +131,7 @@ Reads the current database and generates a ``db/neo4j/schema.yml`` file to track
     rake neo4j:schema:dump
 
 neo4j:schema:load
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Reads the ``db/neo4j/schema.yml`` file and loads the constraints, indexes, and migration nodes into the database.  The default behavior is to only add, but an argument can be passed in to tell the task to remove any indexes / constraints that were found in the database which were not in the ``schema.yml`` file.
 

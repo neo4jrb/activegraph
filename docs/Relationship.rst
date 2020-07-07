@@ -1,5 +1,5 @@
 Relationship
-=========
+============
 
 Relationship is a module in the ``neo4j`` gem which wraps relationships. Relationship objects share most of their behavior with Node objects. Relationship is purely optional and offers advanced functionality for complex relationships.
 
@@ -78,7 +78,7 @@ Relationship Creation
 ---------------------
 
 From an Relationship Model
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once setup, Relationship models follow the same rules as Node in regard to properties. Declare them to create setter/getter methods. You can also set ``created_at`` or ``updated_at`` for automatic timestamps.
 

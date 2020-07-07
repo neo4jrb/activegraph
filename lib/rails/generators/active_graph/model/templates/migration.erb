@@ -1,4 +1,6 @@
 class Create<%= @migration_class_name.underscore.camelize %> < ActiveGraph::Migrations::Base
+  disable_transactions!
+
   def up
     add_constraint :<%= class_name %>, :uuid
   end

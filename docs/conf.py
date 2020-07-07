@@ -59,7 +59,7 @@ copyright = u'2015, Chris Grigg, Brian Underwood'
 # built documents.
 #
 # The short X.Y version.
-f = open('../lib/neo4j/version.rb')
+f = open('../lib/active_graph/version.rb')
 contents = f.read()
 version_line = filter(lambda x:'VERSION' in x, contents.split("\n"))
 import re
@@ -341,4 +341,4 @@ epub_exclude_files = ['search.html']
 #epub_use_index = True
 
 def setup(app):
-    app.add_stylesheet("neo4jrb.css")
+    app.add_css_file("neo4jrb.css")

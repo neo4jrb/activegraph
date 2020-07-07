@@ -82,7 +82,7 @@ module ActiveGraph
 
         alias blank? empty?
 
-        # @param [ActiveGraph::Node, ActiveGraph::Node, String] other An instance of a Neo4j.rb model, a Neo4j-core node, or a string uuid
+        # @param [ActiveGraph::Node, ActiveGraph::Node, String] other An instance of a Neo4j.rb model, a core node, or a string uuid
         # @param [String, Symbol] target An identifier of a link in the Cypher chain
         # @return [Boolean]
         def include?(other, target = nil)

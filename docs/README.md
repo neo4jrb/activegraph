@@ -4,6 +4,11 @@ This directory is a sphinx project designed to work with https://readthedocs.org
 
 There is a set of static *.rst files which provide tutorial-style overview documentation for the Neo4j.rb project.  In addition there are [YARD](http://yardoc.org/) templates which output the API documentation from the comments in the Ruby source code to *.rst files under the `api` directory.
 
+# Prerequisites
+
+`pip3 install -U Sphinx`
+
+`pip3 install sphinx_rtd_theme`
 
 # Rake tasks
 

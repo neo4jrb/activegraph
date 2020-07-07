@@ -16,7 +16,7 @@ module ActiveGraph
         attr_reader :source_object, :association, :model, :starting_query
 
         # QueryProxy is Node's Cypher DSL. While the name might imply that it creates queries in a general sense,
-        # it is actually referring to <tt>ActiveGraph::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>neo4j-core</tt> gem.
+        # it is actually referring to <tt>ActiveGraph::Core::Query</tt>, which is a pure Ruby Cypher DSL provided by the <tt>activegraph</tt> gem.
         # QueryProxy provides ActiveRecord-like methods for common patterns. When it's not handling CRUD for relationships and queries, it
         # provides Node's association chaining (`student.lessons.teachers.where(age: 30).hobbies`) and enjoys long walks on the
         # beach.

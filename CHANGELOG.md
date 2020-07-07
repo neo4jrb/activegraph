@@ -3,11 +3,24 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [10.0.x] 2020-01-23
+## [10.0.0] 2020-07-06
 
-- Executing relationship callbacks on relationship deletion.
-- When assiging relationships, preserving earlier relationships.
-- Enforcing has one constraint on relationships.
+- neo4j 4.0 support (default database only)
+- dropped support for neo4j 3.3 or earlier
+- full bolt support
+- full causal cluster support
+- removal of http support
+- removal of embedded support (neo4j embedded is still supported via bolt)
+- support for a neo4j ruby driver with an api of the official drivers
+- discontinuation of the ``neo4j-core`` gem. Its functionality is replaced partially by ``neo4j-ruby-driver`` and
+   partially by ``activegraph``
+- higher naming consistency with ``activerecord`` and the official ``neo4j-java-driver``
+- configuration more consistent with ``activerecord``
+- changed transaction API
+- support for sessions with bookmarks and read and write transaction
+- enforcing has one constraint on relationships
+- better handling of has_many (no deletion and recreation)
+- executing association callbacks on relationship deletion
 
 ## [9.6.1] 2019-12-18
 

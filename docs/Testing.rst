@@ -27,12 +27,6 @@ This is the most reliable way to clear your database in Neo4j
 
 .. code-block:: cypher
 
-  // For version of Neo4j before 2.3.0
-  // Nodes cannot be deleted without first deleting their relationships
-  MATCH (n)
-  OPTIONAL MATCH (n)-[r]-()
-  DELETE n,r
-
   // For version of Neo4j after 2.3.0
   // DETACH DELETE takes care of removing relationships for you
   MATCH (n) DETACH DELETE n
@@ -41,13 +35,9 @@ In Ruby:
 
 .. code-block:: ruby
 
-  # Just using the `neo4j-core` gem:
-  neo4j_session.query('MATCH (n) DETACH DELETE n')
+  ActiveGraph::Base.query('MATCH (n) DETACH DELETE n')
 
-  # When using the `neo4j` gem:
-  ActiveGraph::Base.current_session.query('MATCH (n) DETACH DELETE n')
-
-If you are using ``Node`` and/or ``Relationship`` from the ``neo4j`` gem you will no doubt have ``SchemaMigration`` nodes in the database.  If you delete these nodes the gem will complain that your migrations haven't been run.  To get around this you could modify the query to exclude those nodes:
+If you are using ``Node`` and/or ``Relationship`` from the ``activegraph`` gem you will no doubt have ``SchemaMigration`` nodes in the database.  If you delete these nodes the gem will complain that your migrations haven't been run.  To get around this you could modify the query to exclude those nodes:
 
 .. code-block:: cypher
 
@@ -82,19 +72,11 @@ If you are using RSpec you can perform tests in a transaction as you would using
 
 .. code-block:: ruby
 
-  # For the `neo4j-core` gem
-  config.around do |example|
-    session.transaction do |tx|
-      example.run
-      tx.mark_failed
-    end
-  end
-  
   # For the `neo4j` gem
   config.around do |example|
-    ActiveGraph::Base.run_transaction do |tx|
+    ActiveGraph::Base.transaction do |tx|
       example.run
-      tx.mark_failed
+      tx.failure
     end
   end
 

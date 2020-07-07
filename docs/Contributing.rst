@@ -6,7 +6,7 @@ We very much welcome contributions!  Before contributing there are a few things 
 The Neo4j.rb Project
 --------------------
 
-We have three main gems: `neo4j <https://github.com/neo4jrb/neo4j>`_, `neo4j-core <https://github.com/neo4jrb/neo4j-core>`_, `neo4j-rake_tasks <https://github.com/neo4jrb/neo4j-rake_tasks>`_.
+We have two main gems: `activegraph <https://github.com/neo4jrb/activegraph>`_, `neo4j-ruby-driver <https://github.com/neo4jrb/neo4j-ruby-driver>`_.
 
 We try to follow semantic versioning based on `semver.org <http://semver.org/>`
 
@@ -26,7 +26,7 @@ Help or discussion on other issues is welcome, just let us know!
 Communicating With the Neo4j.rb Team
 ------------------------------------
 
-GitHub issues are a great way to submit new bugs / ideas.  Of course pull requests are welcome (though please check with us first if it's going to be a large change).  We like tracking our GitHub issues with waffle.io (`neo4j <https://waffle.io/neo4jrb/neo4j>`_, `neo4j-core <https://waffle.io/neo4jrb/neo4j-core>`_, `neo4j-rake_tasks <https://waffle.io/neo4jrb/neo4j-rake_tasks>`_) but just through GitHub also works.
+GitHub issues are a great way to submit new bugs / ideas.  Of course pull requests are welcome (though please check with us first if it's going to be a large change).
 
 We hang out mostly in our `Gitter.im chat room <https://gitter.im/neo4jrb/neo4j>`_ and are happy to talk or answer questions.  We also are often around on the `Neo4j-Users Slack group <http://neo4j.com/blog/public-neo4j-users-slack-group/>`_.
 

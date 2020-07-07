@@ -4,19 +4,13 @@ Querying
 Introduction
 ------------
 
-If you are using the ``neo4j-core`` gem, querying is as simple as calling the ``query`` method on your session object and providing a query and optional parameters:
+Using the ``activegraph`` gem provides the entry point is ``ActiveGraph::Base``.  So you could make a simple query with:
 
 .. code-block:: ruby
 
-  neo4j_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
+  ActiveGraph::Base.query('MATCH (n) RETURN n LIMIT $limit', limit: 10)
 
-Using the ``neo4j`` gem provides a number of additional options.  Firstly in the ``neo4j`` gem, the session is made accessible via a call to ``ActiveGraph::Base.current_session``.  So you could make the above query with:
-
-.. code-block:: ruby
-
-  ActiveGraph::Base.current_session.query('MATCH (n) RETURN n LIMIT {limit}', limit: 10)
-
-Most of the time, though, using the ``neo4j`` gem involves using the ``Node`` and ``Relationship`` APIs as described below.
+Most of the time, though, using the ``activegraph`` gem involves using the ``Node`` and ``Relationship`` APIs as described below.
 
 Node
 ----------
@@ -90,7 +84,7 @@ Note here that we're giving an argument to the associaton methods (``lessons(:l)
 
 .. code-block:: ruby
 
-  student.lessons(:l, :r).where("r.start_date < {the_date} and r.end_date >= {the_date}").params(the_date: '2014-11-22').pluck(:l)
+  student.lessons(:l, :r).where("r.start_date < $the_date and r.end_date >= $the_date").params(the_date: '2014-11-22').pluck(:l)
 
 Here we are limiting lessons by the ``start_date`` and ``end_date`` on the relationship between the student and the lessons.  We can also use the ``rel_where`` method to filter based on this relationship:
 
@@ -187,7 +181,7 @@ You can also specify parameters yourself with the ``params`` method like so:
 
 .. code-block:: ruby
 
-  Student.all.where("s.age < {age} AND s.name = {name} AND s.home_town = {home_town}")
+  Student.all.where("s.age < $age AND s.name = $name AND s.home_town = $home_town")
     .params(age: 24, name: 'James', home_town: 'Dublin')
     .pluck(:s)
 
@@ -206,7 +200,7 @@ This would find the friends of friends of a student. Note that you can still nam
 
 .. code-block:: ruby
 
-  student.friends(:f, :r, rel_length: 2).where('f.gender = {gender} AND r.since >= {date}').params(gender: 'M', date: 1.month.ago)
+  student.friends(:f, :r, rel_length: 2).where('f.gender = $gender AND r.since >= $date').params(gender: 'M', date: 1.month.ago)
 
 
 .. note::
@@ -255,11 +249,11 @@ There are many ways to provide the length information to generate all the variou
 The Query API
 ~~~~~~~~~~~~~
 
-The ``neo4j-core`` gem provides a ``Query`` class which can be used for building very specific queries with method chaining.  This can be used either by getting a fresh ``Query`` object from a ``Session`` or by building a ``Query`` off of a scope such as above.
+The ``activegraph`` gem provides a ``Query`` class which can be used for building very specific queries with method chaining.  This can be used either by getting a fresh ``Query`` object from a ``ActiveGraph::Base`` or by building a ``Query`` off of a scope such as above.
 
 .. code-block:: ruby
 
-  ActiveGraph::Base.new_query # Get a new Query object
+  ActiveGraph::Base.query # Get a new Query object
 
   # Get a Query object based on a scope
   Student.query_as(:s) # For a

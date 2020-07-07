@@ -402,7 +402,7 @@ module ActiveGraph::Node
       #
       # This would define the methods: ``#vehicle``, ``#vehicle=``, and ``.vehicle``.
       #
-      # See :ref:`#has_many <Neo4j/Node/HasN/ClassMethods#has_many>` for anything
+      # See :ref:`#has_many <ActiveGraph/Node/HasN/ClassMethods#has_many>` for anything
       # not specified here
       #
       def has_one(direction, name, options = {}) # rubocop:disable Naming/PredicateName

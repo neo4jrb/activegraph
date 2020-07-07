@@ -13,6 +13,8 @@ Other Ruby apps
 
 You can set configuration variables directly in the Neo4j configuration class like so: ``ActiveGraph::Config[:variable_name] = value`` where **variable_name** and **value** are as described below.
 
+.. _configuration-variables:
+
 Variables
 ~~~~~~~~~
 
@@ -39,7 +41,7 @@ Variables
 
     Determins whether enums property setters should be case sensitive or not.
 
-    .. seealso:: :ref:`activenode-enums`
+    .. seealso:: :ref:`node-enums`
 
   **include_root_in_json**
     **Default:** ``true``
@@ -109,11 +111,11 @@ Variables
 Instrumented events
 ~~~~~~~~~~~~~~~~~~~
 
-The ``neo4j-core`` gem instruments a handful of events so that users can subscribe to them to do logging, metrics, or anything else that they need.  For example, to create a block which is called any time a query is made via the ``neo4j-core`` gem:
+The ``activegraph`` gem instruments a handful of events so that users can subscribe to them to do logging, metrics, or anything else that they need.  For example, to create a block which is called any time a query is made via the gem:
 
 .. code-block:: ruby
 
-  ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query do |message|
+  ActiveGraph::Base.subscribe_to_query do |message|
     puts message
   end
 
@@ -131,15 +133,9 @@ The argument to the block (``message`` in this case) will be an ANSI formatted s
 
 All methods and their corresponding events:
 
-  **ActiveGraph::Core::CypherSession::Adaptors::Base.subscribe_to_query**
+  **ActiveGraph::Base.subscribe_to_query**
     **neo4j.core.cypher_query**
 
-  **ActiveGraph::Core::CypherSession::Adaptors::HTTP.subscribe_to_request**
+  **ActiveGraph::Base.subscribe_to_request**
     **neo4j.core.http.request**
-
-  **ActiveGraph::Core::CypherSession::Adaptors::Bolt.subscribe_to_request**
-    **neo4j.core.bolt.request**
-
-  **ActiveGraph::Core::CypherSession::Adaptors::Embedded.subscribe_to_transaction**
-    **neo4j.core.embedded.transaction**
 

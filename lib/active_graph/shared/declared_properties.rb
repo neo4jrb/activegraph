@@ -75,7 +75,7 @@ module ActiveGraph::Shared
       end.freeze
     end
 
-    # During object wrapping, a props hash is built with string keys but Neo4j-core provides symbols.
+    # During object wrapping, a props hash is built with string keys but ActiveGraph::Core provides symbols.
     # Rather than a `to_s` or `symbolize_keys` during every load, we build a map of symbol-to-string
     # to speed up the process. This increases memory used by the gem but reduces object allocation and GC, so it is faster
     # in practice.

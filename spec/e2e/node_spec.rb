@@ -454,7 +454,7 @@ describe 'ActiveGraph::Node' do
       expect(person.exist?).to be true
     end
 
-    # Escaping strings is handled by neo4j-core but more tests never hurt.
+    # Escaping strings is handled by ActiveGraph::Core but more tests never hurt.
     # If this fails, it likely suggests a problem in that gem.
     it 'can save properties with apostrophes' do
       person = Person.create(name: "D'Amore-Schamberger")

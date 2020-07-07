@@ -1,11 +1,8 @@
 Introduction
 ============
 
-.. contents::
-  :local:
-
-
-Neo4j.rb is an ActiveRecord-inspired OGM (Object Graph Mapping, like `ORM <http://en.wikipedia.org/wiki/Object-relational_mapping>`_) for Ruby supporting Neo4j 2.1+.
+ActiveGraph is an ActiveRecord-inspired OGM (Object Graph Mapping, like
+`ORM <http://en.wikipedia.org/wiki/Object-relational_mapping>`_) for Ruby supporting Neo4j 3.4+.
 
 Terminology
 -----------
@@ -14,7 +11,8 @@ Neo4j
 ~~~~~
 
 Node
-  An `Object or Entity <http://en.wikipedia.org/wiki/Object_%28computer_science%29>`_ which has a distinct identity.  Can store arbitrary properties with values
+  An `Object or Entity <http://en.wikipedia.org/wiki/Object_%28computer_science%29>`_ which has a distinct identity.
+  Can store arbitrary properties with values
 
 Label
   A means of identifying nodes.  Nodes can have zero or more labels.  While similar in concept to relational table names, nodes can have multiple labels (i.e. a node could have the labels ``Person`` and ``Teacher``)
@@ -25,16 +23,19 @@ Relationship
 Type
   Relationships always have exactly one **type** which describes how it is relating it's source and destination nodes (i.e. a relationship with a ``FRIEND_OF`` type might connect two ``Person`` nodes)
 
-Neo4j.rb
-~~~~~~~~
+ActiveGraph
+~~~~~~~~~~~
 
-Neo4j.rb consists of the `neo4j` and `neo4j-core` gems.
+ActiveGraph consists of the `activegraph` gem and suitable driver at level 1.7.x. There are currently 2 such available
+drivers gems: `neo4j-ruby-driver` and `neo4j-java-driver` (jruby only). Both drivers implement exactly the same api and
+can be swapped seamlessly on jruby.
 
-neo4j
-  Provides ``Node`` and ``Relationship`` modules for object modeling.  Introduces *Model* and *Association* concepts (see below).  Depends on ``neo4j-core`` and thus both are available when ``neo4j`` is used
+activegraph
+  Provides ``Node`` and ``Relationship`` modules for object modeling.  Introduces *Model* and *Association* concepts (see below).
 
-neo4j-core
-  Provides low-level connectivity, transactions, and response object wrapping.  Includes ``Query`` class for generating Cypher queries with Ruby method chaining.
+drivers
+  Provide low-level connectivity, transactions, and response object wrapping with api and functionality consistent with
+  the official neo4j drivers. Please see https://github.com/neo4jrb/neo4j-ruby-driver/tree/1.7
 
 Model
   A Ruby class including either the ``ActiveGraph::Node`` module (for modeling nodes) or the ``ActiveGraph::Relationship`` module (for modeling relationships) from the ``neo4j`` gem.  These modules give classes the ability to define properties, associations, validations, and callbacks
@@ -45,7 +46,7 @@ Association
 Code Examples
 -------------
 
-With Neo4j.rb, you can use either high-level abstractions for convenience or low level APIs for flexibility.
+With ActiveGraph, you can use either high-level abstractions for convenience or low level APIs for flexibility.
 
 Node
 ~~~~~~~~~~

@@ -2,12 +2,13 @@ require 'active_support/notifications'
 require 'rails/railtie'
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
+require 'active_graph'
 
 module ActiveGraph
   class Railtie < ::Rails::Railtie
     def empty_config
       ActiveSupport::OrderedOptions.new.tap do |cfg|
-        cfg.driver = ActiveSupport::OrderedOptions.new.tap { |cfg| cfg.config = ActiveSupport::OrderedOptions.new }
+        cfg.driver = ActiveSupport::OrderedOptions.new
       end
     end
 
@@ -58,31 +59,29 @@ module ActiveGraph
       end
     end
 
-    def setup!(neo4j_config = empty_config)
-      url, path, auth_token, username, password, config =
-        final_driver_config!(neo4j_config).values_at(:url, :path, :auth_token, :username, :password, :config)
+    def setup!(config = empty_config)
+      config = final_driver_config!(config)
+      scheme = config.delete(:scheme) || 'bolt'
+      host = config.delete(:host) || 'localhost'
+      port = config.delete(:port) || 7687
+      url = config.delete(:url) || URI::Generic.build( scheme: scheme, host: host, port: port ).to_s
+      username = config.delete(:username)
+      password = config.delete(:password)
+      auth_token = config.delete(:auth_token)
       auth_token ||= username ? Neo4j::Driver::AuthTokens.basic(username, password) : Neo4j::Driver::AuthTokens.none
       register_neo4j_cypher_logging
 
-      url ||= path || default_driver_path_or_url
       method = url.is_a?(Enumerable) ? :routing_driver : :driver
       Neo4j::Driver::GraphDatabase.send(method, url, auth_token, config)
     end
 
-    def final_driver_config!(neo4j_config)
-      (neo4j_config[:driver].empty? ? yaml_config_data : neo4j_config[:driver]).dup
-    end
-
-    def default_driver_path_or_url
-      ENV['NEO4J_URL'] || ENV['NEO4J_PATH'] || 'bolt://localhost:7474'
+    def final_driver_config!(config)
+      { url: ENV['NEO4J_URL'] }.compact.merge(config[:driver]).merge(yaml_config_data)
     end
 
     def yaml_config_data
-      @yaml_config_data ||= if yaml_path
-                              HashWithIndifferentAccess.new(YAML.load(ERB.new(yaml_path.read).result)[Rails.env])
-                            else
-                              {}
-                            end
+      @yaml_config_data ||=
+        yaml_path ? YAML.load(ERB.new(yaml_path.read).result)[Rails.env].transform_keys!(&:to_sym) : {}
     end
 
     def yaml_path

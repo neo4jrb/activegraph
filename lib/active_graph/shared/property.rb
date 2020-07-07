@@ -132,7 +132,7 @@ module ActiveGraph::Shared
       # Defines a property on the class
       #
       # See active_attr gem for allowed options, e.g which type
-      # Notice, in Neo4j you don't have to declare properties before using them, see the neo4j-core api.
+      # Notice, in ActiveGraph you don't have to declare properties before using them, see the ActiveGraph::Coree api.
       #
       # @example Without type
       #    class Person

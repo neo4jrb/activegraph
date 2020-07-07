@@ -14,7 +14,7 @@ To use Node, include ActiveGraph::Node in a class.
 Properties
 ----------
 
-All properties for ActiveGraph::Node objects must be declared (unlike neo4j-core nodes). Properties are declared using the property method which is the same as attribute from the active_attr gem.
+Properties for ActiveGraph::Node objects must be declared by default. Properties are declared using the property method which is the same as attribute from the active_attr gem.
 
 Example:
 
@@ -128,6 +128,8 @@ Pass a property name as a symbol to the serialize method if you want to save JSO
 Neo4j.rb serializes as JSON by default but pass it the constant Hash as a second parameter to serialize as YAML. Those coming from ActiveRecord will recognize this behavior, though Rails serializes as YAML by default.
 
 *Neo4j allows you to save Ruby arrays to undefined or String types but their contents need to all be of the same type. You can do user.stuff = [1, 2, 3] or user.stuff = ["beer, "pizza", "doritos"] but not user.stuff = [1, "beer", "pizza"]. If you wanted to do that, you could call serialize on your property in the model.*
+
+.. _node-enums:
 
 Enums
 ~~~~~~
@@ -472,9 +474,9 @@ is a ``Post`` object, after all. To allow for association chains in this circums
 
 .. seealso::
 
-    #query_as http://www.rubydoc.info/gems/neo4j/Neo4j/Node/Query/QueryProxy#query_as-instance_method
+    #query_as http://www.rubydoc.info/gems/activegraph/ActiveGraph/Node/Query/QueryProxy#query_as-instance_method
     and
-    #proxy_as http://www.rubydoc.info/gems/neo4j/Neo4j/Core/Query#proxy_as-instance_method
+    #proxy_as http://www.rubydoc.info/gems/activegraph/ActiveGraph/Core/Query#proxy_as-instance_method
 
 Dependent Associations
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -508,9 +510,9 @@ The two orphan-destruction options are unique to Neo4j.rb. As an example of when
 
 
 .. seealso::
-  #has_many http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_many-instance_method
+  #has_many http://www.rubydoc.info/gems/activegraph/ActiveGraph/Node/HasN/ClassMethods#has_many-instance_method
   and
-  #has_one http://www.rubydoc.info/gems/neo4j/Neo4j/Node/HasN/ClassMethods#has_one-instance_method
+  #has_one http://www.rubydoc.info/gems/activegraph/ActiveGraph/Node/HasN/ClassMethods#has_one-instance_method
 
 Association Options
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -522,7 +524,7 @@ By default, when you call an association ``Node`` will add the ``model_class`` l
     person.friends
     # =>
     # MATCH (person125)
-    # WHERE (ID(person125) = {ID_person125})
+    # WHERE (ID(person125) = $ID_person125)
     # MATCH (person125)-[rel1:`FRIEND`]->(node3:`Person`)
 
 The exception to this is if ``model_class: false``, in which case ``MATCH (person125)-[rel1:`FRIEND`]->(node3)``.
