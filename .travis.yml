@@ -20,6 +20,7 @@ jdk: openjdk11
 rvm:
   - 2.7.1
   - jruby-9.2.11.1
+  - jruby-9.2.12.0
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
