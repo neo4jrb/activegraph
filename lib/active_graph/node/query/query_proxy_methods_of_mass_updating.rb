@@ -59,7 +59,8 @@ module ActiveGraph
         def idify_hash(args)
           Array(args).reject(&:blank?).flatten.each_with_object({}).with_index do |(arg, hash), inx|
             if arg.is_a?(Integer) || arg.is_a?(String)
-              hash[arg.to_i] = @model.find(arg)
+              key = arg.try(:match?, /\A\d+\z/) ? arg.to_i : arg
+              hash[key] = @model.find(arg)
             else
               key = arg.persisted? ? arg.id : "tmp_#{inx}"
               hash[key] = arg

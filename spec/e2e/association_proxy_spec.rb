@@ -73,7 +73,9 @@ describe 'Association Proxy' do
     it 'does not recreate relatioship for existing relationships' do
       rel_id = science.exams_given.where(id: science_exam.id).rel.id
       science.exams_given = [science_exam]
-      expect(science.exams_given.rel.id).to eq(rel_id)
+      expect(Lesson.find(science.id).exams_given.rel.id).to eq(rel_id)
+      science.exams_given_ids = [science_exam.id]
+      expect(Lesson.find(science.id).exams_given.rel.id).to eq(rel_id)
     end
 
     it 'Should only make one query per association' do
