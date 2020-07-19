@@ -123,7 +123,7 @@ Neo4j requires authentication by default but if you install using the built-in :
 
   config.neo4j.driver.url = 'neo4j://localhost:7687'
   config.neo4j.driver.username = 'neo4j'
-  config.neo4j.driver.username = 'password'
+  config.neo4j.driver.password = 'password'
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
