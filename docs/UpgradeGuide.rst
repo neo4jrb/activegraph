@@ -24,8 +24,8 @@ Your `neo4j` application is unlikely to work with ``activegraph`` out of the box
 required are rather straightforward. To start follow the Setup guide. Once configured there few class name changes:
 
  * Neo4j::ActiveNode became ActiveGraph::Node
- * Neo4j::AciveRel became ActiveGrah::Relationship
- * Neo4j::ActiveBase became ActiveGrapph::Base
+ * Neo4j::AciveRel became ActiveGraph::Relationship
+ * Neo4j::ActiveBase became ActiveGraph::Base
  * all other classes changed their namespace from Neo4j to ActiveGraph
 
 If you use explicit cypher with ``{parameter}`` syntax you will need to change it to ``$parameter`` if using neo4j 4
