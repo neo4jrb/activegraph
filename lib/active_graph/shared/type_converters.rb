@@ -69,6 +69,33 @@ module ActiveGraph::Shared
       end
     end
 
+    class BigDecimalConverter < BaseConverter
+      class << self
+        def convert_type
+          BigDecimal
+        end
+
+        def db_type
+          String
+        end
+
+        def to_db(value)
+          case value
+          when Rational
+            value.to_f.to_d
+          when respond_to?(:to_d)
+            value.to_d
+          else
+            BigDecimal(value.to_s)
+          end.to_s
+        end
+
+        def to_ruby(value)
+          value.to_d
+        end
+      end
+    end
+
     class StringConverter < BaseConverter
       class << self
         def convert_type

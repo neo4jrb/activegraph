@@ -53,7 +53,7 @@ Variables
   **logger**
     **Default:** ``nil`` (or ``Rails.logger`` in Rails)
 
-    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``neo4j`` gem (that is, for models created with the ``Node`` and ``Relationship`` modules).
+    A Ruby ``Logger`` object which is used to log Cypher queries (`info` level is used).  This is only for the ``activegraph`` gem (that is, for models created with the ``Node`` and ``Relationship`` modules).
 
   **module_handling**
     **Default:** ``:none``
