@@ -52,7 +52,7 @@ module ActiveGraph
           node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
           original_ids = self.pluck(:id)
           new_nodes = add_rels(node_or_nodes, original_ids)
-          delete_rels_for_nodes(original_ids, node_or_nodes)
+          delete_rels_for_nodes(original_ids, node_or_nodes.collect(&:id))
           new_nodes
         end
 
@@ -62,9 +62,8 @@ module ActiveGraph
           end.compact
         end
 
-        def delete_rels_for_nodes(original_ids, node_or_nodes)
-          new_ids = node_or_nodes.collect(&:id)
-          ids = original_ids.collect { |id| id unless new_ids.include?(id) }
+        def delete_rels_for_nodes(original_ids, new_ids)
+          ids = original_ids.select { |id| !new_ids.include?(id) }
           return unless ids.present?
           if association.dependent
             start_object.public_send("dependent_#{association.dependent}_callback", association, ids)
