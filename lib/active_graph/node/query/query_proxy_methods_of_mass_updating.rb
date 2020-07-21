@@ -49,32 +49,22 @@ module ActiveGraph
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
         # Executed in the database, callbacks will not be run.
         def replace_with(node_or_nodes)
-          node_hash = idify_hash(node_or_nodes)
+          node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
           original_ids = self.pluck(:id)
-          new_nodes = add_rels(node_hash, original_ids)
-          delete_rels_for_nodes(original_ids - node_hash.keys)
-          new_nodes | node_hash.values
+          new_nodes = add_rels(node_or_nodes, original_ids)
+          delete_rels_for_nodes(original_ids, node_or_nodes)
+          new_nodes
         end
 
-        def idify_hash(args)
-          Array(args).reject(&:blank?).flatten.each_with_object({}).with_index do |(arg, hash), inx|
-            if arg.is_a?(Integer) || arg.is_a?(String)
-              key = arg.try(:match?, /\A\d+\z/) ? arg.to_i : arg
-              hash[key] = @model.find(arg)
-            else
-              key = arg.persisted? ? arg.id : "tmp_#{inx}"
-              hash[key] = arg
-            end
-          end
-        end
-
-        def add_rels(node_hash, original_ids)
-          (node_hash.keys - original_ids).map do |id|
-            node_hash[id] if _create_relation_or_defer(node_hash[id])
+        def add_rels(node_or_nodes, original_ids)
+          node_or_nodes.map do |obj|
+            obj if original_ids.include?(obj.id) || _create_relation_or_defer(obj)
           end.compact
         end
 
-        def delete_rels_for_nodes(ids)
+        def delete_rels_for_nodes(original_ids, node_or_nodes)
+          new_ids = node_or_nodes.collect(&:id)
+          ids = original_ids.collect { |id| id unless new_ids.include?(id) }
           return unless ids.present?
           if association.dependent
             start_object.public_send("dependent_#{association.dependent}_callback", association, ids)
