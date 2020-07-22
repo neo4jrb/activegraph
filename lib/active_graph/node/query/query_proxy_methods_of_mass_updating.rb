@@ -51,9 +51,8 @@ module ActiveGraph
         def replace_with(node_or_nodes)
           node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
           original_ids = self.pluck(:id)
-          new_nodes = add_rels(node_or_nodes, original_ids)
           delete_rels_for_nodes(original_ids, node_or_nodes.collect(&:id))
-          new_nodes
+          add_rels(node_or_nodes, original_ids)
         end
 
         def add_rels(node_or_nodes, original_ids)
