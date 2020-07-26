@@ -1,6 +1,6 @@
 # Usage: rails new myapp -m activegraph.rb
 
-gem 'activegraph', path: '~/mck/activegraph'
+gem 'activegraph'
 gem 'neo4j-ruby-driver'
 
 gem_group :development do
