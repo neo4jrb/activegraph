@@ -1,7 +1,7 @@
 # Usage: rails new myapp -m activegraph.rb
 
-gem 'activegraph'
-gem 'neo4j-ruby-driver'
+gem 'activegraph', '~> 10.0.1'
+gem 'neo4j-ruby-driver', '~> 1.7.0'
 
 gem_group :development do
   gem 'neo4j-rake_tasks'

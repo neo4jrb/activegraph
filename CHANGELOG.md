@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [10.0.1] 2020-07-26
+
+## Fixed
+
+- fixed incorrect id comparison, which could result in lost relationships (https://github.com/neo4jrb/activegraph/issues/1611)
+- brought back BigDecimalConverter
+- fixed rails template (Thanks @ekampp)
+
 ## [10.0.0] 2020-07-06
 
 - neo4j 4.0 support (default database only)

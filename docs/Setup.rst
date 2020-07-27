@@ -56,8 +56,8 @@ Include in your ``Gemfile``:
 .. code-block:: ruby
 
   # for rubygems
-  gem 'activegraph', '>= 10.0.0' # For example, see https://rubygems.org/gems/activegraph/versions for the latest versions
-  gem 'neo4j-ruby-driver'
+  gem 'activegraph', '~> 10.0.0' # For example, see https://rubygems.org/gems/activegraph/versions for the latest versions
+  gem 'neo4j-ruby-driver', '~> 1.7.0'
 
 In ``application.rb``:
 
