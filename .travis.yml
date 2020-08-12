@@ -38,3 +38,9 @@ matrix:
 
     - rvm: jruby-9.2.11.1
       env: driver=java NEO4J_VERSION=enterprise-4.0.7
+    - rvm: jruby-9.2.13.0
+      env: driver=java NEO4J_VERSION=enterprise-4.0.7
+    - rvm: jruby-9.2.11.1
+      env: driver=java NEO4J_VERSION=enterprise-4.1.1
+    - rvm: jruby-9.2.13.0
+      env: driver=java NEO4J_VERSION=enterprise-4.1.1

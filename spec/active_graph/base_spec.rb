@@ -17,25 +17,22 @@ describe ActiveGraph::Base do
 
   describe '#queries' do
     it 'allows for multiple queries' do
-      result = subject.queries do
-        append 'CREATE (n:Label1) RETURN n'
-        append 'CREATE (n:Label2) RETURN n'
+      nodes = subject.transaction do
+        [1, 2].map { |index| subject.query("CREATE (n:Label#{index}) RETURN n").single[:n] }
       end
 
-      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[1].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0][:n].labels.to_a).to eq([:Label1])
-      expect(result[1].to_a[0][:n].labels).to eq([:Label2])
+      expect(nodes[0]).to be_a(Neo4j::Driver::Types::Node)
+      expect(nodes[1]).to be_a(Neo4j::Driver::Types::Node)
+      expect(nodes[0].labels).to eq([:Label1])
+      expect(nodes[1].labels).to eq([:Label2])
     end
 
     it 'allows for building with Query API' do
       ActiveGraph::Base.write_transaction do
-        result = subject.queries do
-          append query.create(n: { Label1: {} }).return(:n)
-        end
+        node = subject.query(ActiveGraph::Core::Query.new.create(n: { Label1: {} }).return(:n)).single[:n]
 
-        expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-        expect(result[0].to_a[0][:n].labels).to eq([:Label1])
+        expect(node).to be_a(Neo4j::Driver::Types::Node)
+        expect(node.labels).to eq([:Label1])
       end
     end
   end

@@ -11,8 +11,8 @@ module ActiveGraph
           queries = []
           queries += drop_and_create_queries(fetch_constraint_descriptions, schema_data[:constraints], remove_missing)
           queries += drop_and_create_queries(fetch_index_descriptions, schema_data[:indexes], remove_missing)
-          ActiveGraph::Base.queries do
-            queries.each { |query| append query }
+          ActiveGraph::Base.write_transaction do
+            queries.each(&ActiveGraph::Base.method(:query))
           end
         end
 
