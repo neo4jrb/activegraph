@@ -17,10 +17,6 @@ module ActiveGraph
         end
       end
 
-      def transaction(**config, &block)
-        send_transaction(:begin_transaction, **config, &block)
-      end
-
       def write_transaction(**config, &block)
         send_transaction(:write_transaction, **config, &block)
       end
@@ -29,10 +25,12 @@ module ActiveGraph
         send_transaction(:read_transaction, **config, &block)
       end
 
+      alias transaction write_transaction
+
       private
 
       def send_transaction(method, **config, &block)
-        return checked_yield(tx, &block) if tx&.open?
+        return yield tx if tx&.open?
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
         driver.session do |session|
           run_transaction_work(session, method, **config, &block)
@@ -40,17 +38,19 @@ module ActiveGraph
       end
 
       def run_transaction_work(session, method, **config, &block)
+        implicit = config.delete(:implicit)
         session.send(method, **config) do |tx|
           self.tx = tx
-          checked_yield(tx, &block)
-        end
-      end
-
-      def checked_yield(tx)
-        yield tx
-      rescue StandardError => e
-        tx.failure
-        raise e
+          block.call(tx).tap do |result|
+            if implicit &&
+              [Core::Result, ActiveGraph::Node::Query::QueryProxy, ActiveGraph::Core::Query]
+                .any?(&result.method(:is_a?))
+              result.store
+            end
+          end
+        end.tap { tx.apply_callbacks }
+      rescue ActiveGraph::Rollback
+        # rollbacks are silently swallowed
       end
     end
   end

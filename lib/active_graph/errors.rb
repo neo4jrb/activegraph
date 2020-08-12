@@ -54,4 +54,6 @@ module ActiveGraph
       defined?(Rails)
     end
   end
+
+  class Rollback < Error; end
 end

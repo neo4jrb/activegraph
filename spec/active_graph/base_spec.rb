@@ -11,7 +11,7 @@ describe ActiveGraph::Base do
     end
 
     it 'can make a query with a large payload' do
-      subject.query('CREATE (n:Test) SET n = $props RETURN n', props: {text: 'a' * 10_000})
+      subject.query('CREATE (n:Test) SET n = $props RETURN n', props: { text: 'a' * 10_000 })
     end
   end
 
@@ -29,12 +29,14 @@ describe ActiveGraph::Base do
     end
 
     it 'allows for building with Query API' do
-      result = subject.queries do
-        append query.create(n: {Label1: {}}).return(:n)
-      end
+      ActiveGraph::Base.write_transaction do
+        result = subject.queries do
+          append query.create(n: { Label1: {} }).return(:n)
+        end
 
-      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0][:n].labels).to eq([:Label1])
+        expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
+        expect(result[0].to_a[0][:n].labels).to eq([:Label1])
+      end
     end
   end
 
@@ -68,7 +70,7 @@ describe ActiveGraph::Base do
       expect_queries(1) do
         subject.transaction do |tx|
           create_object_by_id(3, tx)
-          tx.failure
+          tx.rollback
         end
       end
       expect(get_object_by_id(3)).to be_nil
@@ -76,7 +78,7 @@ describe ActiveGraph::Base do
       expect_queries(1) do
         subject.transaction do |tx|
           create_object_by_id(4, tx)
-          tx.failure
+          tx.rollback
         end
       end
       expect(get_object_by_id(4)).to be_nil
@@ -91,46 +93,33 @@ describe ActiveGraph::Base do
       end
       expect(get_object_by_id(5)).to be_nil
 
-      # Nested transaction, error from inside inner transaction handled outside of inner transaction
-      expect_queries(1) do
-        subject.transaction do |_tx|
-          expect do
-            subject.transaction do |tx|
-              create_object_by_id(6, tx)
-              fail 'Failing transaction with error'
-            end
-          end.to raise_error 'Failing transaction with error'
-        end
-      end
-      expect(get_object_by_id(6)).to be_nil
-
-      # Nested transaction, error from inside inner transaction handled outside of inner transaction
-      expect_queries(2) do
-        subject.transaction do |tx|
-          create_object_by_id(7, tx)
-          expect do
-            subject.transaction do |tx|
-              create_object_by_id(8, tx)
-              fail 'Failing transaction with error'
-            end
-          end.to raise_error 'Failing transaction with error'
-        end
-      end
-      expect(get_object_by_id(7)).to be_nil
-      expect(get_object_by_id(8)).to be_nil
-
       # Nested transaction, error from inside inner transaction handled outside of outer transaction
       expect_queries(1) do
         expect do
           subject.transaction do |_tx|
             subject.transaction do |tx|
-              create_object_by_id(9, tx)
+              create_object_by_id(6, tx)
               fail 'Failing transaction with error'
             end
           end
         end.to raise_error 'Failing transaction with error'
       end
-      expect(get_object_by_id(9)).to be_nil
+      expect(get_object_by_id(6)).to be_nil
+
+      # Nested transaction, error from inside inner transaction handled outside of outer transaction
+      expect_queries(2) do
+        expect do
+          subject.transaction do |tx|
+            create_object_by_id(7, tx)
+            subject.transaction do |tx|
+              create_object_by_id(8, tx)
+              fail 'Failing transaction with error'
+            end
+          end
+        end.to raise_error 'Failing transaction with error'
+      end
+      expect(get_object_by_id(7)).to be_nil
+      expect(get_object_by_id(8)).to be_nil
     end
 
     describe 'after_commit hook' do
@@ -157,7 +146,7 @@ describe ActiveGraph::Base do
                 tx3.after_commit { data = true }
               end
             end
-            tx1.failure
+            tx1.rollback
           end
         end.not_to change { data }
         expect(data).to be_falsey
@@ -170,7 +159,7 @@ describe ActiveGraph::Base do
             subject.transaction do |tx2|
               subject.transaction do |tx3|
                 tx3.after_commit { data = true }
-                tx3.failure
+                tx3.rollback
               end
             end
           end
@@ -215,7 +204,7 @@ describe ActiveGraph::Base do
     it 'symbolizes keys for Neo4j objects' do
       result = subject.query('RETURN {a: 1} AS obj')
 
-      expect(result.map(&:to_h)).to eq([{obj: {a: 1}}])
+      expect(result.map(&:to_h)).to eq([{ obj: { a: 1 } }])
 
       expect(result).to be_a(Enumerable)
       expect(result.count).to be(1)
@@ -251,8 +240,8 @@ describe ActiveGraph::Base do
         %w[foo bar],
         # Hashes / Maps
         {},
-        {a: 1, b: 2},
-        {a: 'foo', b: 'bar'}
+        { a: 1, b: 2 },
+        { a: 'foo', b: 'bar' }
       ].each do |value|
         let_context(param: value) { it { should eq(value) } }
       end
@@ -396,9 +385,9 @@ describe ActiveGraph::Base do
 
       it do
         should match_array([
-                             {type: :uniqueness, label: :Album, properties: [:al_id]},
-                             {type: :uniqueness, label: :Album, properties: [:name]},
-                             {type: :uniqueness, label: :Song, properties: [:so_id]}
+                             { type: :uniqueness, label: :Album, properties: [:al_id] },
+                             { type: :uniqueness, label: :Album, properties: [:name] },
+                             { type: :uniqueness, label: :Song, properties: [:so_id] }
                            ])
       end
     end

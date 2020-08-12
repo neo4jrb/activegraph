@@ -2,25 +2,30 @@ module ActiveGraph
   module Core
     module Schema
       def version
-        result = query('CALL dbms.components()', {}, skip_instrumentation: true)
-
-        # BTW: community / enterprise could be retrieved via `result.first.edition`
-        result.first[:versions][0]
+        read_transaction do
+          # BTW: community / enterprise could be retrieved via `result.first.edition`
+          query('CALL dbms.components()', {}, skip_instrumentation: true).first[:versions][0]
+        end
       end
 
       def indexes
-        result = query('CALL db.indexes()', {}, skip_instrumentation: true)
+        read_transaction do
+          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
-        result.map do |row|
-          { type: row[:type].to_sym, label: label(result, row), properties: properties(row), state: row[:state].to_sym }
+          result.map do |row|
+            { type: row[:type].to_sym, label: label(result, row), properties: properties(row),
+              state: row[:state].to_sym }
+          end
         end
       end
 
       def constraints
-        result = query('CALL db.indexes()', {}, skip_instrumentation: true)
+        read_transaction do
+          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
 
-        result.select(&method(v4?(result) ? :v4_filter : :v3_filter)).map do |row|
-          { type: :uniqueness, label: label(result, row), properties: properties(row) }
+          result.select(&method(v4?(result) ? :v4_filter : :v3_filter)).map do |row|
+            { type: :uniqueness, label: label(result, row), properties: properties(row) }
+          end
         end
       end
 

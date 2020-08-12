@@ -30,7 +30,7 @@ shared_context 'after_commit' do |company_variable, options|
       expect do
         wrap_in_transactions(transactions_count) do |tx|
           company.save
-          tx.failure if fail_transaction
+          tx.rollback if fail_transaction
         end
       end.send(to_or_not_to, change { company.after_create_commit_called })
     end
@@ -46,7 +46,7 @@ shared_context 'after_commit' do |company_variable, options|
       expect do
         wrap_in_transactions(transactions_count) do |tx|
           company.update(name: 'some')
-          tx.failure if fail_transaction
+          tx.rollback if fail_transaction
         end
       end.send(to_or_not_to, change { company.after_update_commit_called })
     end
@@ -62,7 +62,7 @@ shared_context 'after_commit' do |company_variable, options|
       expect do
         wrap_in_transactions(transactions_count) do |tx|
           company.destroy
-          tx.failure if fail_transaction
+          tx.rollback if fail_transaction
         end
       end.send(to_or_not_to, change { company.after_destroy_commit_called })
     end

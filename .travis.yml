@@ -20,14 +20,15 @@ jdk: openjdk11
 rvm:
   - 2.7.1
   - jruby-9.2.11.1
-  - jruby-9.2.12.0
+  - jruby-9.2.13.0
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
     - NEO4J_URL="bolt://localhost:7472"
   matrix:
-    - NEO4J_VERSION=enterprise-3.5.19
-    - NEO4J_VERSION=enterprise-4.0.6
+    - NEO4J_VERSION=enterprise-3.5.20
+    - NEO4J_VERSION=enterprise-4.0.7
+    - NEO4J_VERSION=enterprise-4.1.1
 matrix:
   include:
     # Testing older versions of ActiveModel
@@ -36,4 +37,4 @@ matrix:
       env: NEO4J_VERSION=community-3.4.18 ACTIVE_MODEL_VERSION=5.2.3
 
     - rvm: jruby-9.2.11.1
-      env: driver=java NEO4J_VERSION=enterprise-4.0.6
+      env: driver=java NEO4J_VERSION=enterprise-4.0.7

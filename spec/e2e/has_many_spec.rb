@@ -411,11 +411,11 @@ describe 'has_many' do
   end
 
   describe 'transactions' do
-    context 'failure' do
+    context 'rollback' do
       it 'rolls back <<' do
         ActiveGraph::Base.transaction do |tx|
           node.friends << friend1
-          tx.failure
+          tx.rollback
         end
         expect(node.friends.count).to eq 0
       end
@@ -424,7 +424,7 @@ describe 'has_many' do
         node.friends = friend1
         ActiveGraph::Base.transaction do |tx|
           node.friends = friend2
-          tx.failure
+          tx.rollback
         end
         expect(node.friends.first).to eq friend1
       end

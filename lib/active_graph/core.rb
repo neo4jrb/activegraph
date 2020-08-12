@@ -10,5 +10,5 @@ require 'neo4j_ruby_driver'
 Neo4j::Driver::Types::Entity.include ActiveGraph::Core::Wrappable
 Neo4j::Driver::Types::Entity.prepend ActiveGraph::Core::Entity
 Neo4j::Driver::Types::Node.prepend ActiveGraph::Core::Node
-Neo4j::Driver::StatementResult.prepend ActiveGraph::Core::Result
+Neo4j::Driver::Result.prepend ActiveGraph::Core::Result
 Neo4j::Driver::Record.prepend ActiveGraph::Core::Record

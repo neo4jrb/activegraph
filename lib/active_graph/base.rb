@@ -30,7 +30,7 @@ module ActiveGraph
       end
 
       def query(*args)
-        transaction do
+        transaction(implicit: true) do
           super(*args)
         end
       end
