@@ -9,8 +9,8 @@ module ActiveGraph
     end
 
     class_methods do
-      def session(*args)
-        ActiveGraph::Base.driver.session(*args) do |session|
+      def session(**session_config)
+        ActiveGraph::Base.driver.session(**session_config) do |session|
           self.explicit_session = session
           yield session
           session.last_bookmark
