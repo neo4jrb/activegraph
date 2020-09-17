@@ -18,7 +18,7 @@ Migrations can be created by using the built-in Rails generator:
 
 .. code-block:: bash
 
-  rails generate neo4j:migration RenameUserNameToFirstName
+  rails generate active_graph:migration RenameUserNameToFirstName
 
 This will generate a new file located in ``db/neo4j/migrate/xxxxxxxxxx_rename_user_name_to_first_name.rb``
 
