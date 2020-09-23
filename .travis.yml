@@ -1,8 +1,7 @@
 ---
 dist: xenial
 language: ruby
-python:
-  - 3.8
+python: 3.8
 cache: bundler
 jdk: openjdk11
 rvm:
@@ -22,6 +21,7 @@ install:
   - neoctrl-start $NEO4J_DIR
   - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
   - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
+  - bundle install --jobs=3 --retry=3
 
 env:
   global:
