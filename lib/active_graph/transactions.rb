@@ -5,7 +5,7 @@ module ActiveGraph
     extend ActiveSupport::Concern
 
     included do
-      thread_mattr_accessor :explicit_session, :tx
+      thread_mattr_accessor :explicit_session, :tx, :last_bookmark
     end
 
     class_methods do
@@ -13,7 +13,8 @@ module ActiveGraph
         ActiveGraph::Base.driver.session(**session_config) do |session|
           self.explicit_session = session
           yield session
-          session.last_bookmark
+        ensure
+          self.last_bookmark = session.last_bookmark
         end
       end
 

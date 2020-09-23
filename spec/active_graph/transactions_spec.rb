@@ -81,11 +81,13 @@ describe ActiveGraph::Transactions do
 
     it 'returns and accepts bookmarks' do
       expect do
-        bookmark = ActiveGraph::Base.session do
+         ActiveGraph::Base.session do
           ActiveGraph::Base.write_transaction { Student.create }
           ActiveGraph::Base.write_transaction { Student.create }
         end
-        ActiveGraph::Base.session(bookmarks: bookmark) { ActiveGraph::Base.read_transaction { Student.count } }
+        ActiveGraph::Base.session(bookmarks: ActiveGraph::Base.last_bookmark) do
+          ActiveGraph::Base.read_transaction { Student.count }
+        end
       end.not_to raise_error
     end
 

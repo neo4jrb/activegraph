@@ -20,11 +20,12 @@ module ActiveGraph
       end
 
       def constraints
-        read_transaction do
-          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
-
-          result.select(&method(v4?(result) ? :v4_filter : :v3_filter)).map do |row|
-            { type: :uniqueness, label: label(result, row), properties: properties(row) }
+        session do |session|
+          session.read_transaction do |tx|
+            tx.run('CALL db.indexes()')
+                     .select(&method(v4?(tx.run('CALL db.indexes()')) ? :v4_filter : :v3_filter)).map do |row|
+              { type: :uniqueness, label: label(tx.run('CALL db.indexes()'), row), properties: properties(row) }
+            end
           end
         end
       end
