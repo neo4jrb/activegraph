@@ -170,7 +170,7 @@ default driver with the ``Base`` module (this is done automatically in Rails):
 
 .. code-block:: ruby
 
-  ActiveGraph::Base.driver = Neo4j::Driver::GraphDatabase.driver('neo4j::/localhost:7687', Neo4j::Driver.AuthTokens.basic('user','pass'), encryption: false)
+  ActiveGraph::Base.driver = Neo4j::Driver::GraphDatabase.driver('neo4j://localhost:7687', Neo4j::Driver::AuthTokens.basic('user','pass'), encryption: false)
 
 Driver instances are thread-safe. Session and transactions can be created explicitly to guarantee reading your own
 writes and atomic operations with the following methods:
