@@ -135,47 +135,47 @@ describe ActiveGraph::Base do
 
     describe 'after_commit hook' do
       it 'gets called when the root transaction is closed' do
-        data = false
+        data = 0
         expect do
           subject.transaction do |tx1|
             subject.transaction do |tx2|
               subject.transaction do |tx3|
-                tx3.after_commit { data = true }
+                tx3.after_commit { data += 1 }
               end
             end
           end
-        end.to change { data }.to(true)
-        expect(data).to be_truthy
+        end.to change { data }.to(1)
+        expect(data).to eq(1)
       end
 
       it 'is ignored when the root transaction fails' do
-        data = false
+        data = 0
         expect do
           subject.transaction do |tx1|
             subject.transaction do |tx2|
               subject.transaction do |tx3|
-                tx3.after_commit { data = true }
+                tx3.after_commit { data += 1 }
               end
             end
             tx1.failure
           end
         end.not_to change { data }
-        expect(data).to be_falsey
+        expect(data).to eq(0)
       end
 
       it 'is ignored when a child transaction fails' do
-        data = false
+        data = 0
         expect do
           subject.transaction do |tx1|
             subject.transaction do |tx2|
               subject.transaction do |tx3|
-                tx3.after_commit { data = true }
+                tx3.after_commit { data += 1 }
                 tx3.failure
               end
             end
           end
         end.not_to change { data }
-        expect(data).to be_falsey
+        expect(data).to eq(0)
       end
     end
   end
