@@ -6,9 +6,6 @@ module ActiveGraph
     end
 
     def close
-      return if @closed
-      @closed = true
-
       success
       super
       after_commit_registry.each(&:call) unless @failure
