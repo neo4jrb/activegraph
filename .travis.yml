@@ -16,11 +16,12 @@ before_install:
   - if [ -n "$NEO4J_EDITION_FLAG" ]; then NEO4J_EDITION=enterprise; else NEO4J_EDITION=community; fi
   - NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
   - neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import= dbms.security.auth_enabled=false
-   #dbms.connectors.default_listen_address=::
+  #dbms.connectors.default_listen_address=::
 install:
   - neoctrl-start $NEO4J_DIR
   - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
   - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
+  - bundle install --jobs=3 --retry=3
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
