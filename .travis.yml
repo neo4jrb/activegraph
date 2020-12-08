@@ -21,9 +21,6 @@ install:
   - neoctrl-start $NEO4J_DIR
   - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
   - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
-before_script:
-  - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
-  - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
 env:
   global:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
