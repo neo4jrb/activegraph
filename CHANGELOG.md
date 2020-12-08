@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [10.0.2] 2020-12-08
+
+## Fixed
+
+- fixed bad require (https://github.com/neo4jrb/activegraph/issues/1634)
+- removed unused exception class (Thanks @joshjordan)
+- prevented after_commit callbacks from being called multiple times (Thanks @joshjordan)
+
 ## [10.0.1] 2020-07-26
 
 ## Fixed

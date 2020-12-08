@@ -43,7 +43,7 @@ module ActiveGraph
         session.send(method, **config) do |tx|
           self.tx = tx
           checked_yield(tx, &block)
-        end
+        end.tap { tx.apply_callbacks }
       end
 
       def checked_yield(tx)
