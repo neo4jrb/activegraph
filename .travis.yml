@@ -14,9 +14,8 @@ before_install:
   - neoctrl-install $NEO4J_EDITION_FLAG $NEO4J_VERSION servers
   - if [ -n "$NEO4J_EDITION_FLAG" ]; then NEO4J_EDITION=enterprise; else NEO4J_EDITION=community; fi
   - NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
-  - neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import=
+  - neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import= dbms.security.auth_enabled=false
   #dbms.connectors.default_listen_address=::
-  - neoctrl-set-initial-password password $NEO4J_DIR
   - neoctrl-start $NEO4J_DIR
   - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-16.04.deb
   - sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-16.04.deb
@@ -26,9 +25,9 @@ env:
     - JRUBY_OPTS="--debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF"
     - NEO4J_URL="bolt://localhost:7687"
   matrix:
-    - NEO4J_VERSION=3.5.22
-    - NEO4J_VERSION=4.0.8
-    - NEO4J_VERSION=4.1.2
+    - NEO4J_VERSION=3.5.25
+    - NEO4J_VERSION=4.0.10
+    - NEO4J_VERSION=4.1.4
     #matrix:
     #  include:
     # Testing older versions of ActiveModel

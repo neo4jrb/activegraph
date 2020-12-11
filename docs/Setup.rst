@@ -125,6 +125,13 @@ Neo4j requires authentication by default but if you install using the built-in :
   config.neo4j.driver.username = 'neo4j'
   config.neo4j.driver.password = 'password'
 
+In Neo4j 4.x encryption is not configured by default, while neo4j-ruby-driver 1.7 by default requests encrypted connection. To make both work together either setup SSL on the neo4j server or disable encryption in the driver:
+
+.. code-block:: ruby
+
+  config.neo4j.driver.encryption = false
+
+
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
 
@@ -163,7 +170,7 @@ default driver with the ``Base`` module (this is done automatically in Rails):
 
 .. code-block:: ruby
 
-  ActiveGraph::Base.driver = Neo4j::Driver::GraphDatabase.driver('neo4j::/localhost:7687', Neo4j::Driver.AuthTokens.basic('user','pass'), encryption: false)
+  ActiveGraph::Base.driver = Neo4j::Driver::GraphDatabase.driver('neo4j://localhost:7687', Neo4j::Driver::AuthTokens.basic('user','pass'), encryption: false)
 
 Driver instances are thread-safe. Session and transactions can be created explicitly to guarantee reading your own
 writes and atomic operations with the following methods:

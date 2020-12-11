@@ -121,47 +121,38 @@ describe ActiveGraph::Base do
 
     describe 'after_commit hook' do
       it 'gets called when the root transaction is closed' do
-        data = false
-        expect do
-          subject.transaction do |tx1|
-            subject.transaction do |tx2|
-              subject.transaction do |tx3|
-                tx3.after_commit { data = true }
-              end
+        expect(self).to receive(:callback).once
+        subject.transaction do |tx1|
+          subject.transaction do |tx2|
+            subject.transaction do |tx3|
+              tx3.after_commit(&method(:callback))
             end
           end
-        end.to change { data }.to(true)
-        expect(data).to be_truthy
+        end
       end
 
       it 'is ignored when the root transaction fails' do
-        data = false
-        expect do
-          subject.transaction do |tx1|
-            subject.transaction do |tx2|
-              subject.transaction do |tx3|
-                tx3.after_commit { data = true }
-              end
+        expect(self).not_to receive(:callback)
+        subject.transaction do |tx1|
+          subject.transaction do |tx2|
+            subject.transaction do |tx3|
+              tx3.after_commit(&method(:callback))
             end
-            tx1.rollback
           end
-        end.not_to change { data }
-        expect(data).to be_falsey
+          tx1.rollback
+        end
       end
 
       it 'is ignored when a child transaction fails' do
-        data = false
-        expect do
-          subject.transaction do |tx1|
-            subject.transaction do |tx2|
-              subject.transaction do |tx3|
-                tx3.after_commit { data = true }
-                tx3.rollback
-              end
+        expect(self).not_to receive(:callback)
+        subject.transaction do |tx1|
+          subject.transaction do |tx2|
+            subject.transaction do |tx3|
+              tx3.after_commit(&method(:callback))
+              tx3.rollback
             end
           end
-        end.not_to change { data }
-        expect(data).to be_falsey
+        end
       end
     end
   end

@@ -22,6 +22,7 @@ module ActiveGraph
           class << self
             def for_clause(clause, arg, model, *args)
               method_to_call = "for_#{clause}_clause"
+              return unless respond_to?(method_to_call)
 
               send(method_to_call, arg, model, *args)
             end
@@ -112,8 +113,6 @@ module ActiveGraph
               default = [Link.new(clause, arg, *args)]
 
               Link.for_clause(clause, arg, model, *args) || default
-            rescue NoMethodError
-              default
             end
 
             def converted_keys(model, arg)

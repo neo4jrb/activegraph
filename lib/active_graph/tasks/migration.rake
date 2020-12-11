@@ -5,9 +5,8 @@ require 'active_graph/migration'
 if !defined?(Rails) && !Rake::Task.task_defined?('environment')
   desc 'Run a script against the database to perform system-wide changes'
   task :environment do
-    require 'active_graph/session_manager'
     require 'ostruct'
-    neo4j_url = ENV['NEO4J_URL'] || 'http://localhost:7474'
+    neo4j_url = ENV['NEO4J_URL'] || 'bolt://localhost:7687'
     $LOAD_PATH.unshift File.dirname('./')
     ActiveGraph::Base.on_establish_driver do
       Neo4j::Driver::GraphDatabase.driver(neo4j_url)
