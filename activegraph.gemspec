@@ -36,11 +36,10 @@ DESCRIPTION
   s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('i18n', '!= 1.3.0') # version 1.3.0 introduced a bug with `symbolize_key`
   s.add_dependency('orm_adapter', '~> 0.5.0')
-  s.add_dependency("neo4j-java-driver", '~> 4.1.0.beta.2')
+  s.add_dependency("neo4j-java-driver", '~> 4.2.0.beta.0')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
-  s.add_development_dependency('neo4j-rake_tasks', '>= 0.3.0')
   # s.add_development_dependency("neo4j-#{ENV['driver'] == 'java' ? 'java' : 'ruby'}-driver", '~> 4.1.0.beta.1')
   s.add_development_dependency('os')
   s.add_development_dependency('pry')
