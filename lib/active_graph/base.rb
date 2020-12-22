@@ -33,6 +33,8 @@ module ActiveGraph
         transaction do
           super(*args)
         end
+      rescue Neo4j::Driver::Exceptions::ClientException => e
+        raise ActiveGraph::Core::CypherError.new_from(e.code, e.message, e.backtrace)
       end
 
       # Should support setting driver via config options
