@@ -184,7 +184,8 @@ module ActiveGraph::Node
     end
 
     # Returns the current AssociationProxy cache for the association cache. It is in the format
-    # { :association_name => AssociationProxy}
+    # { hash => AssociationProxy}
+    # where hash is the result of calling #association_proxy_hash with the association name
     # This is so that we
     # * don't need to re-build the QueryProxy objects
     # * also because the QueryProxy object caches it's results
@@ -458,7 +459,11 @@ module ActiveGraph::Node
 
       def define_setter(name, setter_name)
         define_method_unless_defined(setter_name) do |others|
-          association_proxy_cache.clear # TODO: Should probably just clear for this association...
+          # todo: how would we handle the case where the association proxy hash
+          # had a non-empty options hash passed to it when constructed?
+          key = association_proxy_hash(name, {})
+          association_proxy_cache.delete(key)
+
           clear_deferred_nodes_for_association(name)
           others = Array(others).reject(&:blank?)
           if persisted?
