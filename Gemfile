@@ -15,7 +15,6 @@ group 'test' do
   gem 'codecov', require: false
   gem 'simplecov', require: false
   gem 'simplecov-html', require: false
-  gem 'rspec', '~> 3.4'
   gem 'its'
   gem 'test-unit'
   gem 'colored'
