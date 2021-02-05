@@ -31,6 +31,7 @@ jobs:
       NEO4J_VERSION: ${{ matrix.neo4j }}
       driver: ${{ matrix.driver }}
       ACTIVE_MODEL_VERSION: ${{ matrix.active-model-version }}
+      JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
       - uses: actions/checkout@v2
 
