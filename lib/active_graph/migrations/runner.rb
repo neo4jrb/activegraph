@@ -5,15 +5,15 @@ require 'sorted_set'
 module ActiveGraph
   module Migrations
     class Runner
-      STATUS_TABLE_FORMAT = '%-10s %-20s %s'.freeze
-      SEPARATOR = '--------------------------------------------------'.freeze
-      FILE_MISSING = '**** file missing ****'.freeze
-      STATUS_TABLE_HEADER = ['Status'.freeze, 'Migration ID'.freeze, 'Migration Name'.freeze].freeze
-      UP_MESSAGE = 'up'.freeze
-      DOWN_MESSAGE = 'down'.freeze
-      INCOMPLETE_MESSAGE = 'incomplete'.freeze
-      MIGRATION_RUNNING = {up: 'running'.freeze, down: 'reverting'.freeze}.freeze
-      MIGRATION_DONE = {up: 'migrated'.freeze, down: 'reverted'.freeze}.freeze
+      STATUS_TABLE_FORMAT = '%-10s %-20s %s'
+      SEPARATOR = '--------------------------------------------------'
+      FILE_MISSING = '**** file missing ****'
+      STATUS_TABLE_HEADER = ['Status', 'Migration ID', 'Migration Name'].freeze
+      UP_MESSAGE = 'up'
+      DOWN_MESSAGE = 'down'
+      INCOMPLETE_MESSAGE = 'incomplete'
+      MIGRATION_RUNNING = {up: 'running', down: 'reverting'}.freeze
+      MIGRATION_DONE = {up: 'migrated', down: 'reverted'}.freeze
 
       def initialize(options = {})
         @silenced = options[:silenced] || !!ENV['MIGRATIONS_SILENCED']
