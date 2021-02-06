@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [10.1.0] 2021-02-05
+
+## Added
+
+- support for ruby 3.0.0
+
 ## [10.0.2] 2020-12-08
 
 ## Fixed
