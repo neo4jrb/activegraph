@@ -28,7 +28,7 @@ module ActiveGraph
         def validate_each(record, attribute, value)
           return unless found(record, attribute, value).exists?
 
-          record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope).merge(value: value))
+          record.errors.add(attribute, :taken, **options.except(:case_sensitive, :scope).merge(value: value))
         end
 
         def found(record, attribute, value)
