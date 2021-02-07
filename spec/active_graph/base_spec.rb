@@ -342,7 +342,7 @@ describe ActiveGraph::Base do
       it 'raises an error' do
         expect do
           described_class.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input 'CRATE'/)
+        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input '.*A.*'/)
       end
     end
 
