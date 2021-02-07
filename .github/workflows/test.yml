@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, 11.0.x ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, 11.0.x ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -14,23 +14,13 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        ruby: [ 2.5, 3.0, jruby-9.2.14.0 ]
-        neo4j: [ 3.5.26, 4.0.11 ]
-        driver: [ ffi ]
-        include:
-          - ruby: jruby-9.2.14.0
-            neo4j: 4.0.11
-            driver: java
-          - ruby: 2.5
-            neo4j: 3.4.18
-            driver: ffi
-            java-version: 8
-            active-model-version: 5.2.3
+        ruby: [ jruby-9.2.14.0 ]
+        neo4j: [ 3.5.26, 4.0.11, 4.1.6. 4.2.3 ]
+        driver: [ java ]
     env:
       NEO4J_EDITION_FLAG: -e
       NEO4J_VERSION: ${{ matrix.neo4j }}
       driver: ${{ matrix.driver }}
-      ACTIVE_MODEL_VERSION: ${{ matrix.active-model-version }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
       - uses: actions/checkout@v2
@@ -60,12 +50,6 @@ jobs:
           NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
           neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
           neoctrl-start $NEO4J_DIR
-
-      - name: Setup Seabolt
-        if: matrix.driver != 'java'
-        run: |
-          wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
-          sudo dpkg -i seabolt-1.7.4-Linux-ubuntu-18.04.deb
 
       - name: Install dependencies
         run: bundle update
