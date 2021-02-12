@@ -45,31 +45,33 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 ## Neo4j version support
 
-| **Neo4j Version** | v2.x | v3.x  | >= v4.x | >= 7.0.3 | activegraph 10.0 |
-|-------------------|------|-------|---------|----------|------------------|
-| 1.9.x             | Yes  | No    | No      | No       | No               |
-| 2.0.x             | No   | Yes   | No      | No       | No               |
-| 2.1.x             | No   | Yes   | Yes *   | Yes      | No               |
-| 2.2.x             | No   | No    | Yes     | Yes      | No               |
-| 2.3.x             | No   | No    | Yes     | Yes      | No               |
-| 3.0, 3.1, 3.3     | No   | No    | No      | Yes      | No               |
-| 3.4, 3.5          | No   | No    | No      | Yes      | Yes              |
-| 4.0               | No   | No    | No      | No       | Yes              |
-| 4.1               | No   | No    | No      | No       | No               |
+| **Neo4j Version** | v2.x | v3.x  | >= v4.x | >= 7.0.3 | activegraph 10.0 | activegraph 11.0.0.beta.4-java |
+|-------------------|------|-------|---------|----------|------------------|--------------------------------|
+| 1.9.x             | Yes  | No    | No      | No       | No               | No
+| 2.0.x             | No   | Yes   | No      | No       | No               | No
+| 2.1.x             | No   | Yes   | Yes *   | Yes      | No               | No
+| 2.2.x             | No   | No    | Yes     | Yes      | No               | No
+| 2.3.x             | No   | No    | Yes     | Yes      | No               | No
+| 3.0, 3.1, 3.3     | No   | No    | No      | Yes      | No               | No
+| 3.4               | No   | No    | No      | Yes      | Yes              | No
+| 3.5               | No   | No    | No      | Yes      | Yes              | Yes
+| 4.0               | No   | No    | No      | No       | Yes              | Yes
+| 4.1               | No   | No    | No      | No       | No               | Yes
+| 4.2               | No   | No    | No      | No       | No               | Yes
 
 `*` Neo4j.rb >= 4.x doesn't support Neo4j versions before 2.1.5.  To use 2.1.x you should upgrade to a version >= 2.1.5
 
 ## Neo4j feature support
 
-| **Neo4j Feature**          |   v2.x | v3.x | >= v4.x | >= 8.x | activegraph 10.0 |
-|----------------------------|--------|------|---------|--------|------------------|
-| Bolt Protocol              |   No   |  No  | No      | Yes    | Yes              | 
-| Auth                       |   No   |  No  | Yes     | Yes    | Yes              |
-| Remote Cypher              |   Yes  |  Yes | Yes     | Yes    | No               |
-| Transactions               |   Yes  |  Yes | Yes     | Yes    | Yes              |
-| High Availability          |   No   |  Yes | Yes     | Yes    | Yes              |
-| Causal Cluster             |   No   |  No  | No      | No     | Yes              |
-| Embedded JVM support       |   Yes  |  Yes | Yes     | Yes    | via bolt only    |
+| **Neo4j Feature**          |   v2.x | v3.x | >= v4.x | >= 8.x | >= activegraph 10.0 |
+|----------------------------|--------|------|---------|--------|---------------------|
+| Bolt Protocol              |   No   |  No  | No      | Yes    | Yes                 | 
+| Auth                       |   No   |  No  | Yes     | Yes    | Yes                 |
+| Remote Cypher              |   Yes  |  Yes | Yes     | Yes    | No                  |
+| Transactions               |   Yes  |  Yes | Yes     | Yes    | Yes                 |
+| High Availability          |   No   |  Yes | Yes     | Yes    | Yes                 |
+| Causal Cluster             |   No   |  No  | No      | No     | Yes                 |
+| Embedded JVM support       |   Yes  |  Yes | Yes     | Yes    | via bolt only       |
 
 ## Documentation
 
