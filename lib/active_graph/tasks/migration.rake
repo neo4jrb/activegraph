@@ -87,7 +87,9 @@ COMMENT
 
       ActiveGraph::Base.subscribe_to_query(&method(:puts))
 
-      ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
+      ActiveGraph::Base.transaction do
+        ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
+      end
 
       ActiveGraph::Base.transaction do
         runner = ActiveGraph::Migrations::Runner.new
@@ -180,7 +182,7 @@ class #{migration_class_name} < ActiveGraph::Migrations::Base
     drop_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}
   end
 end
-CONTENT
+    CONTENT
 
     File.open(path, 'w') { |f| f << content }
 
