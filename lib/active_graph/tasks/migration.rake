@@ -87,9 +87,7 @@ COMMENT
 
       ActiveGraph::Base.subscribe_to_query(&method(:puts))
 
-      ActiveGraph::Base.transaction do
-        ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
-      end
+      ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
 
       ActiveGraph::Base.transaction do
         runner = ActiveGraph::Migrations::Runner.new
