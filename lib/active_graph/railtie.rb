@@ -18,7 +18,12 @@ module ActiveGraph
       ActiveSupport::Reloader.to_prepare do
         ActiveGraph::Node::Labels::Reloading.reload_models!
       end
+
+      ActiveSupport::Reloader.before_class_unload do
+        ActiveGraph::Node::Labels::Reloading.prepare_for_unload!
+      end
     elsif const_defined?(:ActionDispatch)
+      # NOTE: ActionDispatch::Reloader::to_prepare was removed after v5.0.0.1
       ActionDispatch::Reloader.to_prepare do
         ActiveGraph::Node::Labels::Reloading.reload_models!
       end
