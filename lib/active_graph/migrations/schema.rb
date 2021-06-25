@@ -3,16 +3,17 @@ module ActiveGraph
     module Schema
       class << self
         def fetch_schema_data
-          {constraints: fetch_constraint_descriptions.sort,
-           indexes: fetch_index_descriptions.sort}
+          { constraints: fetch_constraint_descriptions.sort, indexes: fetch_index_descriptions.sort }
         end
 
         def synchronize_schema_data(schema_data, remove_missing)
           queries = []
-          queries += drop_and_create_queries(fetch_constraint_descriptions, schema_data[:constraints], remove_missing)
-          queries += drop_and_create_queries(fetch_index_descriptions, schema_data[:indexes], remove_missing)
-          ActiveGraph::Base.queries do
-            queries.each { |query| append query }
+          ActiveGraph::Base.read_transaction do
+            queries += drop_and_create_queries(fetch_constraint_descriptions, schema_data[:constraints], remove_missing)
+            queries += drop_and_create_queries(fetch_index_descriptions, schema_data[:indexes], remove_missing)
+          end
+          ActiveGraph::Base.write_transaction do
+            queries.each(&ActiveGraph::Base.method(:query))
           end
         end
 
@@ -23,11 +24,12 @@ module ActiveGraph
         end
 
         def fetch_index_descriptions
-          result = ActiveGraph::Base.query('CALL db.indexes()')
-          if result.keys.include?(:description)
-            v3_indexes(result)
-          else
-            v4_indexes(result)
+          ActiveGraph::Base.raw_indexes do |keys, result|
+            if keys.include?(:description)
+              v3_indexes(result)
+            else
+              v4_indexes(result)
+            end
           end
         end
 

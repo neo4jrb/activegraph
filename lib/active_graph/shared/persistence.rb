@@ -90,7 +90,7 @@ module ActiveGraph::Shared
       apply_default_values
       result = _persisted_obj ? update_model : create_model
 
-      ActiveGraph::Base.transaction(&:failure) if result == false
+      ActiveGraph::Base.transaction(&:rollback) if result == false
 
       result != false
     ensure
@@ -179,7 +179,7 @@ module ActiveGraph::Shared
       ActiveGraph::Base.transaction do |tx|
         self.attributes = process_attributes(attributes)
         saved = save
-        tx.failure unless saved
+        tx.rollback unless saved
         saved
       end
     end

@@ -1,13 +1,8 @@
 module ActiveGraph
   module Transaction
-    def failure
+    def rollback
       super
-      @failure = true
-    end
-
-    def close
-      success
-      super
+      @rolled_back = true
     end
 
     def after_commit(&block)
@@ -15,7 +10,7 @@ module ActiveGraph
     end
 
     def apply_callbacks
-      after_commit_registry.each(&:call) unless @failure
+      after_commit_registry.each(&:call) unless @rolled_back
     end
 
     private

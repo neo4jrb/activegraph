@@ -62,50 +62,36 @@ namespace :neo4j do
 
 COMMENT
 
-    def check_neo4j_version_3
-      if ActiveGraph::Base.version > '3.0.0'
-        yield
-      else
-        puts 'WARNING: This task does not work for versions of Neo4j before 3.0.0'
-      end
-    end
-
     desc 'Creates a db/neo4j/schema.yml file which represents the indexes / constraints in the Neo4j DB'
     task dump: :environment do
-      check_neo4j_version_3 do
-        require 'active_graph/migrations/schema'
+      require 'active_graph/migrations/schema'
 
-        schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data
+      schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data
 
-        runner = ActiveGraph::Migrations::Runner.new
-        schema_data[:versions] = runner.complete_migration_versions.sort
+      runner = ActiveGraph::Migrations::Runner.new
+      schema_data[:versions] = runner.complete_migration_versions.sort
 
-        FileUtils.mkdir_p(File.dirname(SCHEMA_YAML_PATH))
-        File.open(SCHEMA_YAML_PATH, 'w') { |file| file << SCHEMA_YAML_COMMENT + schema_data.to_yaml }
+      FileUtils.mkdir_p(File.dirname(SCHEMA_YAML_PATH))
+      File.open(SCHEMA_YAML_PATH, 'w') { |file| file << SCHEMA_YAML_COMMENT + schema_data.to_yaml }
 
-        puts "Dumped updated schema file to #{SCHEMA_YAML_PATH}"
-      end
+      puts "Dumped updated schema file to #{SCHEMA_YAML_PATH}"
     end
 
     desc "Loads a db/neo4j/schema.yml file into the database\nOptionally removes schema elements which aren't in the schema.yml file (defaults to false)"
     task :load, [:remove_missing] => :environment do |_t, args|
-      check_neo4j_version_3 do
-        require 'active_graph/migrations/schema'
+      require 'active_graph/migrations/schema'
 
-        args.with_defaults(remove_missing: false)
+      args.with_defaults(remove_missing: false)
 
-        schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
+      schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
 
-        ActiveGraph::Base.subscribe_to_query(&method(:puts))
+      ActiveGraph::Base.subscribe_to_query(&method(:puts))
 
-        ActiveGraph::Base.transaction do
-          ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
-        end
+      ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
 
-        ActiveGraph::Base.transaction do
-          runner = ActiveGraph::Migrations::Runner.new
-          runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
-        end
+      ActiveGraph::Base.transaction do
+        runner = ActiveGraph::Migrations::Runner.new
+        runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
       end
     end
   end
@@ -194,7 +180,7 @@ class #{migration_class_name} < ActiveGraph::Migrations::Base
     drop_#{index_or_constraint} #{label.to_sym.inspect}, #{property_name.to_sym.inspect}
   end
 end
-CONTENT
+    CONTENT
 
     File.open(path, 'w') { |f| f << content }
 

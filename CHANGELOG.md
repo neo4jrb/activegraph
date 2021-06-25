@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [11.0.0] 2021-06-25
+
+## Added
+
+- support for neo4j 4.1, 4.2, 4.3
+
 ## [10.1.0] 2021-02-05
 
 ## Added

@@ -11,30 +11,29 @@ describe ActiveGraph::Base do
     end
 
     it 'can make a query with a large payload' do
-      subject.query('CREATE (n:Test) SET n = $props RETURN n', props: {text: 'a' * 10_000})
+      subject.query('CREATE (n:Test) SET n = $props RETURN n', props: { text: 'a' * 10_000 })
     end
   end
 
   describe '#queries' do
     it 'allows for multiple queries' do
-      result = subject.queries do
-        append 'CREATE (n:Label1) RETURN n'
-        append 'CREATE (n:Label2) RETURN n'
+      nodes = subject.transaction do
+        [1, 2].map { |index| subject.query("CREATE (n:Label#{index}) RETURN n").single[:n] }
       end
 
-      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[1].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0][:n].labels.to_a).to eq([:Label1])
-      expect(result[1].to_a[0][:n].labels).to eq([:Label2])
+      expect(nodes[0]).to be_a(Neo4j::Driver::Types::Node)
+      expect(nodes[1]).to be_a(Neo4j::Driver::Types::Node)
+      expect(nodes[0].labels).to eq([:Label1])
+      expect(nodes[1].labels).to eq([:Label2])
     end
 
     it 'allows for building with Query API' do
-      result = subject.queries do
-        append query.create(n: {Label1: {}}).return(:n)
-      end
+      ActiveGraph::Base.write_transaction do
+        node = subject.query(ActiveGraph::Core::Query.new.create(n: { Label1: {} }).return(:n)).single[:n]
 
-      expect(result[0].to_a[0][:n]).to be_a(Neo4j::Driver::Types::Node)
-      expect(result[0].to_a[0][:n].labels).to eq([:Label1])
+        expect(node).to be_a(Neo4j::Driver::Types::Node)
+        expect(node.labels).to eq([:Label1])
+      end
     end
   end
 
@@ -68,7 +67,7 @@ describe ActiveGraph::Base do
       expect_queries(1) do
         subject.transaction do |tx|
           create_object_by_id(3, tx)
-          tx.failure
+          tx.rollback
         end
       end
       expect(get_object_by_id(3)).to be_nil
@@ -76,7 +75,7 @@ describe ActiveGraph::Base do
       expect_queries(1) do
         subject.transaction do |tx|
           create_object_by_id(4, tx)
-          tx.failure
+          tx.rollback
         end
       end
       expect(get_object_by_id(4)).to be_nil
@@ -91,46 +90,33 @@ describe ActiveGraph::Base do
       end
       expect(get_object_by_id(5)).to be_nil
 
-      # Nested transaction, error from inside inner transaction handled outside of inner transaction
-      expect_queries(1) do
-        subject.transaction do |_tx|
-          expect do
-            subject.transaction do |tx|
-              create_object_by_id(6, tx)
-              fail 'Failing transaction with error'
-            end
-          end.to raise_error 'Failing transaction with error'
-        end
-      end
-      expect(get_object_by_id(6)).to be_nil
-
-      # Nested transaction, error from inside inner transaction handled outside of inner transaction
-      expect_queries(2) do
-        subject.transaction do |tx|
-          create_object_by_id(7, tx)
-          expect do
-            subject.transaction do |tx|
-              create_object_by_id(8, tx)
-              fail 'Failing transaction with error'
-            end
-          end.to raise_error 'Failing transaction with error'
-        end
-      end
-      expect(get_object_by_id(7)).to be_nil
-      expect(get_object_by_id(8)).to be_nil
-
       # Nested transaction, error from inside inner transaction handled outside of outer transaction
       expect_queries(1) do
         expect do
           subject.transaction do |_tx|
             subject.transaction do |tx|
-              create_object_by_id(9, tx)
+              create_object_by_id(6, tx)
               fail 'Failing transaction with error'
             end
           end
         end.to raise_error 'Failing transaction with error'
       end
-      expect(get_object_by_id(9)).to be_nil
+      expect(get_object_by_id(6)).to be_nil
+
+      # Nested transaction, error from inside inner transaction handled outside of outer transaction
+      expect_queries(2) do
+        expect do
+          subject.transaction do |tx|
+            create_object_by_id(7, tx)
+            subject.transaction do |tx|
+              create_object_by_id(8, tx)
+              fail 'Failing transaction with error'
+            end
+          end
+        end.to raise_error 'Failing transaction with error'
+      end
+      expect(get_object_by_id(7)).to be_nil
+      expect(get_object_by_id(8)).to be_nil
     end
 
     describe 'after_commit hook' do
@@ -153,7 +139,7 @@ describe ActiveGraph::Base do
               tx3.after_commit(&method(:callback))
             end
           end
-          tx1.failure
+          tx1.rollback
         end
       end
 
@@ -163,7 +149,7 @@ describe ActiveGraph::Base do
           subject.transaction do |tx2|
             subject.transaction do |tx3|
               tx3.after_commit(&method(:callback))
-              tx3.failure
+              tx3.rollback
             end
           end
         end
@@ -206,7 +192,7 @@ describe ActiveGraph::Base do
     it 'symbolizes keys for Neo4j objects' do
       result = subject.query('RETURN {a: 1} AS obj')
 
-      expect(result.map(&:to_h)).to eq([{obj: {a: 1}}])
+      expect(result.map(&:to_h)).to eq([{ obj: { a: 1 } }])
 
       expect(result).to be_a(Enumerable)
       expect(result.count).to be(1)
@@ -242,8 +228,8 @@ describe ActiveGraph::Base do
         %w[foo bar],
         # Hashes / Maps
         {},
-        {a: 1, b: 2},
-        {a: 'foo', b: 'bar'}
+        { a: 1, b: 2 },
+        { a: 'foo', b: 'bar' }
       ].each do |value|
         let_context(param: value) { it { should eq(value) } }
       end
@@ -356,7 +342,7 @@ describe ActiveGraph::Base do
       it 'raises an error' do
         expect do
           described_class.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input 'A'/)
+        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input '.*A.*'/)
       end
     end
 
@@ -387,9 +373,9 @@ describe ActiveGraph::Base do
 
       it do
         should match_array([
-                             {type: :uniqueness, label: :Album, properties: [:al_id]},
-                             {type: :uniqueness, label: :Album, properties: [:name]},
-                             {type: :uniqueness, label: :Song, properties: [:so_id]}
+                             { type: :uniqueness, label: :Album, properties: [:al_id] },
+                             { type: :uniqueness, label: :Album, properties: [:name] },
+                             { type: :uniqueness, label: :Song, properties: [:so_id] }
                            ])
       end
     end

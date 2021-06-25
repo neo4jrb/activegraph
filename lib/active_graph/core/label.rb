@@ -114,8 +114,9 @@ module ActiveGraph
         end
 
         def drop_constraints
-          ActiveGraph::Base.transaction do |tx|
-            tx.run('CALL db.constraints').each do |record|
+          result = ActiveGraph::Base.read_transaction { |tx| tx.run('CALL db.constraints').to_a }
+          ActiveGraph::Base.write_transaction do |tx|
+            result.each do |record|
               tx.run("DROP #{record.keys.include?(:name) ? "CONSTRAINT #{record[:name]}" : record[:description]}")
             end
           end

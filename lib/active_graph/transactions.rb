@@ -5,20 +5,17 @@ module ActiveGraph
     extend ActiveSupport::Concern
 
     included do
-      thread_mattr_accessor :explicit_session, :tx
+      thread_mattr_accessor :explicit_session, :tx, :last_bookmark
     end
 
     class_methods do
-      def session(*args)
-        ActiveGraph::Base.driver.session(*args) do |session|
+      def session(**session_config)
+        ActiveGraph::Base.driver.session(**session_config) do |session|
           self.explicit_session = session
           yield session
-          session.last_bookmark
+        ensure
+          self.last_bookmark = session.last_bookmark
         end
-      end
-
-      def transaction(**config, &block)
-        send_transaction(:begin_transaction, **config, &block)
       end
 
       def write_transaction(**config, &block)
@@ -29,10 +26,12 @@ module ActiveGraph
         send_transaction(:read_transaction, **config, &block)
       end
 
+      alias transaction write_transaction
+
       private
 
       def send_transaction(method, **config, &block)
-        return checked_yield(tx, &block) if tx&.open?
+        return yield tx if tx&.open?
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
         driver.session do |session|
           run_transaction_work(session, method, **config, &block)
@@ -40,17 +39,19 @@ module ActiveGraph
       end
 
       def run_transaction_work(session, method, **config, &block)
+        implicit = config.delete(:implicit)
         session.send(method, **config) do |tx|
           self.tx = tx
-          checked_yield(tx, &block)
+          block.call(tx).tap do |result|
+            if implicit &&
+              [Core::Result, ActiveGraph::Node::Query::QueryProxy, ActiveGraph::Core::Query]
+                .any?(&result.method(:is_a?))
+              result.store
+            end
+          end
         end.tap { tx.apply_callbacks }
-      end
-
-      def checked_yield(tx)
-        yield tx
-      rescue StandardError => e
-        tx.failure
-        raise e
+      rescue ActiveGraph::Rollback
+        # rollbacks are silently swallowed
       end
     end
   end
