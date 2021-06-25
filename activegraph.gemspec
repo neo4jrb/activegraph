@@ -37,7 +37,7 @@ DESCRIPTION
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_dependency('sorted_set')
-  s.add_dependency("neo4j-java-driver", '~> 4.2.0.beta.0')
+  s.add_dependency("neo4j-java-driver", '>= 4.3.0')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')

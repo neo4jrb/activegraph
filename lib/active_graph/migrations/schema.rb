@@ -24,11 +24,12 @@ module ActiveGraph
         end
 
         def fetch_index_descriptions
-          result = ActiveGraph::Base.query('CALL db.indexes()')
-          if result.keys.include?(:description)
-            v3_indexes(result)
-          else
-            v4_indexes(result)
+          ActiveGraph::Base.raw_indexes do |keys, result|
+            if keys.include?(:description)
+              v3_indexes(result)
+            else
+              v4_indexes(result)
+            end
           end
         end
 
