@@ -58,6 +58,7 @@ module ActiveGraph
           def process_string(str)
             head, rest = str.split('.', 2)
             k, length = head.split('*', -2)
+            length = { max: length } if length
             add_nested(k.to_sym, rest, length)
           end
 
