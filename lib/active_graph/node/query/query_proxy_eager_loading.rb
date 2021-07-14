@@ -68,7 +68,7 @@ module ActiveGraph
 
         def init_associations(node, element)
           element.each_key { |key| node.association_proxy(key).init_cache }
-          node.association_proxy(element.name).init_cache if element.rel_length == ''
+          node.association_proxy(element.name).init_cache if element.rel_length && element.rel_length[:max] == ''
         end
 
         def cache_and_init(node, element)
@@ -157,14 +157,8 @@ module ActiveGraph
         end
 
         def relationship_part(association, path_name, rel_length)
-          if rel_length
-            rel_name = nil
-            length = {max: rel_length}
-          else
-            rel_name = escape("#{path_name}_rel")
-            length = nil
-          end
-          "#{association.arrow_cypher(rel_name, {}, false, false, length)}(#{escape(path_name)})"
+          rel_name = escape("#{path_name}_rel") unless rel_length
+          "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
         def chain

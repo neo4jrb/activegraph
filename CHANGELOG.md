@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [11.0.1] 2021-07-14
+
+- It changes the relationship length assignment in query proxy eagerloading module to be consistent with query proxy relationship length syntax.
+
 ## [11.0.0] 2021-06-25
 
 ## Added
