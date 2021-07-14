@@ -157,7 +157,7 @@ module ActiveGraph
         end
 
         def relationship_part(association, path_name, rel_length)
-          rel_name = rel_length ? nil : escape("#{path_name}_rel")
+          rel_name = escape("#{path_name}_rel") unless rel_length
           "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
         end
 
