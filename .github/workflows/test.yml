@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         ruby: [ jruby-9.2.19.0 ]
-        neo4j: [ 3.5.28, 4.0.12, 4.1.10, 4.2.9, 4.3.2 ]
+        neo4j: [ 3.5.29, 4.0.12, 4.1.10, 4.2.9, 4.3.3 ]
         driver: [ java ]
     env:
       NEO4J_EDITION_FLAG: -e
