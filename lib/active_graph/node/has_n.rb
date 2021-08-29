@@ -253,8 +253,10 @@ module ActiveGraph::Node
 
     def relationship_corresponding_rel(relationship, direction, target_class)
       self.class.associations.find do |_key, assoc|
-        assoc.relationship_class_name == relationship.class.name ||
-          (assoc.relationship_type == relationship.type.to_sym && assoc.target_class == target_class && assoc.direction == direction)
+        assoc.direction == direction && (
+          assoc.relationship_class_name == relationship.class.name ||
+          (assoc.relationship_type == relationship.type.to_sym && assoc.target_class == target_class)
+        )
       end
     end
 

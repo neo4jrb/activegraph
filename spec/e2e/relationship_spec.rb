@@ -589,4 +589,65 @@ describe 'Relationship' do
       end
     end
   end
+
+  context "between nodes of the same class" do
+    before(:each) do
+      clear_model_memory_caches
+
+      stub_node_class('NodeClass') do
+        has_one  :out, :parent,   rel_class: :IsParentOf
+        has_many :in,  :children, rel_class: :IsParentOf
+      end
+
+      stub_relationship_class('IsParentOf') do
+        from_class :NodeClass
+        to_class   :NodeClass
+      end
+
+      @gen0 = NodeClass.create
+      @gen1 = @gen2 = nil
+    end
+
+    after(:each) { [@gen0, @gen1, @gen2].compact.each(&:destroy) }
+
+    shared_examples_for :creating_gen2 do
+      it "creates (gen1)-->(gen0)" do
+        @gen1 = NodeClass.create parent: @gen0
+
+        expect(@gen1.parent.id).to eq @gen0.id
+
+        expect(@gen0.children.count).to eq 1
+        expect(@gen0.children.first.id).to eq @gen1.id
+      end
+
+      context "given (gen1)-->(gen0)" do
+        before(:each) { @gen1 = NodeClass.create parent: @gen0 }
+
+        describe "#create (gen2)-->(gen1)" do
+          it "adds a new node and relationsihp without affecting (gen1)-->(gen0)" do
+            @gen2 = NodeClass.create parent: @gen1
+
+            expect(@gen2.parent.id).to eq @gen1.id
+
+            expect(@gen1.children.count).to eq 1
+            expect(@gen1.children.first.id).to eq @gen2.id
+
+            expect(@gen1.parent).to(be_present, "gen1 lost its parent")
+            expect(@gen1.parent.id).to eq @gen0.id
+
+            expect(@gen0.children.count).to eq 1
+            expect(@gen0.children.first.id).to eq @gen1.id
+          end
+        end
+      end
+    end
+
+    %i(all none).each do |uniqueness|
+      context "with creates_unique(:#{uniqueness})" do
+        before(:each) { IsParentOf.creates_unique uniqueness }
+
+        include_examples :creating_gen2
+      end
+    end
+  end
 end
