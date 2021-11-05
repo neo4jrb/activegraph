@@ -1,3 +1,3 @@
 module ActiveGraph
-  VERSION = '11.0.1'
+  VERSION = '11.0.2'
 end
