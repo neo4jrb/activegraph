@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [10.1.1] 2021-07-14
+## [10.1.1] 2021-11-05
 
+## Fixed
+
+- Fixed issue where some has_one relationships where incorrectly deleted disregarding direction
 - It changes the relationship length assignment in query proxy eagerloading module to be consistent with query proxy relationship length syntax.
 
 ## [10.1.0] 2021-02-05
