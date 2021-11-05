@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        ruby: [ 2.5, 3.0, jruby-9.2.19.0 ]
+        ruby: [ 2.5, 3.0, jruby-9.2.20.0 ]
         neo4j: [ 3.5.29, 4.0.12 ]
         driver: [ ffi ]
         include:
-          - ruby: jruby-9.2.19.0
+          - ruby: jruby-9.2.20.0
             neo4j: 4.0.12
             driver: java
           - ruby: 2.5
