@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        ruby: [ jruby-9.2.19.0 ]
-        neo4j: [ 3.5.29, 4.0.12, 4.1.10, 4.2.11, 4.3.6 ]
+        ruby: [ jruby-9.3.2.0 ]
+        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.11, 4.3.7, 4.4.0 ]
         driver: [ java ]
     env:
       NEO4J_EDITION_FLAG: -e
