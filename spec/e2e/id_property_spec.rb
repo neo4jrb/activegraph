@@ -29,7 +29,6 @@ describe ActiveGraph::Node::IdProperty do
     end
   end
 
-
   describe 'when no id_property' do
     let!(:clazz) do
       stub_node_class('Clazz') do
@@ -194,8 +193,11 @@ describe ActiveGraph::Node::IdProperty do
     end
   end
 
-
-  EXISTS_REGEXP = /Node.\d+\)? already exists with label/
+  def raise_constraint_error
+    raise_error(Neo4j::Driver::Exceptions::ClientException) do |error|
+      expect(error.code).to eq 'Neo.ClientError.Schema.ConstraintValidationFailed'
+    end
+  end
 
   describe 'id_property :my_id, on: :foobar' do
     before do
@@ -219,7 +221,7 @@ describe ActiveGraph::Node::IdProperty do
         'same uuid'
       end
       Clazz.create
-      expect { Clazz.create }.to raise_error(EXISTS_REGEXP)
+      expect { Clazz.create }.to raise_constraint_error
     end
 
     describe 'property my_id' do
@@ -241,7 +243,6 @@ describe ActiveGraph::Node::IdProperty do
         expect(node.id).to eq(node.my_id)
       end
     end
-
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
@@ -280,7 +281,7 @@ describe ActiveGraph::Node::IdProperty do
     it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
     let_context id_property_name: :my_uuid do
-      let_context id_property_options: {constraint: false} do
+      let_context id_property_options: { constraint: false } do
         it_behaves_like 'logs id_property constraint option false warning', :Clazz
         it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
@@ -288,12 +289,12 @@ describe ActiveGraph::Node::IdProperty do
           it_behaves_like 'logs id_property constraint option false warning', :Clazz
           it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
-          let_context subclass_id_property_options: {constraint: false} do
+          let_context subclass_id_property_options: { constraint: false } do
             it_behaves_like 'logs id_property constraint option false warning', :Clazz
             it_behaves_like 'logs id_property constraint option false warning', :SubClazz
           end
 
-          let_context subclass_id_property_options: {constraint: true} do
+          let_context subclass_id_property_options: { constraint: true } do
             it_behaves_like 'logs id_property constraint option false warning', :Clazz
             it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
@@ -306,18 +307,18 @@ describe ActiveGraph::Node::IdProperty do
           it_behaves_like 'logs id_property constraint option false warning', :Clazz
           it_behaves_like 'does not log id_property constraint option false warning', :SubClazz
 
-          let_context subclass_id_property_options: {constraint: false} do
+          let_context subclass_id_property_options: { constraint: false } do
             it_behaves_like 'logs id_property constraint option false warning', :Clazz
             it_behaves_like 'logs id_property constraint option false warning', :SubClazz
           end
         end
       end
 
-      let_context id_property_options: {constraint: true} do
+      let_context id_property_options: { constraint: true } do
         it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
         it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
-        let_context subclass_id_property_options: {constraint: true} do
+        let_context subclass_id_property_options: { constraint: true } do
           let_context subclass_id_property_name: :other_uuid do
             it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
             it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
@@ -330,11 +331,11 @@ describe ActiveGraph::Node::IdProperty do
         end
       end
 
-      let_context id_property_options: {constraint: nil} do
+      let_context id_property_options: { constraint: nil } do
         it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
         it_behaves_like 'raises schema error not including', :constraint, :SubClazz
 
-        let_context subclass_id_property_options: {constraint: nil} do
+        let_context subclass_id_property_options: { constraint: nil } do
           let_context subclass_id_property_name: :other_uuid do
             it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
             it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
@@ -346,7 +347,7 @@ describe ActiveGraph::Node::IdProperty do
           end
         end
 
-        let_context subclass_id_property_options: {constraint: true} do
+        let_context subclass_id_property_options: { constraint: true } do
           let_context subclass_id_property_name: :other_uuid do
             it_behaves_like 'raises schema error including', :constraint, :Clazz, :my_uuid
             it_behaves_like 'raises schema error including', :constraint, :SubClazz, :other_uuid
@@ -379,7 +380,7 @@ describe ActiveGraph::Node::IdProperty do
         'same uuid'
       end
       Clazz.create
-      expect { Clazz.create }.to raise_error(EXISTS_REGEXP)
+      expect { Clazz.create }.to raise_constraint_error
     end
 
     describe 'property my_uuid' do
