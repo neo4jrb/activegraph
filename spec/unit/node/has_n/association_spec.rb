@@ -1,7 +1,7 @@
 class Default
 end
 
-describe ActiveGraph::Node::HasN::Association do
+describe ActiveGraph::Node::HasN::Association, jruby_problem: true do
   let(:options) { {type: nil} }
   let(:name) { :default }
   let(:direction) { :out }
