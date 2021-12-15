@@ -49,7 +49,6 @@ jobs:
           neoctrl-install $NEO4J_EDITION_FLAG $NEO4J_VERSION servers
           if [ -n "$NEO4J_EDITION_FLAG" ]; then NEO4J_EDITION=enterprise; else NEO4J_EDITION=community; fi
           NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
-#          neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
           neoctrl-configure $NEO4J_DIR dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
           neoctrl-start $NEO4J_DIR
 
