@@ -18,7 +18,8 @@ module ActiveGraph
             .map do |record, eager_data|
             record = cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
-              eager_records.first.zip(eager_records.last).each do |eager_record|
+              eager_records.each do |eager_record|
+                next unless eager_record.first && eager_record.first.type.to_s == element.association.relationship_type.to_s 
                 add_to_cache(*eager_record, element)
               end
             end
@@ -68,7 +69,7 @@ module ActiveGraph
 
         def init_associations(node, element)
           element.each_key { |key| node.association_proxy(key).init_cache }
-          node.association_proxy(element.name).init_cache if element.rel_length && element.rel_length[:max] == ''
+          node.association_proxy(element.name).init_cache if element.rel_length && element.rel_length[:min] == 0
         end
 
         def cache_and_init(node, element)
@@ -130,13 +131,13 @@ module ActiveGraph
         def with_association_query_part(base_query, path, previous_with_vars)
           optional_match_with_where(base_query, path, previous_with_vars)
             .with(identity,
-                  "[#{relationship_collection(path)}, collect(#{escape path_name(path)})] "\
+                  "collect([#{relationship_collection(path)}, #{escape path_name(path)}]) "\
                   "AS #{escape("#{path_name(path)}_collection")}",
                   *previous_with_vars)
         end
 
         def relationship_collection(path)
-          path.last.rel_length ? "collect(last(relationships(#{escape("#{path_name(path)}_path")})))" : "collect(#{escape("#{path_name(path)}_rel")})"
+          path.last.rel_length ? "last(relationships(#{escape("#{path_name(path)}_path")}))" : "#{escape("#{path_name(path)}_rel")}"
         end
 
         def optional_match_with_where(base_query, path, _)
