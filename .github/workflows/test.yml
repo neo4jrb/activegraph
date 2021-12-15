@@ -55,4 +55,4 @@ jobs:
       - name: Install dependencies
         run: bundle update
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec rspec -t ~jruby_problem

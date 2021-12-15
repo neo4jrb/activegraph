@@ -329,7 +329,7 @@ describe ActiveGraph::Node::HasN::Association do
             it { is_expected.to eq(['::Fizzl']) }
           end
 
-          context 'inbound' do
+          context 'inbound', jruby_problem: true do
             let(:direction) { :in }
 
             before(:each) do
