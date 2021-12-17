@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'parslet'
 require 'active_graph/version'
 
 require 'active_graph/core'
@@ -8,6 +9,7 @@ require 'active_support/core_ext/module/attribute_accessors_per_thread'
 require 'active_graph/transactions'
 require 'active_graph/base'
 require 'active_graph/model_schema'
+require 'active_graph/string_parsers/relation_parser'
 
 require 'active_model'
 require 'active_support/concern'

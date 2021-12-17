@@ -56,10 +56,9 @@ module ActiveGraph
           end
 
           def process_string(str)
-            head, rest = str.split('.', 2)
-            k, length = head.split('*', -2)
-            length = {max: length} if length
-            add_nested(k.to_sym, rest, length)
+            map = StringParsers::RelationParser.new.parse(str)
+            #binding.pry
+            add_nested(map[:rel_name].to_sym, map[:rest_str], map[:length_part])
           end
 
           private
