@@ -57,14 +57,13 @@ module ActiveGraph
 
           def process_string(str)
             map = StringParsers::RelationParser.new.parse(str)
-            #binding.pry
-            add_nested(map[:rel_name].to_sym, map[:rest_str], map[:length_part])
+            add_nested(map[:rel_name].to_sym, map[:rest_str].to_s.presence, map[:length_part])
           end
 
           private
 
           def target_class(model, key)
-            association = model.associations[key]
+            association = model.associations[key.to_sym]
             fail "Invalid association: #{[*path, key].join('.')}" unless association
             model.associations[key].target_class
           end
