@@ -19,7 +19,7 @@ module ActiveGraph
             record = cache_and_init(record, with_associations_tree)
             eager_data.zip(with_associations_tree.paths.map(&:last)).each do |eager_records, element|
               eager_records.each do |eager_record|
-                next unless eager_record.first && eager_record.first.type.to_s == element.association.relationship_type.to_s 
+                next unless eager_record.first&.type&.to_s == element.association.relationship_type.to_s
                 add_to_cache(*eager_record, element)
               end
             end
@@ -137,7 +137,7 @@ module ActiveGraph
         end
 
         def relationship_collection(path)
-          path.last.rel_length ? "last(relationships(#{escape("#{path_name(path)}_path")}))" : "#{escape("#{path_name(path)}_rel")}"
+          path.last.rel_length ? "last(relationships(#{escape("#{path_name(path)}_path")}))" : escape("#{path_name(path)}_rel")
         end
 
         def optional_match_with_where(base_query, path, _)
