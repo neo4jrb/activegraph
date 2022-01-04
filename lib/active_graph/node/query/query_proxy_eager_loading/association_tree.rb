@@ -17,6 +17,20 @@ module ActiveGraph
             super.tap { |copy| copy.each { |key, value| copy[key] = value.clone } }
           end
 
+          def add_spec_and_validate(spec)
+            add_spec(spec)
+            validate_for_zero_length_paths
+          end
+
+          def validate_for_zero_length_paths
+            fail 'Can not eager load more than one zero length path.' if values.count { |value| value.zero_length_path? } > 1
+          end
+
+          def zero_length_path?
+            rel_length&.fetch(:min, nil)&.to_s == '0' ||
+              values.any? { |value| value.zero_length_path? }
+          end
+
           def add_spec(spec)
             fail_spec(spec) unless model
 

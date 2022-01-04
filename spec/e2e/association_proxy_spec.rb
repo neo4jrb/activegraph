@@ -356,10 +356,14 @@ describe 'Association Proxy' do
       let(:friend1) { Person.create(name: 'f-1', knows: friend2) }
       let(:friend2) { Person.create(name: 'f-2', knows: friend3) }
       let(:friend3) { Person.create(name: 'f-3') }
-      let(:billy_comment) { Comment.create(text: 'test-comment', owner: node) }
-      let(:comment) { Comment.create(text: 'test-comment', owner: friend1) }
+      let(:billy_comment) { Comment.create(text: 'billy-comment', owner: node) }
+      let(:comment) { Comment.create(text: 'f-1-comment', owner: friend1) }
 
       before { Post.create(name: 'Post-1', owner: node, comments: [comment, billy_comment]) }
+
+      it 'Raises error if attempting to eager load more than one zero length paths' do
+        expect { Person.all.with_associations(['knows*0..','comments.owner.knows*0..']) }.to raise_error(RuntimeError, /Can not eager load more than one zero length path./)
+      end
 
       it 'Should allow for string parameter with variable length relationship notation' do
         expect_queries(1) do
@@ -367,6 +371,11 @@ describe 'Association Proxy' do
         end
       end
 
+      it 'Should allow for zero length paths' do
+        expect_queries(1) do
+          Post.comments.with_associations(owner: 'knows*0..', ).map(&:owner).each(&method(:deep_traversal))
+        end
+      end
 
       it 'allows on demand retrieval beyond eagerly fetched associations' do
         expect(Post.owner.with_associations('knows*2')[0].knows[0].knows[0].knows[0].name).to eq 'f-3'
