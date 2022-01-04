@@ -69,7 +69,7 @@ module ActiveGraph
 
         def init_associations(node, element)
           element.each_key { |key| node.association_proxy(key).init_cache }
-          node.association_proxy(element.name).init_cache if element.rel_length && element.rel_length[:min] == "0"
+          node.association_proxy(element.name).init_cache if element.rel_length && element.rel_length[:max] == ''
         end
 
         def cache_and_init(node, element)
