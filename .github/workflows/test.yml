@@ -11,11 +11,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [ jruby-9.2.19.0 ]
-        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.11, 4.3.7, 4.4.0 ]
+        ruby: [ jruby-9.3.3.0 ]
+        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.14, 4.3.10, 4.4.3 ]
         driver: [ java ]
     env:
       NEO4J_EDITION_FLAG: -e
