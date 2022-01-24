@@ -13,6 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         ruby: [ jruby-9.3.3.0 ]
         neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.14, 4.3.10, 4.4.3 ]
