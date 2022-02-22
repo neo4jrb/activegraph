@@ -1,7 +1,7 @@
 class Default
 end
 
-describe ActiveGraph::Node::HasN::Association, jruby_problem: true do
+describe ActiveGraph::Node::HasN::Association do
   let(:options) { {type: nil} }
   let(:name) { :default }
   let(:direction) { :out }
@@ -329,7 +329,7 @@ describe ActiveGraph::Node::HasN::Association, jruby_problem: true do
             it { is_expected.to eq(['::Fizzl']) }
           end
 
-          context 'inbound', jruby_problem: true do
+          context 'inbound' do
             let(:direction) { :in }
 
             before(:each) do
