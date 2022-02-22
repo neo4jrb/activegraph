@@ -13,8 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ 2.5, 3.0, 3.1, jruby-9.3.3.0 ]
-        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.15, 4.3.10, 4.4.4 ]
+        neo4j: [ 3.5.30, 4.0.12 ]
         driver: [ ffi ]
+        experimental: [ false ]
         include:
           - ruby: jruby-9.3.3.0
             neo4j: 4.0.12
@@ -24,6 +25,22 @@ jobs:
             driver: ffi
             java-version: 8
             active-model-version: 5.2.3
+          - ruby: 3.1
+            neo4j: 4.1.11
+            driver: ffi
+            experimental: true
+          - ruby: 3.1
+            neo4j: 4.2.15
+            driver: ffi
+            experimental: true
+          - ruby: 3.1
+            neo4j: 4.3.10
+            driver: ffi
+            experimental: true
+          - ruby: 3.1
+            neo4j: 4.4.4
+            driver: ffi
+            experimental: true
     env:
       NEO4J_EDITION_FLAG: -e
       NEO4J_VERSION: ${{ matrix.neo4j }}
