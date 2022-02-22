@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby-9.3.3.0 ]
-        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.14, 4.3.10, 4.4.3 ]
+        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.15, 4.3.10, 4.4.4 ]
         driver: [ java ]
     env:
       NEO4J_EDITION_FLAG: -e
@@ -49,7 +49,7 @@ jobs:
           neoctrl-install $NEO4J_EDITION_FLAG $NEO4J_VERSION servers
           if [ -n "$NEO4J_EDITION_FLAG" ]; then NEO4J_EDITION=enterprise; else NEO4J_EDITION=community; fi
           NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
-          neoctrl-configure $NEO4J_DIR dbms.memory.pagecache.size=600m dbms.memory.heap.max_size=600m dbms.memory.heap.initial_size=600m dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
+          neoctrl-configure $NEO4J_DIR dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
           neoctrl-start $NEO4J_DIR
 
       - name: Install dependencies
