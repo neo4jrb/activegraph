@@ -57,9 +57,13 @@ module ActiveGraph
       end
 
       def handle_migration_error!(e)
-        fail e unless e.message =~ /Cannot perform data updates in a transaction that has performed schema updates./
-        fail MigrationError,
-             "#{e.message}. Please add `disable_transactions!` in your migration file."
+        if e.is_a?(Neo4j::Driver::Exceptions::ClientException) &&
+          e.code == 'Neo.ClientError.Transaction.ForbiddenDueToTransactionType' ||
+          e.message =~ /Cannot perform data updates in a transaction that has performed schema updates./
+          fail MigrationError, "#{e.message}. Please add `disable_transactions!` in your migration file."
+        else
+          fail e
+        end
       end
 
       def migration_transaction(&block)
