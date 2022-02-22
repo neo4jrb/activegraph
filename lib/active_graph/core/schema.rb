@@ -9,10 +9,15 @@ module ActiveGraph
       end
 
       def indexes
-        result = query('CALL db.indexes()', {}, skip_instrumentation: true)
-
-        result.map do |row|
-          { type: row[:type].to_sym, label: label(result, row), properties: properties(row), state: row[:state].to_sym }
+        raw_indexes do |keys, result|
+          result.map do |row|
+            {
+              type: row[:type].to_sym,
+              label: label(keys, row),
+              properties: properties(row),
+              state: row[:state].to_sym
+            }
+          end
         end
       end
 
@@ -21,6 +26,13 @@ module ActiveGraph
 
         result.select(&method(v4?(result) ? :v4_filter : :v3_filter)).map do |row|
           { type: :uniqueness, label: label(result, row), properties: properties(row) }
+        end
+      end
+
+      def raw_indexes
+        read_transaction do
+          result = query('CALL db.indexes()', {}, skip_instrumentation: true)
+          yield result.keys, result.reject { |row| row[:type] == 'LOOKUP' }
         end
       end
 
