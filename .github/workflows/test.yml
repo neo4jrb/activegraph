@@ -5,18 +5,16 @@ on:
     branches: [ '10' ]
   pull_request:
     branches: [ '10' ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 jobs:
   test:
     runs-on: ubuntu-18.04
+    continue-on-error: ${{ matrix.neo4j > '4.0' }}
     strategy:
       fail-fast: false
       matrix:
         ruby: [ 2.5, 3.0, 3.1, jruby-9.3.3.0 ]
-        neo4j: [ 3.5.30, 4.0.12 ]
+        neo4j: [ 3.5.30, 4.0.12, 4.1.11, 4.2.15, 4.3.10, 4.4.4 ]
         driver: [ ffi ]
         include:
           - ruby: jruby-9.3.3.0

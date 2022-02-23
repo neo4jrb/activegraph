@@ -195,7 +195,7 @@ describe ActiveGraph::Node::IdProperty do
   end
 
 
-  EXISTS_REGEXP = /Node.\d+\)? already exists with label/
+  EXISTS_REGEXP = /Node.\d+\)? already exists with label|New data does not satisfy Constraint/
 
   describe 'id_property :my_id, on: :foobar' do
     before do

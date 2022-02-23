@@ -356,14 +356,14 @@ describe ActiveGraph::Base do
       it 'raises an error' do
         expect do
           described_class.query("CRATE (:Album {uuid: 'dup'})").to_a
-        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input 'A'/)
+        end.to raise_error(Neo4j::Driver::Exceptions::ClientException, /Invalid input '.*A.*'/)
       end
     end
 
     describe 'Clause ordering error' do
       it 'raises an error' do
         expect do
-          described_class.query("RETURN a CREATE (a:Album {uuid: 'dup'})").to_a
+          described_class.query("RETURN 1 CREATE (a:Album {uuid: 'dup'})").to_a
         end.to raise_error Neo4j::Driver::Exceptions::ClientException, /RETURN can only be used at the end of the query/
       end
     end
