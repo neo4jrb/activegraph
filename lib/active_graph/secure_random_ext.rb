@@ -1,5 +1,5 @@
 module ActiveGraph
-  module SecureRandom
+  module SecureRandomExt
     def hex(n = nil)
       super.force_encoding(Encoding::UTF_8)
     end

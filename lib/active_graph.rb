@@ -5,7 +5,7 @@ require 'active_graph/core'
 require 'active_graph/core/query_ext' # From this gem
 
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
-require 'active_graph/secure_random'
+require 'active_graph/secure_random_ext'
 require 'active_graph/transactions'
 require 'active_graph/base'
 require 'active_graph/model_schema'
@@ -122,4 +122,4 @@ if defined?(Rails)
 end
 
 Neo4j::Driver::Transaction.prepend ActiveGraph::Transaction
-SecureRandom.singleton_class.prepend ActiveGraph::SecureRandom
+SecureRandom.singleton_class.prepend ActiveGraph::SecureRandomExt
