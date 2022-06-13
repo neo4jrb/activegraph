@@ -31,7 +31,7 @@ module ActiveGraph
 
           ActiveSupport::Notifications.instrument('neo4j.core.bolt.request') do
             transaction do |tx|
-              tx.run(query.cypher, query.parameters).tap { |result| result.wrap = options[:wrap] != false }
+              tx.run(query.cypher, **query.parameters).tap { |result| result.wrap = options[:wrap] != false }
             end
           end
         end
