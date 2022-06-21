@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveGraph
   module SecureRandomExt
     def hex(n = nil)

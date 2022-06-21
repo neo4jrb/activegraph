@@ -33,9 +33,9 @@ DESCRIPTION
   s.add_dependency('activemodel', '>= 4.0')
   s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
+  s.add_dependency('neo4j-ruby-driver', '>= 4.4.0.alpha.4')
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_dependency('sorted_set')
-  s.add_dependency("neo4j-ruby-driver", '>= 4.4.0.alpha.4')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
