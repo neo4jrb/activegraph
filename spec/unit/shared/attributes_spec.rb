@@ -222,7 +222,7 @@ module ActiveGraph::Shared
         it 'raises when setting an undefined attribute' do
           expect do
             model.send(method, :initials, 'BP')
-          end.to raise_error ActiveGraph::UnknownAttributeError, 'unknown attribute: initials'
+          end.to raise_error ActiveGraph::UnknownAttributeError, /^unknown attribute: initials/
         end
       end
     end
