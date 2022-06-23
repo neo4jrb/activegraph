@@ -56,7 +56,7 @@ describe 'ActiveGraph::Node' do
       property :created, type: Time
       property :expiry_date, type: Date
       property :make_date, type: Neo4j::Driver::Types::OffsetTime
-      property :storage, type: Neo4j::Driver::Types::Bytes
+      property :storage, type: String
       property :best_before, type: ActiveSupport::Duration
       property :place, type: Neo4j::Driver::Types::Point
       property :local_time, type: Neo4j::Driver::Types::LocalTime
@@ -74,7 +74,7 @@ describe 'ActiveGraph::Node' do
     let(:created) { Time.now }
     let(:suger) { Float::MAX }
     let(:ingredients) { { suger: 20, water: 50 } }
-    let(:storage) { Neo4j::Driver::Types::Bytes.new([1, 2, 3].pack('C*')) }
+    let(:storage) { [1, 2, 3].pack('C*') }
     let(:best_before) { 6.months }
     let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
     let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
