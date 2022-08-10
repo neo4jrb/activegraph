@@ -72,7 +72,7 @@ module ActiveGraph
       register_neo4j_cypher_logging
 
       method = url.is_a?(Enumerable) ? :routing_driver : :driver
-      Neo4j::Driver::GraphDatabase.send(method, url, auth_token, config)
+      Neo4j::Driver::GraphDatabase.send(method, url, auth_token, **config)
     end
 
     def final_driver_config!(config)
