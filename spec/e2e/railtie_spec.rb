@@ -11,6 +11,7 @@ module Rails
       let(:cfg) do
         ActiveGraph::Railtie.empty_config.dup.tap do |c|
           c.driver.path = driver_path if driver_path
+          c.driver.abc = 1
         end
       end
 
@@ -29,7 +30,7 @@ module Rails
           let_env_variable(:NEO4J_URL) { 'bolt://localhost:7472' }
 
           it 'calls ActiveGraph::Base' do
-            expect(Neo4j::Driver::GraphDatabase).to have_received(:driver).with('bolt://localhost:7472', anything)
+            expect(Neo4j::Driver::GraphDatabase).to have_received(:driver).with('bolt://localhost:7472', Object, abc: 1)
           end
         end
       end
