@@ -5,7 +5,6 @@ module ActiveGraph
       extend ActiveSupport::Concern
       include ActiveGraph::Shared::Validations
 
-
       # @return [Boolean] true if valid
       def valid?(context = nil)
         context ||= (new_record? ? :create : :update)
@@ -19,7 +18,6 @@ module ActiveGraph
         end
       end
 
-
       class UniquenessValidator < ::ActiveModel::EachValidator
         def initialize(options)
           super(options.reverse_merge(case_sensitive: true))
@@ -32,14 +30,19 @@ module ActiveGraph
         end
 
         def found(record, attribute, value)
-          conditions = scope_conditions(record)
+          scopes, attributes = Array(options[:scope] || []).partition { |s| s.is_a?(Proc) }
+          conditions = scope_conditions(record, attributes)
 
           # TODO: Added as find(:name => nil) throws error
           value = '' if value.nil?
 
           conditions[attribute] = options[:case_sensitive] ? value : /#{Regexp.escape(value.to_s)}/i
 
-          found = record.class.as(:result).where(conditions)
+          found = if scopes.empty?
+                    record.class.as(:result)
+                  else
+                    scopes.reduce(record) { |proxy, scope| proxy.instance_eval(&scope) }
+                  end.where(conditions)
           found = found.where_not(neo_id: record.neo_id) if record._persisted_obj
           found
         end
@@ -48,8 +51,8 @@ module ActiveGraph
           super || 'has already been taken'
         end
 
-        def scope_conditions(instance)
-          Array(options[:scope] || []).inject({}) do |conditions, key|
+        def scope_conditions(instance, attributes)
+          attributes.inject({}) do |conditions, key|
             conditions.merge(key => instance[key])
           end
         end
