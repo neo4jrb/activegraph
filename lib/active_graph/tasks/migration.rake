@@ -91,6 +91,9 @@ COMMENT
 
       ActiveGraph::Base.transaction do
         runner = ActiveGraph::Migrations::Runner.new
+      end
+
+      ActiveGraph::Base.transaction do
         runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
       end
     end
