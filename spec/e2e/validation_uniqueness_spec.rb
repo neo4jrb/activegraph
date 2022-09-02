@@ -49,11 +49,6 @@ describe ActiveGraph::Node::Validations do
         o = Foo.new('name' => 'joe')
         expect(o.save).to be true
 
-        allow(Foo) \
-        .to receive(:first) \
-        .with(name: 'joe') \
-        .and_return(o)
-
         o2 = Foo.new('name' => 'joe')
         expect(o2).to have_error_on(:name)
       end
@@ -66,11 +61,6 @@ describe ActiveGraph::Node::Validations do
 
         o = OtherClazz.new('name' => '')
         expect(o.save).to be true
-
-        allow(OtherClazz) \
-        .to receive(:first) \
-        .with(name: '') \
-        .and_return(o)
 
         o2 = OtherClazz.new('name' => '')
         expect(o2).not_to have_error_on(:name)
@@ -151,18 +141,13 @@ describe ActiveGraph::Node::Validations do
         stub_node_class('Foo') do
           property :name
           property :scope
-          validates_uniqueness_of :name, scope: :scope
+          validates :name, uniqueness: { scope: :scope }
         end
       end
 
       it 'should fail if the same name exists in the scope' do
         o = Foo.new('name' => 'joe', 'scope' => 'one')
         expect(o.save).to be true
-
-        allow(Foo) \
-          .to receive(:first) \
-          .with(name: 'joe', scope: 'one') \
-          .and_return(o)
 
         o2 = Foo.new('name' => 'joe', 'scope' => 'one')
         expect(o2).to have_error_on(:name)
@@ -171,11 +156,6 @@ describe ActiveGraph::Node::Validations do
       it 'should pass if the same name exists in a different scope' do
         o = Foo.new('name' => 'joe', 'scope' => 'one')
         expect(o.save).to be true
-
-        allow(Foo) \
-          .to receive(:first) \
-          .with(name: 'joe', scope: 'two') \
-          .and_return(nil)
 
         o2 = Foo.new('name' => 'joe', 'scope' => 'two')
         expect(o2).not_to have_error_on(:name)
@@ -188,18 +168,13 @@ describe ActiveGraph::Node::Validations do
           property :name
           property :first_scope
           property :second_scope
-          validates_uniqueness_of :name, scope: [:first_scope, :second_scope]
+          validates :name, uniqueness: { scope: [:first_scope, :second_scope] }
         end
       end
 
       it 'should fail if the same name exists in the scope' do
         o = Foo.new('name' => 'joe', 'first_scope' => 'one', 'second_scope' => 'two')
         expect(o.save).to be true
-
-        allow(Foo) \
-          .to receive(:first) \
-          .with(name: 'joe', first_scope: 'one', second_scope: 'two') \
-          .and_return(o)
 
         o2 = Foo.new('name' => 'joe', 'first_scope' => 'one', 'second_scope' => 'two')
         expect(o2).to have_error_on(:name)
@@ -209,12 +184,38 @@ describe ActiveGraph::Node::Validations do
         o = Foo.new('name' => 'joe', 'first_scope' => 'one', 'second_scope' => 'two')
         expect(o.save).to be true
 
-        allow(Foo) \
-          .to receive(:first) \
-          .with(name: 'joe', first_scope: 'one', second_scope: 'one') \
-          .and_return(nil)
-
         o2 = Foo.new('name' => 'joe', 'first_scope' => 'one', 'second_scope' => 'one')
+        expect(o2).not_to have_error_on(:name)
+      end
+    end
+
+    context "scoped by a scope" do
+      before do
+        stub_node_class('Bar') do
+          has_many :in, :foos, origin: :bar
+        end
+        stub_node_class('Foo') do
+          property :name
+          has_one :out, :bar, type: :bar
+          validates :name, uniqueness: { scope: Proc.new { bar.foos } }
+        end
+      end
+      let(:bar1) { Bar.create! }
+      let(:bar2) { Bar.create! }
+
+      it 'should fail if the same name exists in the scope' do
+        o = Foo.new(name: 'joe', bar: bar1)
+        expect(o.save).to be true
+
+        o2 = Foo.new(name: 'joe', bar: bar1)
+        expect(o2).to have_error_on(:name)
+      end
+
+      it 'should pass if the same name exists in a different scope' do
+        o = Foo.new(name: 'joe', bar: bar1)
+        expect(o.save).to be true
+
+        o2 = Foo.new(name: 'joe', bar: bar2)
         expect(o2).not_to have_error_on(:name)
       end
     end
