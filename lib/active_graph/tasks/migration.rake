@@ -89,10 +89,7 @@ COMMENT
 
       ActiveGraph::Migrations::Schema.synchronize_schema_data(schema_data, args[:remove_missing])
 
-      ActiveGraph::Base.transaction do
-        runner = ActiveGraph::Migrations::Runner.new
-      end
-
+      runner = ActiveGraph::Base.transaction { ActiveGraph::Migrations::Runner.new }
       ActiveGraph::Base.transaction do
         runner.mark_versions_as_complete(schema_data[:versions]) # Run in test mode?
       end
