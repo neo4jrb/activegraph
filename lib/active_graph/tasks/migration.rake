@@ -7,9 +7,12 @@ if !defined?(Rails) && !Rake::Task.task_defined?('environment')
   task :environment do
     require 'ostruct'
     neo4j_url = ENV['NEO4J_URL'] || 'bolt://localhost:7687'
+    neo4j_user = ENV['NEO4J_USER'] || 'neo4j'
+    neo4j_password = ENV['NEO4J_PASSWORD'] || 'neo4j'
+    neo4j_encryption = ENV['NEO4J_ENCRYPTION'] == 'true' ? true : false
     $LOAD_PATH.unshift File.dirname('./')
     ActiveGraph::Base.on_establish_driver do
-      Neo4j::Driver::GraphDatabase.driver(neo4j_url)
+      Neo4j::Driver::GraphDatabase.driver(neo4j_url, Neo4j::Driver::AuthTokens.basic(neo4j_user, neo4j_password), encryption: neo4j_encryption)
     end
   end
 end
