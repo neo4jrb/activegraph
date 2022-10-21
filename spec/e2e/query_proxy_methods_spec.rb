@@ -822,8 +822,12 @@ describe 'query_proxy_methods' do
       expect(@john.lessons.branch { teachers }).to be_a(ActiveGraph::Node::Query::QueryProxy)
     end
 
-    it 'keeps identity to the external chain' do
+    it 'keeps identity to the external chain - node' do
       expect(@john.lessons(:l).branch { teachers(:t) }.identity).to eq(:l)
+    end
+
+    it 'keeps identity to the external chain - rel' do
+      expect(@history.students(:student, :enrolledIn).branch { all }.rel_var).to eq(:enrolledIn)
     end
 
     it 'queries lessions' do
