@@ -298,6 +298,7 @@ describe 'Association Proxy' do
 
     context 'when requiring "active_support/core_ext/enumerable"' do
       require 'active_support/core_ext/enumerable'
+      let(:lessons) { billy.lessons }
 
       it 'uses the correct `pluck` method' do
         expect(billy.lessons(:l).pluck(:l)).not_to include(nil)
@@ -305,9 +306,9 @@ describe 'Association Proxy' do
       end
 
       it 'allows to call .to_a with arguments' do
-        expect(billy.lessons.to_a(true, false)).to eq(billy.lessons.to_a)
-        expect(billy.lessons.to_a(true, true).flat_map { |pair| pair.map(&:class) }.uniq).to eq([Lesson, LessonEnrollment])
-        expect(billy.lessons.to_a(false, nil)).to eq([])
+        expect(lessons.to_a(true, false)).to eq(lessons.to_a)
+        expect(lessons.to_a(true, true).flat_map { |pair| pair.map(&:class) }.uniq).to eq([Lesson, LessonEnrollment])
+        expect(lessons.to_a(false, nil)).to eq([])
       end
     end
 
