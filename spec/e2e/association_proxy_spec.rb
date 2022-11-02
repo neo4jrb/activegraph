@@ -303,6 +303,12 @@ describe 'Association Proxy' do
         expect(billy.lessons(:l).pluck(:l)).not_to include(nil)
         expect(billy.lessons(:l).method(:pluck).source_location.first).not_to include('active_support')
       end
+
+      it 'allows to call .to_a with arguments' do
+        expect(billy.lessons.to_a(true, false)).to eq(billy.lessons.to_a)
+        expect(billy.lessons.to_a(true, true).flat_map { |pair| pair.map(&:class) }.uniq).to eq([Lesson, LessonEnrollment])
+        expect(billy.lessons.to_a(false, nil)).to eq([])
+      end
     end
 
     describe '#inspect' do

@@ -34,12 +34,20 @@ module ActiveGraph::Node
 
       include Enumerable
 
-      def each(&block)
-        result_nodes.each(&block)
+      def each(node = true, rel = nil, &block)
+        return [] unless node || rel
+
+        if node && rel
+          pairs_with_deferred
+        elsif node
+          result_nodes
+        else
+          rels
+        end.each(&block)
       end
 
       def each_rel(&block)
-        rels.each(&block)
+        each(false, true, &block)
       end
 
       # .count always hits the database
@@ -162,6 +170,10 @@ module ActiveGraph::Node
       end
 
       private
+
+      def pairs_with_deferred
+        @query_proxy.to_a(true, true) + @deferred_objects.map { |obj| [obj] }
+      end
 
       def map_results_as_nodes(result)
         result.map do |object|
