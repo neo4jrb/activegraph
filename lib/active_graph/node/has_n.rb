@@ -110,11 +110,8 @@ module ActiveGraph::Node
       end
 
       def add_to_cache(object, rel = nil)
-        if rel
-          (@cached_rels ||= []) << rel
-        else
-          (@cached_result ||= []).tap { |results| results << object unless results.include?(object) }
-        end
+        (@cached_rels ||= []) << rel if rel
+        (@cached_result ||= []).tap { |results| results << object if object && !results.include?(object) }
       end
 
       def rels
