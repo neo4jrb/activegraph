@@ -38,7 +38,7 @@ module ActiveGraph::Node
         return [] unless node || rel
 
         if node && rel
-          pairs_with_deferred
+          result_nodes.zip(rels)
         elsif node
           result_nodes
         else
@@ -110,12 +110,15 @@ module ActiveGraph::Node
       end
 
       def add_to_cache(object, rel = nil)
-        (@cached_rels ||= []) << rel if rel
-        (@cached_result ||= []).tap { |results| results << object unless results.include?(object) }
+        if rel
+          (@cached_rels ||= []) << rel
+        else
+          (@cached_result ||= []).tap { |results| results << object unless results.include?(object) }
+        end
       end
 
       def rels
-        @cached_rels || super
+        @cached_rels || super.tap { |rels| rels.each { |rel| add_to_cache(nil, rel)  } }
       end
 
       def cache_query_proxy_result

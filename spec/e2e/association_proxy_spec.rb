@@ -309,6 +309,15 @@ describe 'Association Proxy' do
         expect(lessons.to_a(true, false)).to eq(lessons.to_a)
         expect(lessons.to_a(true, true).flat_map { |pair| pair.map(&:class) }.uniq).to eq([Lesson, LessonEnrollment])
         expect(lessons.to_a(false, nil)).to eq([])
+        expect(lessons.to_a(false, true)).to eq(lessons.rels)
+      end
+    end
+
+    describe '#rels' do
+      it 'caches results for consecutive calls' do
+        expect_queries(1) do
+          2.times { billy.lessons.rels }
+        end
       end
     end
 
