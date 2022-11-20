@@ -47,7 +47,7 @@ module ActiveGraph::Node
       end
 
       def each_rel(&block)
-        each(false, true, &block)
+        rels.each(&block)
       end
 
       # .count always hits the database
@@ -170,10 +170,6 @@ module ActiveGraph::Node
       end
 
       private
-
-      def pairs_with_deferred
-        @query_proxy.to_a(true, true) + @deferred_objects.map { |obj| [obj] }
-      end
 
       def map_results_as_nodes(result)
         result.map do |object|
