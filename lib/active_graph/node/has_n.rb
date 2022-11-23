@@ -34,8 +34,16 @@ module ActiveGraph::Node
 
       include Enumerable
 
-      def each(&block)
-        result_nodes.each(&block)
+      def each(node = true, rel = nil, &block)
+        return [] unless node || rel
+
+        if node && rel
+          result_nodes.zip(rels)
+        elsif node
+          result_nodes
+        else
+          rels
+        end.each(&block)
       end
 
       def each_rel(&block)
@@ -103,11 +111,11 @@ module ActiveGraph::Node
 
       def add_to_cache(object, rel = nil)
         (@cached_rels ||= []) << rel if rel
-        (@cached_result ||= []).tap { |results| results << object unless results.include?(object) }
+        (@cached_result ||= []).tap { |results| results << object if object && !results.include?(object) }
       end
 
       def rels
-        @cached_rels || super
+        @cached_rels || super.tap { |rels| rels.each { |rel| add_to_cache(nil, rel)  } }
       end
 
       def cache_query_proxy_result

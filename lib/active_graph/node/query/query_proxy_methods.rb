@@ -48,7 +48,7 @@ module ActiveGraph
         end
 
         def propagate_context(query_proxy)
-          query_proxy.instance_variable_set(:@distinct, @distinct)
+          [:@distinct, :@rel_var].each { |var| query_proxy.instance_variable_set(var, instance_variable_get(var)) }
         end
 
         # @return [Integer] number of nodes of this class
