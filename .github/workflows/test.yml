@@ -24,8 +24,8 @@ jobs:
       NEO4J_VERSION: ${{ matrix.neo4j }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
-      - - name: Start neo4j
-          run: docker run --name neo4j --env NEO4J_dbms_directories_import= --env NEO4J_dbms_connectors_default__listen__address=:: --env NEO4J_dbms_security_auth__enabled=false --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
+      - name: Start neo4j
+        run: docker run --name neo4j --env NEO4J_dbms_directories_import= --env NEO4J_dbms_connectors_default__listen__address=:: --env NEO4J_dbms_security_auth__enabled=false --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
 
       - uses: actions/checkout@v3
 
