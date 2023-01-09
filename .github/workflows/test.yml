@@ -18,41 +18,27 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby, ruby ]
-        neo4j: [ 3.5.35, 4.0.12, 4.1.12, 4.2.19, 4.3.17, 4.4.10 ]
+        neo4j: [ 3.5.35, 4.0.12, 4.1.12, 4.2.19, 4.3.22, 4.4.14, 5.3.0 ]
     env:
       NEO4J_EDITION_FLAG: -e
       NEO4J_VERSION: ${{ matrix.neo4j }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
-      - uses: actions/checkout@v2
+      - - name: Start neo4j
+          run: docker run --name neo4j --env NEO4J_dbms_directories_import= --env NEO4J_dbms_connectors_default__listen__address=:: --env NEO4J_dbms_security_auth__enabled=false --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
+
+      - uses: actions/checkout@v3
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8.x'
-      - uses: BSFishy/pip-action@v1
-        with:
-          packages: git+https://github.com/klobuczek/boltkit@1.3#egg=boltkit
-
-      - name: Set up Java
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ matrix.java-version || 11 }}
-
-      - name: Setup Neo4j
-        run: |
-          neoctrl-install $NEO4J_EDITION_FLAG $NEO4J_VERSION servers
-          if [ -n "$NEO4J_EDITION_FLAG" ]; then NEO4J_EDITION=enterprise; else NEO4J_EDITION=community; fi
-          NEO4J_DIR=servers/neo4j-$NEO4J_EDITION-$NEO4J_VERSION
-          neoctrl-configure $NEO4J_DIR dbms.directories.import= dbms.connectors.default_listen_address=:: dbms.security.auth_enabled=false
-          neoctrl-start $NEO4J_DIR
-
       - name: Install dependencies
         run: bundle update
+
+      - name: Wait for neo4j
+        run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
+
       - name: Run tests
         run: bundle exec rspec
