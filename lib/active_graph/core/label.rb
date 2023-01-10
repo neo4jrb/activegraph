@@ -65,7 +65,7 @@ module ActiveGraph
                    else
                      fail "Not supported constraint #{constraint.inspect}"
                    end
-          schema_query("DROP CONSTRAINT FOR (n:`#{name}`) REQUIRE #{cypher}")
+          schema_query("DROP CONSTRAINT ON (n:`#{name}`) ASSERT #{cypher}")
         else
           type = case constraint[:type]
                  when :unique, :uniqueness
