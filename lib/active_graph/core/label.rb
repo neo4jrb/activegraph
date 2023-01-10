@@ -8,12 +8,15 @@ module ActiveGraph
         @name = name
       end
 
-      def create_index(property, options = {})
+      def create_index(*properties, **options)
         validate_index_options!(options)
-        mod = version?('>=4.4') ? ->(p) { "l.#{p}" } : ->(p) { p }
-        properties = Array(property).map(&mod).join('.')
-        schema_query("CREATE INDEX " +
-                       (version?('>=4.4') ? "FOR (l:`#{@name}`) ON (#{properties})" : "ON :`#{@name}`(#{properties})"))
+        if version?('>=4.4')
+          properties = properties.map { |p| "l.#{p}" }
+          fragment = "FOR (l:`#{@name}`) ON"
+        else
+          fragment = "ON :`#{@name}`"
+        end
+        schema_query("CREATE INDEX #{fragment} (#{properties.join('.')})")
       end
 
       def drop_index(property, options = {})
@@ -37,7 +40,8 @@ module ActiveGraph
       def create_constraint(property, constraints)
         cypher = case constraints[:type]
                  when :unique, :uniqueness
-                   "CREATE CONSTRAINT #{version?('>=4.4') ? 'FOR' : 'ON'} (n:`#{name}`) #{version?('>=4.4') ? 'REQUIRE' : 'ASSERT'} n.`#{property}` IS UNIQUE"
+                   _for, _require = version?('>=4.4') ? %w[FOR REQUIRE]:%w[ON ASSERT]
+                   "CREATE CONSTRAINT #{_for} (n:`#{name}`) #{_require} n.`#{property}` IS UNIQUE"
                  else
                    fail "Not supported constraint #{constraints.inspect} for property #{property} (expected :type => :unique)"
                  end

@@ -322,7 +322,7 @@ describe ActiveGraph::Base do
 
   def create_index(label_name, property, options = {})
     label_object = ActiveGraph::Core::Label.new(label_name)
-    label_object.create_index(property, options)
+    label_object.create_index(property, **options)
   end
 
   describe 'cypher errors' do

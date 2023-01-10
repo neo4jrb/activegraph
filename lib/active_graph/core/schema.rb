@@ -35,7 +35,6 @@ module ActiveGraph
       def raw_constraints
         read_transaction do
           query('SHOW CONSTRAINTS YIELD *', {}, skip_instrumentation: true)
-            .filter { |row| row[:type] == 'UNIQUENESS' }
         end
       end
 

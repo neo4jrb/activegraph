@@ -160,7 +160,7 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_index(label_name, property, options = {})
-    ActiveGraph::Base.label_object(label_name).create_index(property, options)
+    ActiveGraph::Base.label_object(label_name).create_index(property, **options)
     ActiveGraph::ModelSchema.reload_models_data!
   end
 end
