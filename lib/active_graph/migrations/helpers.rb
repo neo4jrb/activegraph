@@ -83,7 +83,7 @@ module ActiveGraph
       private
 
       def property_exists?(label, property)
-        by_label(label).where("EXISTS(n.#{property})").return(:n).any?
+        by_label(label).where("n.#{property} IS NOT NULL").return(:n).any?
       end
 
       def by_label(label, options = {})

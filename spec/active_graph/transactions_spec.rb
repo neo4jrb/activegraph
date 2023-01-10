@@ -67,7 +67,6 @@ describe ActiveGraph::Transactions do
     end
   end
 
-
   describe '.session' do
     it 'allows write on implicitly writable' do
       expect { ActiveGraph::Base.session { ActiveGraph::Base.transaction { Student.create } } }.not_to raise_error
@@ -81,7 +80,7 @@ describe ActiveGraph::Transactions do
 
     it 'returns and accepts bookmarks' do
       expect do
-         ActiveGraph::Base.session do
+        ActiveGraph::Base.session do
           ActiveGraph::Base.write_transaction { Student.create }
           ActiveGraph::Base.write_transaction { Student.create }
         end
@@ -99,11 +98,7 @@ describe ActiveGraph::Transactions do
             Student.create
           end
           session.write_transaction { |tx| tx.run(write_query) }
-          if ActiveGraph::Base.version >= '3.5'
-            session.run(read_query, {}, timeout: 1.minute)
-          else
-            session.run(read_query)
-          end
+          session.run(read_query, {}, timeout: 1.minute)
         end
       end.not_to raise_error
     end

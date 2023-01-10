@@ -23,12 +23,12 @@ module ActiveGraph
         protected
 
         def idless_count(label, id_property)
-          query.match(n: label).where("NOT EXISTS(n.#{id_property})").pluck('COUNT(n) AS ids').first
+          query.match(n: label).where("n.#{id_property} IS NULL").pluck('COUNT(n) AS ids').first
         end
 
         def id_batch_set(label, id_property, new_ids, count)
           ActiveGraph::Base.transaction do
-            execute("MATCH (n:`#{label}`) WHERE NOT EXISTS(n.#{id_property})
+            execute("MATCH (n:`#{label}`) WHERE n.#{id_property} IS NULL
             with COLLECT(n) as nodes, #{new_ids} as ids
             FOREACH(i in range(0,#{count - 1})|
               FOREACH(node in [nodes[i]]|
