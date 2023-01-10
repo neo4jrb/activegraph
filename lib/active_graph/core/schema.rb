@@ -27,20 +27,20 @@ module ActiveGraph
       end
 
       def constraints
-        send(db_proc? ? :raw_indexes : :raw_constraints).select(&method(:filter)).map do |row|
+        send(version?('<5') ? :raw_indexes : :raw_constraints).select(&method(:filter)).map do |row|
           { type: :uniqueness, label: label(row), properties: properties(row) }
         end
       end
 
       def raw_constraints
         read_transaction do
-          query('SHOW CONSTRAINTS YIELD *', {}, skip_instrumentation: true)
+          query('SHOW CONSTRAINTS YIELD *', {}, skip_instrumentation: true).to_a
         end
       end
 
       def raw_indexes
         read_transaction do
-          query(db_proc? ? 'CALL db.indexes()' : 'SHOW INDEXES YIELD *', {}, skip_instrumentation: true)
+          query(version?('<4.3') ? 'CALL db.indexes()' : 'SHOW INDEXES YIELD *', {}, skip_instrumentation: true)
             .reject { |row| row[:type] == 'LOOKUP' }
         end
       end
@@ -52,7 +52,7 @@ module ActiveGraph
       end
 
       def db_proc?
-        version?('<4.3')
+        version?('<5')
       end
 
       def filter(record)
