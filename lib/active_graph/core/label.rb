@@ -18,7 +18,7 @@ module ActiveGraph
 
       def drop_index(property, options = {})
         validate_index_options!(options)
-        if version?('<4')
+        if version?('<4.3')
           schema_query("DROP INDEX ON :`#{@name}`(#{property})")
         else
           schema_query("SHOW INDEXES YIELD * WHERE labelsOrTypes = $labels AND properties = $properties",
