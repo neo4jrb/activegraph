@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [11.1.0] 2023-01-10
+
+## Added
+
+- support for pure ruby driver, neo4j-ruby-driver 4.4
+- support for neo4j 5
+
+## Fixed
+
+- moved migrations into their own transactions
+- Uniqueness within a scope defined by a proc
+- Fixed lost @rel_var when branching QueryProxy
+
 ## [11.0.2] 2021-11-05
 
 ## Fixed

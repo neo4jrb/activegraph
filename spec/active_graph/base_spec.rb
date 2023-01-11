@@ -322,7 +322,7 @@ describe ActiveGraph::Base do
 
   def create_index(label_name, property, options = {})
     label_object = ActiveGraph::Core::Label.new(label_name)
-    label_object.create_index(property, options)
+    label_object.create_index(property, **options)
   end
 
   describe 'cypher errors' do
@@ -373,9 +373,9 @@ describe ActiveGraph::Base do
 
       it do
         should match_array([
-                             { type: :uniqueness, label: :Album, properties: [:al_id] },
-                             { type: :uniqueness, label: :Album, properties: [:name] },
-                             { type: :uniqueness, label: :Song, properties: [:so_id] }
+                             a_hash_including(type: :uniqueness, label: :Album, properties: [:al_id]),
+                             a_hash_including(type: :uniqueness, label: :Album, properties: [:name]),
+                             a_hash_including(type: :uniqueness, label: :Song, properties: [:so_id])
                            ])
       end
     end
