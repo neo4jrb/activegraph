@@ -40,7 +40,7 @@ module ActiveGraph
       def create_constraint(property, constraints)
         cypher = case constraints[:type]
                  when :unique, :uniqueness
-                   _for, _require = version?('>=4.4') ? %w[FOR REQUIRE]:%w[ON ASSERT]
+                   _for, _require = version?('>=4.4') ? %w[FOR REQUIRE] : %w[ON ASSERT]
                    "CREATE CONSTRAINT #{_for} (n:`#{name}`) #{_require} n.`#{property}` IS UNIQUE"
                  else
                    fail "Not supported constraint #{constraints.inspect} for property #{property} (expected :type => :unique)"
@@ -60,30 +60,19 @@ module ActiveGraph
       #   label.drop_constraint(:name, {type: :unique})
       #
       def drop_constraint(property, constraint)
-        if version?('<5')
-          cypher = case constraint[:type]
-                   when :unique, :uniqueness
-                     "n.`#{property}` IS UNIQUE"
-                   when :exists
-                     "exists(n.`#{property}`)"
-                   else
-                     fail "Not supported constraint #{constraint.inspect}"
-                   end
-          schema_query("DROP CONSTRAINT ON (n:`#{name}`) ASSERT #{cypher}")
-        else
-          type = case constraint[:type]
-                 when :unique, :uniqueness
-                   "UNIQUENESS"
-                 when :exists
-                   "NODE_PROPERTY_EXISTENCE"
-                 else
-                   fail "Not supported constraint #{constraint.inspect}"
-                 end
-          schema_query(
-            'SHOW CONSTRAINTS YIELD * WHERE type = $type AND labelsOrTypes = $labels AND properties = $properties',
-            type: type, labels: [name], properties: [property]).first[:name].tap do |constraint_name|
-            schema_query("DROP CONSTRAINT #{constraint_name}")
-          end
+        return drop_constraint42(property, constraint) if version?('<4.3')
+        type = case constraint[:type]
+               when :unique, :uniqueness
+                 'UNIQUENESS'
+               when :exists
+                 'NODE_PROPERTY_EXISTENCE'
+               else
+                 fail "Not supported constraint #{constraint.inspect}"
+               end
+        schema_query(
+          'SHOW CONSTRAINTS YIELD * WHERE type = $type AND labelsOrTypes = $labels AND properties = $properties',
+          type: type, labels: [name], properties: [property]).first[:name].tap do |constraint_name|
+          schema_query("DROP CONSTRAINT #{constraint_name}")
         end
       end
 
@@ -167,6 +156,18 @@ module ActiveGraph
       def validate_index_options!(options)
         return unless options[:type] && options[:type] != :exact
         fail "Type #{options[:type]} is not supported"
+      end
+
+      def drop_constraint42(property, constraint)
+        cypher = case constraint[:type]
+                 when :unique, :uniqueness
+                   "n.`#{property}` IS UNIQUE"
+                 when :exists
+                   "exists(n.`#{property}`)"
+                 else
+                   fail "Not supported constraint #{constraint.inspect}"
+                 end
+        schema_query("DROP CONSTRAINT ON (n:`#{name}`) ASSERT #{cypher}")
       end
     end
   end
