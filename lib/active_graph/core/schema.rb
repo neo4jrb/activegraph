@@ -4,7 +4,6 @@ module ActiveGraph
       FILTER = {
         3 => [:type, 'node_unique_property'],
         4 => [:uniqueness, 'UNIQUE'],
-        5 => [:type, 'UNIQUENESS'],
       }
 
       def version
@@ -26,9 +25,11 @@ module ActiveGraph
       end
 
       def constraints
-        send(version?('<4.3') ? :raw_indexes : :raw_constraints).select(&method(:filter)).map do |row|
-          definition(row).merge(type: :uniqueness)
-        end
+        if version?('<4.3')
+          raw_indexes.select(&method(:filter))
+        else
+          raw_constraints.select(&method(:constraint_filter))
+        end.map { |row| definition(row).merge(type: :uniqueness) }
       end
 
       private def raw_constraints
@@ -52,6 +53,10 @@ module ActiveGraph
 
       def filter(record)
         FILTER[major].then { |(key, value)| record[key] == value }
+      end
+
+      def constraint_filter(record)
+        record[:type] == 'UNIQUENESS'
       end
 
       def definition(row)
