@@ -373,9 +373,9 @@ describe ActiveGraph::Base do
 
       it do
         should match_array([
-                             { type: :uniqueness, label: :Album, properties: [:al_id] },
-                             { type: :uniqueness, label: :Album, properties: [:name] },
-                             { type: :uniqueness, label: :Song, properties: [:so_id] }
+                             a_hash_including(type: :uniqueness, label: :Album, properties: [:al_id]),
+                             a_hash_including(type: :uniqueness, label: :Album, properties: [:name]),
+                             a_hash_including(type: :uniqueness, label: :Song, properties: [:so_id])
                            ])
       end
     end

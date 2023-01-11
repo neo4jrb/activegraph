@@ -21,20 +21,13 @@ module ActiveGraph
 
       def indexes
         raw_indexes.map do |row|
-          { type: row[:type].to_sym, label: label(row), properties: properties(row),
-            state: row[:state].to_sym, name: row[:name] }
+          definition(row).merge(type: row[:type].to_sym, state: row[:state].to_sym)
         end
       end
 
       def constraints
-        send(version?('<5') ? :raw_indexes : :raw_constraints).select(&method(:filter)).map do |row|
-          { type: :uniqueness, label: label(row), properties: properties(row) }
-        end
-      end
-
-      def raw_constraints
-        read_transaction do
-          query('SHOW CONSTRAINTS YIELD *', {}, skip_instrumentation: true).to_a
+        raw_indexes.select(&method(:filter)).map do |row|
+          definition(row).merge(type: :uniqueness)
         end
       end
 
@@ -51,12 +44,12 @@ module ActiveGraph
         @major ||= version.segments.first
       end
 
-      def db_proc?
-        version?('<5')
-      end
-
       def filter(record)
         FILTER[major].then { |(key, value)| record[key] == value }
+      end
+
+      def definition(row)
+        { label: label(row), properties: properties(row), name: row[:name] }
       end
 
       def label(row)
