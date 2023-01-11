@@ -26,8 +26,14 @@ module ActiveGraph
       end
 
       def constraints
-        raw_indexes.select(&method(:filter)).map do |row|
+        send(version?('<4.3') ? :raw_indexes : :raw_constraints).select(&method(:filter)).map do |row|
           definition(row).merge(type: :uniqueness)
+        end
+      end
+
+      private def raw_constraints
+        read_transaction do
+          query('SHOW CONSTRAINTS YIELD *', {}, skip_instrumentation: true).to_a
         end
       end
 
