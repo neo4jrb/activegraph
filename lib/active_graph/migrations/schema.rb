@@ -3,15 +3,15 @@ module ActiveGraph
     module Schema
       class << self
         def fetch_schema_data
-          { constraints: fetch_constraint_descriptions.sort, indexes: fetch_index_descriptions.sort }
+          %i[constraints indexes].to_h { |schema_elem| [schema_elem, fetch_descriptions(schema_elem).keys] }
         end
 
         def synchronize_schema_data(schema_data, remove_missing)
-          queries = []
-          ActiveGraph::Base.read_transaction do
-            queries += drop_and_create_queries(fetch_constraint_descriptions, schema_data[:constraints], remove_missing)
-            queries += drop_and_create_queries(fetch_index_descriptions, schema_data[:indexes], remove_missing)
-          end
+          queries =
+            ActiveGraph::Base.read_transaction do
+              drop_and_create_queries(fetch_descriptions(:constraints), schema_data[:constraints], 'CONSTRAINT', remove_missing) +
+                drop_and_create_queries(fetch_descriptions(:indexes), schema_data[:indexes], 'INDEX', remove_missing)
+            end
           ActiveGraph::Base.write_transaction do
             queries.each(&ActiveGraph::Base.method(:query))
           end
@@ -19,46 +19,22 @@ module ActiveGraph
 
         private
 
-        def fetch_constraint_descriptions
-          ActiveGraph::Base.query('CALL db.constraints() YIELD description').map(&:first)
+        def fetch_descriptions(schema_elem)
+          ActiveGraph::Base.send(schema_elem).map { |definition| definition.values_at(:create_statement, :name) }.sort
+                           .to_h
         end
 
-        def fetch_index_descriptions
-          ActiveGraph::Base.raw_indexes do |keys, result|
-            if keys.include?(:description)
-              v3_indexes(result)
-            else
-              v4_indexes(result)
-            end
-          end
+        def drop_and_create_queries(existing, specified, schema_elem, remove_missing)
+          (remove_missing ? existing.except(*specified).map { |stmt, name| drop_statement(schema_elem, stmt, name) } : []) +
+            (specified - existing.keys).map(&method(:create_statement))
         end
 
-        def v3_indexes(result)
-          result.reject do |row|
-            # These indexes are created automagically when the corresponding constraints are created
-            row[:type] == 'node_unique_property'
-          end.map { |row| row[:description] }
+        def drop_statement(schema_elem, create_statement, name)
+          "DROP #{name&.then { |name| "#{schema_elem} #{name}" } || create_statement}"
         end
 
-        def v4_indexes(result)
-          result.reject do |row|
-            # These indexes are created automagically when the corresponding constraints are created
-            row[:uniqueness] == 'UNIQUE'
-          end.map(&method(:description))
-        end
-
-        def description(row)
-          "INDEX FOR (n:#{row[:labelsOrTypes].first}) ON (#{row[:properties].map { |prop| "n.#{prop}" }.join(', ')})"
-        end
-
-        def drop_and_create_queries(existing, specified, remove_missing)
-          [].tap do |queries|
-            if remove_missing
-              (existing - specified).each { |description| queries << "DROP #{description}" }
-            end
-
-            (specified - existing).each { |description| queries << "CREATE #{description}" }
-          end
+        def create_statement(stmt)
+          stmt.start_with?('CREATE ') ? stmt : "CREATE #{stmt}"
         end
       end
     end

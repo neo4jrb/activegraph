@@ -26,7 +26,7 @@ module ActiveGraph
 
       def constraints
         if version?('<4.3')
-          raw_indexes.select(&method(:filter))
+          raw_indexes.select(&method(:index_filter))
         else
           raw_constraints.select(&method(:constraint_filter))
         end.map { |row| definition(row).merge(type: :uniqueness) }
@@ -41,26 +41,27 @@ module ActiveGraph
       def raw_indexes
         read_transaction do
           query(version?('<4.3') ? 'CALL db.indexes()' : 'SHOW INDEXES YIELD *', {}, skip_instrumentation: true)
-            .reject { |row| row[:type] == 'LOOKUP' }
+            .reject { |row| row[:type] == 'LOOKUP' || row[:owningConstraint] }.reject(&method(:index_filter))
         end
       end
 
       private
 
+      def index_filter(record)
+        FILTER[major].then { |(key, value)| record[key] == value }
+      end
+
       def major
         @major ||= version.segments.first
       end
 
-      def filter(record)
-        FILTER[major].then { |(key, value)| record[key] == value }
-      end
-
       def constraint_filter(record)
-        record[:type] == 'UNIQUENESS'
+        %w[UNIQUENESS RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY].include?(record[:type])
       end
 
       def definition(row)
-        { label: label(row), properties: properties(row), name: row[:name] }
+        { label: label(row), properties: properties(row), name: row[:name],
+          create_statement: version?('<4.3') ? row[:description] : row[:createStatement] }
       end
 
       def label(row)
