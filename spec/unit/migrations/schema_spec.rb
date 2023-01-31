@@ -41,6 +41,7 @@ describe ActiveGraph::Migrations::Schema do
   end
 
   if ActiveGraph::Base.version?('<4.3')
+    let(:range_index) { "INDEX FOR (n:Person) ON (n.nickname)" }
     let(:fulltext_index) {}
 
     let(:unique_constraint) { "CONSTRAINT ON (n:Person) ASSERT (n.name) IS UNIQUE" }
