@@ -38,10 +38,13 @@ describe ActiveGraph::Migrations::Schema do
   end
 
   if ActiveGraph::Base.version?('<4.3')
+    let(:range_index) { "INDEX FOR (n:Person) ON (n.nickname)" }
     let(:fulltext_index) {}
 
-    let(:not_null_rel_prop_constraint) { 'CREATE CONSTRAINT `not_null_rel_prop_constraint` ON ()-[r:`LIKED`]-() ASSERT exists(r.`when`)' }
-    let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` ON (n:`Person`) ASSERT exists(n.`name`)' }
+    let(:unique_constraint) { "CONSTRAINT ON (n:Person) ASSERT (n.name) IS UNIQUE" }
+    let(:not_null_rel_prop_constraint) {}
+    let(:not_null_node_prop_constraint) {}
+    let(:node_key_constraint) {}
   end
 
   context 'empty' do

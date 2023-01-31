@@ -19,17 +19,17 @@ module ActiveGraph
       end
 
       def indexes
-        raw_indexes.map do |row|
-          definition(row).merge(type: row[:type].to_sym, state: row[:state].to_sym)
+        raw_indexes.reject(&method(:constraint_owned?)).map do |row|
+          definition(row, INDEX_TEMPLATE).merge(type: row[:type].to_sym, state: row[:state].to_sym)
         end
       end
 
       def constraints
         if version?('<4.3')
-          raw_indexes.select(&method(:index_filter))
+          raw_indexes.select(&method(:constraint_owned?))
         else
           raw_constraints.select(&method(:constraint_filter))
-        end.map { |row| definition(row).merge(type: :uniqueness) }
+        end.map { |row| definition(row, CONSTRAINT_TEMPLATE).merge(type: :uniqueness) }
       end
 
       private def raw_constraints
@@ -41,13 +41,13 @@ module ActiveGraph
       def raw_indexes
         read_transaction do
           query(version?('<4.3') ? 'CALL db.indexes()' : 'SHOW INDEXES YIELD *', {}, skip_instrumentation: true)
-            .reject { |row| row[:type] == 'LOOKUP' }.reject(&method(:index_filter))
+            .reject { |row| row[:type] == 'LOOKUP' }
         end
       end
 
       private
 
-      def index_filter(record)
+      def constraint_owned?(record)
         FILTER[major]&.then { |(key, value)| record[key] == value } || record[:owningConstraint]
       end
 
@@ -59,9 +59,13 @@ module ActiveGraph
         %w[UNIQUENESS RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY].include?(record[:type])
       end
 
-      def definition(row)
+      INDEX_TEMPLATE = "INDEX FOR %s ON %s"
+      CONSTRAINT_TEMPLATE = "CONSTRAINT ON %s ASSERT %s IS UNIQUE"
+
+      def definition(row, template)
         { label: label(row), properties: properties(row), name: row[:name],
-          create_statement: version?('<4.3') ? row[:description] : row[:createStatement] }
+          create_statement: row[:createStatement] || row[:description] ||
+            template % ["(n:#{label(row)})", "(#{row[:properties].map { |prop| "n.#{prop}" }.join(', ')})"] }
       end
 
       def label(row)
