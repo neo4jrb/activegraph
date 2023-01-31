@@ -41,14 +41,14 @@ module ActiveGraph
       def raw_indexes
         read_transaction do
           query(version?('<4.3') ? 'CALL db.indexes()' : 'SHOW INDEXES YIELD *', {}, skip_instrumentation: true)
-            .reject { |row| row[:type] == 'LOOKUP' || row[:owningConstraint] }.reject(&method(:index_filter))
+            .reject { |row| row[:type] == 'LOOKUP' }.reject(&method(:index_filter))
         end
       end
 
       private
 
       def index_filter(record)
-        FILTER[major].then { |(key, value)| record[key] == value }
+        FILTER[major]&.then { |(key, value)| record[key] == value } || record[:owningConstraint]
       end
 
       def major
