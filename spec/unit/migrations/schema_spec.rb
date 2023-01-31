@@ -16,6 +16,7 @@ describe ActiveGraph::Migrations::Schema do
   let(:point_index) { "CREATE POINT INDEX `point_index` FOR (n:`Person`) ON (n.`location`) OPTIONS {indexConfig: {`spatial.cartesian-3d.max`: [1000000.0, 1000000.0, 1000000.0],`spatial.cartesian-3d.min`: [-1000000.0, -1000000.0, -1000000.0],`spatial.cartesian.max`: [1000000.0, 1000000.0],`spatial.cartesian.min`: [-1000000.0, -1000000.0],`spatial.wgs-84-3d.max`: [180.0, 90.0, 1000000.0],`spatial.wgs-84-3d.min`: [-180.0, -90.0, -1000000.0],`spatial.wgs-84.max`: [180.0, 90.0],`spatial.wgs-84.min`: [-180.0, -90.0]}, indexProvider: 'point-1.0'}" }
   let(:fulltext_index) { "CREATE FULLTEXT INDEX `fulltext_index` FOR (n:`Friend`) ON EACH [n.`name`] OPTIONS {indexConfig: {`fulltext.analyzer`: 'swedish',`fulltext.eventually_consistent`: false}, indexProvider: 'fulltext-1.0'}" }
   let(:text_index) { "CREATE TEXT INDEX `text_index` FOR ()-[r:`KNOWS`]-() ON (r.`city`) OPTIONS {indexConfig: {}, indexProvider: 'text-2.0'}" }
+
   let(:unique_constraint) { "CREATE CONSTRAINT `unique_constraint` FOR (n:`Person`) REQUIRE (n.`name`) IS UNIQUE OPTIONS {indexConfig: {}, indexProvider: 'range-1.0'}" }
   let(:not_null_rel_prop_constraint) { 'CREATE CONSTRAINT `not_null_rel_prop_constraint` FOR ()-[r:`LIKED`]-() REQUIRE (r.`when`) IS NOT NULL' }
   let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` FOR (n:`Person`) REQUIRE (n.`name`) IS NOT NULL' }
@@ -27,6 +28,9 @@ describe ActiveGraph::Migrations::Schema do
 
   if ActiveGraph::Base.version?('<4.4')
     let(:range_index) { "CREATE INDEX `range_index` FOR (n:`Person`) ON (n.`nickname`) OPTIONS {indexConfig: {`spatial.cartesian-3d.max`: [1000000.0, 1000000.0, 1000000.0],`spatial.cartesian-3d.min`: [-1000000.0, -1000000.0, -1000000.0],`spatial.cartesian.max`: [1000000.0, 1000000.0],`spatial.cartesian.min`: [-1000000.0, -1000000.0],`spatial.wgs-84-3d.max`: [180.0, 90.0, 1000000.0],`spatial.wgs-84-3d.min`: [-180.0, -90.0, -1000000.0],`spatial.wgs-84.max`: [180.0, 90.0],`spatial.wgs-84.min`: [-180.0, -90.0]}, indexProvider: 'native-btree-1.0'}" }
+    let(:point_index) {}
+    let(:text_index) {}
+
     let(:unique_constraint) { "CREATE CONSTRAINT `unique_constraint` ON (n:`Person`) ASSERT (n.`name`) IS UNIQUE OPTIONS {indexConfig: {`spatial.cartesian-3d.max`: [1000000.0, 1000000.0, 1000000.0],`spatial.cartesian-3d.min`: [-1000000.0, -1000000.0, -1000000.0],`spatial.cartesian.max`: [1000000.0, 1000000.0],`spatial.cartesian.min`: [-1000000.0, -1000000.0],`spatial.wgs-84-3d.max`: [180.0, 90.0, 1000000.0],`spatial.wgs-84-3d.min`: [-180.0, -90.0, -1000000.0],`spatial.wgs-84.max`: [180.0, 90.0],`spatial.wgs-84.min`: [-180.0, -90.0]}, indexProvider: 'native-btree-1.0'}" }
     let(:not_null_rel_prop_constraint) { 'CREATE CONSTRAINT `not_null_rel_prop_constraint` ON ()-[r:`LIKED`]-() ASSERT (r.`when`) IS NOT NULL' }
     let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` ON (n:`Person`) ASSERT (n.`name`) IS NOT NULL' }
