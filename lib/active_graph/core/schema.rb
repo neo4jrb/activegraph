@@ -20,7 +20,8 @@ module ActiveGraph
 
       def indexes
         raw_indexes.reject(&method(:constraint_owned?)).map do |row|
-          definition(row, INDEX_TEMPLATE).merge(type: row[:type].to_sym, state: row[:state].to_sym)
+          definition(row, version?('<4') ? :index_cypher_v3 : :index_cypher)
+            .merge(type: row[:type].to_sym, state: row[:state].to_sym)
         end
       end
 
@@ -29,7 +30,7 @@ module ActiveGraph
           raw_indexes.select(&method(:constraint_owned?))
         else
           raw_constraints.select(&method(:constraint_filter))
-        end.map { |row| definition(row, CONSTRAINT_TEMPLATE).merge(type: :uniqueness) }
+        end.map { |row| definition(row, :constraint_cypher).merge(type: :uniqueness) }
       end
 
       private def raw_constraints
@@ -59,13 +60,25 @@ module ActiveGraph
         %w[UNIQUENESS RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY].include?(record[:type])
       end
 
-      INDEX_TEMPLATE = "INDEX FOR %s ON %s"
-      CONSTRAINT_TEMPLATE = "CONSTRAINT ON %s ASSERT %s IS UNIQUE"
+      def index_cypher_v3(label, properties)
+        "INDEX ON :#{label}#{com_sep(properties, nil)}"
+      end
+
+      def index_cypher(label, properties)
+        "INDEX FOR (n:#{label}) ON #{com_sep(properties)}"
+      end
+
+      def constraint_cypher(label, properties)
+        "CONSTRAINT ON (n:#{label}) ASSERT #{com_sep(properties)} IS UNIQUE"
+      end
+
+      def com_sep(properties, prefix = 'n.')
+        "(#{properties.map { |prop| "#{prefix}#{prop}" }.join(', ')})"
+      end
 
       def definition(row, template)
         { label: label(row), properties: properties(row), name: row[:name],
-          create_statement: row[:createStatement] || row[:description] ||
-            template % ["(n:#{label(row)})", "(#{row[:properties].map { |prop| "n.#{prop}" }.join(', ')})"] }
+          create_statement: row[:createStatement] || send(template,label(row), row[:properties]) }
       end
 
       def label(row)

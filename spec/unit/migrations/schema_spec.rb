@@ -1,10 +1,13 @@
 require 'active_graph/migrations/schema'
 
 describe ActiveGraph::Migrations::Schema do
+  before { delete_schema }
+
   subject do
     described_class.synchronize_schema_data(schema_data, remove_missing)
     described_class.fetch_schema_data
   end
+
   let(:schema_data) { { indexes: indexes, constraints: constraints } }
   let(:remove_missing) { false }
   let(:all_indexes) { [range_index, point_index, fulltext_index, text_index].compact.sort }
@@ -38,7 +41,6 @@ describe ActiveGraph::Migrations::Schema do
   end
 
   if ActiveGraph::Base.version?('<4.3')
-    let(:range_index) { "INDEX FOR (n:Person) ON (n.nickname)" }
     let(:fulltext_index) {}
 
     let(:unique_constraint) { "CONSTRAINT ON (n:Person) ASSERT (n.name) IS UNIQUE" }
@@ -47,7 +49,12 @@ describe ActiveGraph::Migrations::Schema do
     let(:node_key_constraint) {}
   end
 
-  context 'empty' do
+  if ActiveGraph::Base.version?('<4')
+    let(:range_index) { "INDEX ON :Person(nickname)" }
+  end
+
+
+    context 'empty' do
     it { is_expected.to eq schema_data }
   end
 
