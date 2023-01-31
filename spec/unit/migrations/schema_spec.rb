@@ -39,6 +39,9 @@ describe ActiveGraph::Migrations::Schema do
 
   if ActiveGraph::Base.version?('<4.3')
     let(:fulltext_index) {}
+
+    let(:not_null_rel_prop_constraint) { 'CREATE CONSTRAINT `not_null_rel_prop_constraint` ON ()-[r:`LIKED`]-() ASSERT exists(r.`when`)' }
+    let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` ON (n:`Person`) ASSERT exists(n.`name`)' }
   end
 
   context 'empty' do
