@@ -37,6 +37,10 @@ describe ActiveGraph::Migrations::Schema do
     let(:node_key_constraint) { "CREATE CONSTRAINT `node_key_constraint` ON (n:`Person`) ASSERT (n.`name`, n.`surname`) IS NODE KEY OPTIONS {indexConfig: {`spatial.cartesian-3d.max`: [1000000.0, 1000000.0, 1000000.0],`spatial.cartesian-3d.min`: [-1000000.0, -1000000.0, -1000000.0],`spatial.cartesian.max`: [1000000.0, 1000000.0],`spatial.cartesian.min`: [-1000000.0, -1000000.0],`spatial.wgs-84-3d.max`: [180.0, 90.0, 1000000.0],`spatial.wgs-84-3d.min`: [-180.0, -90.0, -1000000.0],`spatial.wgs-84.max`: [180.0, 90.0],`spatial.wgs-84.min`: [-180.0, -90.0]}, indexProvider: 'native-btree-1.0'}" }
   end
 
+  if ActiveGraph::Base.version?('<4.3')
+    let(:fulltext_index) {}
+  end
+
   context 'empty' do
     it { is_expected.to eq schema_data }
   end
