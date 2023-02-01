@@ -190,7 +190,7 @@ ActiveGraph::Config[:logger_level] = Logger::DEBUG if ENV['DEBUG']
 def set_default_driver
   server_url = ENV['NEO4J_URL'] || 'bolt://localhost:7687'
   ActiveGraph::Base.driver =
-    Neo4j::Driver::GraphDatabase.driver(server_url, Neo4j::Driver::AuthTokens.basic('neo4j', 'pass'))
+    Neo4j::Driver::GraphDatabase.driver(server_url, Neo4j::Driver::AuthTokens.basic('neo4j', 'password'))
 end
 
 set_default_driver
