@@ -19,9 +19,13 @@ module ActiveGraph
       end
 
       def indexes
-        raw_indexes.reject(&method(:constraint_owned?)).map do |row|
+        normalize(raw_indexes, *%i[type state])
+      end
+
+      def normalize(result, *extra)
+        result.map do |row|
           definition(row, version?('<4') ? :index_cypher_v3 : :index_cypher)
-            .merge(type: row[:type].to_sym, state: row[:state].to_sym)
+            .merge(extra.to_h { |key| [key, row[key].to_sym] })
         end
       end
 
@@ -46,11 +50,11 @@ module ActiveGraph
         end
       end
 
-      private
-
       def constraint_owned?(record)
         FILTER[major]&.then { |(key, value)| record[key] == value } || record[:owningConstraint]
       end
+
+      private
 
       def major
         @major ||= version.segments.first
