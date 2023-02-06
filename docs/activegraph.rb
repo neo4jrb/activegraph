@@ -1,7 +1,6 @@
 # Usage: rails new myapp -m activegraph.rb
 
-gem 'activegraph', '~> 10.0.1'
-gem 'neo4j-ruby-driver', '~> 1.7.0'
+gem 'activegraph', '=> 11.1'
 
 gem_group :development do
   gem 'neo4j-rake_tasks'
@@ -9,7 +8,6 @@ end
 
 inject_into_file 'config/application.rb', before: '# Require the gems listed in Gemfile' do <<END
 require 'active_graph/railtie'
-require 'neo4j_ruby_driver'
 
 END
 end

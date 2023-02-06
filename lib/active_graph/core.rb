@@ -5,7 +5,7 @@ require 'active_graph/core/query'
 require 'active_graph/core/record'
 require 'active_graph/core/wrappable'
 require 'active_graph/transaction'
-require 'neo4j_ruby_driver'
+require 'neo4j/driver'
 
 Neo4j::Driver::Types::Entity.include ActiveGraph::Core::Wrappable
 Neo4j::Driver::Types::Entity.prepend ActiveGraph::Core::Entity
