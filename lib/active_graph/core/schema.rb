@@ -19,17 +19,22 @@ module ActiveGraph
       end
 
       def indexes
-        raw_indexes.map do |row|
-          definition(row).merge(type: row[:type].to_sym, state: row[:state].to_sym)
+        normalize(raw_indexes, *%i[type state])
+      end
+
+      def normalize(result, *extra)
+        result.map do |row|
+          definition(row, version?('<4') ? :index_cypher_v3 : :index_cypher)
+            .merge(extra.to_h { |key| [key, row[key].to_sym] })
         end
       end
 
       def constraints
         if version?('<4.3')
-          raw_indexes.select(&method(:filter))
+          raw_indexes.select(&method(:constraint_owned?))
         else
           raw_constraints.select(&method(:constraint_filter))
-        end.map { |row| definition(row).merge(type: :uniqueness) }
+        end.map { |row| definition(row, :constraint_cypher).merge(type: :uniqueness) }
       end
 
       private def raw_constraints
@@ -45,22 +50,39 @@ module ActiveGraph
         end
       end
 
+      def constraint_owned?(record)
+        FILTER[major]&.then { |(key, value)| record[key] == value } || record[:owningConstraint]
+      end
+
       private
 
       def major
         @major ||= version.segments.first
       end
 
-      def filter(record)
-        FILTER[major].then { |(key, value)| record[key] == value }
-      end
-
       def constraint_filter(record)
-        record[:type] == 'UNIQUENESS'
+        %w[UNIQUENESS RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY].include?(record[:type])
       end
 
-      def definition(row)
-        { label: label(row), properties: properties(row), name: row[:name] }
+      def index_cypher_v3(label, properties)
+        "INDEX ON :#{label}#{com_sep(properties, nil)}"
+      end
+
+      def index_cypher(label, properties)
+        "INDEX FOR (n:#{label}) ON #{com_sep(properties)}"
+      end
+
+      def constraint_cypher(label, properties)
+        "CONSTRAINT ON (n:#{label}) ASSERT #{com_sep(properties)} IS UNIQUE"
+      end
+
+      def com_sep(properties, prefix = 'n.')
+        "(#{properties.map { |prop| "#{prefix}#{prop}" }.join(', ')})"
+      end
+
+      def definition(row, template)
+        { label: label(row), properties: properties(row), name: row[:name],
+          create_statement: row[:createStatement] || send(template,label(row), row[:properties]) }
       end
 
       def label(row)

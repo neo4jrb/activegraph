@@ -124,7 +124,7 @@ module ActiveGraph::Shared
       end
 
       it 'returns false when compared to another type' do
-        is_expected.not_to eq Struct.new(:attributes).new('first_name' => 'Ben')
+        is_expected.not_to eq Struct.new(:attributes).new({'first_name' => 'Ben'})
       end
     end
 
