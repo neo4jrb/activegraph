@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [11.2.0] 2023-02-06
+
+## Added
+
+- support for neo4j:schema:dump and :load for neo4j 4 and 5. No automatic migration of schema on major neo4j upgrades. Schema must be regenerated with neo4j:schema:dump or manually adjusted to new syntax on those upgrades.
+  
 ## [11.1.0] 2023-01-10
 
 ## Added
