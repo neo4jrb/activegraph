@@ -83,7 +83,7 @@ COMMENT
 
       args.with_defaults(remove_missing: false)
 
-      schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])
+      schema_data = YAML.safe_load(File.read(SCHEMA_YAML_PATH), permitted_classes: [Symbol])
 
       ActiveGraph::Base.subscribe_to_query(&method(:puts))
 

@@ -36,6 +36,7 @@ DESCRIPTION
   s.add_dependency('neo4j-ruby-driver', '>= 4.4.1')
   s.add_dependency('orm_adapter', '~> 0.5.0')
   s.add_dependency('sorted_set')
+  s.add_dependency('psych', '>= 4.0.1')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
