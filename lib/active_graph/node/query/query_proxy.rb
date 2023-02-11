@@ -243,9 +243,9 @@ module ActiveGraph
 
         # QueryProxy objects act as a representation of a model at the class level so we pass through calls
         # This allows us to define class functions for reusable query chaining or for end-of-query aggregation/summarizing
-        def method_missing(method_name, *args, &block)
+        def method_missing(method_name, *args, **kwargs, &block)
           if @model && @model.respond_to?(method_name)
-            scoping { @model.public_send(method_name, *args, &block) }
+            scoping { @model.public_send(method_name, *args, **kwargs, &block) }
           else
             super
           end

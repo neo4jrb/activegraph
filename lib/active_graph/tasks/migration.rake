@@ -83,7 +83,7 @@ COMMENT
 
       args.with_defaults(remove_missing: false)
 
-      schema_data = if Gem::Requirement.new(">= 4.0.1") =~ Gem::Version.new(Psych::VERSION)
+      schema_data = if Gem::Requirement.new('>= 4') =~ Gem::Version.new(Psych::VERSION)
         YAML.safe_load(File.read(SCHEMA_YAML_PATH), permitted_classes: [Symbol])
       else
         YAML.safe_load(File.read(SCHEMA_YAML_PATH), [Symbol])

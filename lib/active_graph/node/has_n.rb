@@ -155,14 +155,14 @@ module ActiveGraph::Node
 
       CACHED_RESULT_METHODS = []
 
-      def method_missing(method_name, *args, &block)
+      def method_missing(method_name, *args, **kwargs, &block)
         target = target_for_missing_method(method_name)
         super if target.nil?
 
         cache_query_proxy_result if !cached? && !target.is_a?(ActiveGraph::Node::Query::QueryProxy)
         clear_cache_result if target.is_a?(ActiveGraph::Node::Query::QueryProxy)
 
-        target.public_send(method_name, *args, &block)
+        target.public_send(method_name, *args, **kwargs, &block)
       end
 
       def serializable_hash(options = {})
