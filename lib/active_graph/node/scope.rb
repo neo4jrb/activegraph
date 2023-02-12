@@ -79,7 +79,11 @@ module ActiveGraph::Node
       def _call_scope_context(eval_context, *query_params, **kwargs, &proc)
         last_vararg_index = proc.arity - (kwargs.empty? ? 1 : 2)
         query_params.fill(nil, query_params.length..last_vararg_index)
-        eval_context.instance_exec(*query_params, **kwargs, &proc)
+        if kwargs.empty? # for jruby-9.3 compatibility
+          eval_context.instance_exec(*query_params, &proc)
+        else
+          eval_context.instance_exec(*query_params, **kwargs, &proc)
+        end
       end
 
       def current_scope #:nodoc:
@@ -121,7 +125,11 @@ module ActiveGraph::Node
       # method_missing is not delegated to super class but to aggregated class
       # rubocop:disable Style/MethodMissingSuper
       def method_missing(name, *params, **kwargs, &block)
-        query_proxy_or_target.public_send(name, *params, **kwargs, &block)
+        if kwargs.empty? # for jruby-9.3 compatibility
+          query_proxy_or_target.public_send(name, *params, &block)
+        else
+          query_proxy_or_target.public_send(name, *params, **kwargs, &block)
+        end
       end
       # rubocop:enable Style/MethodMissingSuper
 

@@ -41,7 +41,7 @@ module ActiveGraph::Shared
       #   Media.enum type: { image: 1, video: 2, unknown: 3 }
       #
       # @see http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html
-      def enum(parameters = {})
+      def enum(**parameters)
         options, parameters = *split_options_and_parameters(parameters)
         parameters.each do |property_name, enum_keys|
           enum_keys = normalize_key_list enum_keys, options

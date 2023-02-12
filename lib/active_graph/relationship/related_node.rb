@@ -61,8 +61,8 @@ module ActiveGraph::Relationship
       !@node.nil?
     end
 
-    def method_missing(*args, **kwargs, &block)
-      loaded.send(*args, **kwargs, &block)
+    def method_missing(*args, &block)
+      loaded.send(*args, &block)
     end
 
     def respond_to_missing?(method_name, include_private = false)
