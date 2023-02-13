@@ -125,7 +125,7 @@ module ActiveGraph::Node
       # method_missing is not delegated to super class but to aggregated class
       # rubocop:disable Style/MethodMissingSuper
       def method_missing(name, *params, **kwargs, &block)
-        if kwargs.empty? # for jruby-9.3 compatibility
+        if RUBY_VERSION < '3' && kwargs.empty?
           query_proxy_or_target.public_send(name, *params, &block)
         else
           query_proxy_or_target.public_send(name, *params, **kwargs, &block)

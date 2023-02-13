@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [11.3.1] 2023-02-12
+
+## Fixed
+
+- Fixed an issue with keyword arguments on jruby-9.3 when none were passed
+
 ## [11.3.0] 2023-02-10
 
 ## Added
