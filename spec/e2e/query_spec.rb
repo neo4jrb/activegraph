@@ -855,6 +855,21 @@ describe 'Query API' do
         expect(lesson.teachers.where(name: 'aoeuo').to_a).to be_empty
       end
     end
+
+    context 'when association used after identity-scope' do
+      subject { Level.experts.teachers }
+
+      before do
+        stub_node_class('Level') do
+          property :name
+          has_many :out, :teachers, model_class: 'Teacher', type: 'level'
+          scope :experts, -> { where("#{identity}.name = 'expert'") }
+        end
+      end
+      let!(:expert_level) { Level.create(name: 'expert', teachers: [mrjames]) }
+
+      it { is_expected.to contain_exactly mrjames }
+    end
   end
 
   describe 'batch finding' do
