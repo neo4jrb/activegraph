@@ -27,6 +27,16 @@ module ActiveGraph
               send(method_to_call, arg, model, *args)
             end
 
+            def for_union_clause(arg, model, *args)
+              links = []
+              links << new(:call_subquery_start, nil, *args)
+              # links << new(:with, common_base_query_proxy_identity, *args) if common_base_query_present_before_union?
+              arg.each do |union_sub_query_part|
+                links << new(:union, ->(v, _) { [union_sub_query_part, "#{v}_union"] }, *args)
+              end
+              links << new(:call_subquery_end, nil, *args)
+            end
+
             def for_where_clause(arg, model, *args)
               node_num = 1
               result = []
@@ -104,6 +114,8 @@ module ActiveGraph
                 [for_arg(model, clause, args[0], *args[1..-1])]
               elsif [:rel_where, :rel_where_not].include?(clause)
                 args.map { |arg| for_arg(model, clause, arg, association) }
+              elsif clause == :union
+                [for_arg(model, clause, args)]
               else
                 args.map { |arg| for_arg(model, clause, arg) }
               end

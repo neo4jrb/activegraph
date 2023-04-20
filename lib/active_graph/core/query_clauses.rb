@@ -28,7 +28,7 @@ module ActiveGraph
         def value
           return @value if @value
 
-          [String, Symbol, Integer, Hash, NilClass].each do |arg_class|
+          [String, Symbol, Integer, Hash, NilClass, Array].each do |arg_class|
             from_method = "from_#{arg_class.name.downcase}"
             return @value = send(from_method, @arg) if @arg.is_a?(arg_class) && respond_to?(from_method)
           end
@@ -130,13 +130,15 @@ module ActiveGraph
           def to_cypher(clauses, pretty = false)
             string = clause_string(clauses, pretty)
 
-            final_keyword = if pretty
-                              "#{clause_color}#{keyword}#{ANSI::CLEAR}"
-                            else
-                              keyword
-                            end
+            "#{final_keyword(pretty)} #{string}" if !string.empty?
+          end
 
-            "#{final_keyword} #{string}" if !string.empty?
+          def final_keyword(pretty)
+            if pretty
+              "#{clause_color}#{keyword}#{ANSI::CLEAR}"
+            else
+              keyword
+            end
           end
 
           def clause_string(clauses, pretty)
@@ -256,6 +258,41 @@ module ActiveGraph
         end
       end
 
+      class UnionClause < Clause
+        KEYWORD = ''
+
+        def from_array(args)
+          query_proxy = args.first
+          "#{query_proxy.to_cypher} RETURN #{query_proxy.identity} AS #{args.last}"
+        end
+
+        class << self
+          def from_args(args, params, options = {})
+            query_proxy = args.first
+            params.add_params(query_proxy.query.parameters)
+
+            [from_arg(args, params, options)]
+          end
+
+          def clause_strings(clauses)
+            clauses.map!(&:value)
+          end
+
+          def clause_join
+            ' UNION '
+          end
+        end
+      end
+
+          def from_args(args, params, options = {})
+            args.flatten!
+            args.map { |arg| from_arg(arg, params, options) }.tap(&:compact!)
+          end
+
+          def from_arg(arg, params, options = {})
+            new(arg, params, options) if !arg.respond_to?(:empty?) || !arg.empty?
+          end
+
       class WhereClause < Clause
         KEYWORD = 'WHERE'
 
@@ -345,6 +382,38 @@ module ActiveGraph
 
           def clause_join
             " #{KEYWORD} "
+          end
+        end
+      end
+
+      class CallSubqueryStartClause < Clause
+        KEYWORD = 'CALL {'
+
+        def from_nilclass(_value)
+          ' '
+        end
+
+        def from_string(value)
+          value
+        end
+
+        class << self
+          def to_cypher(clauses, pretty = false)
+            super || final_keyword(pretty)
+          end
+
+          def clause_strings(clauses)
+            clauses.map!(&:value)
+          end
+        end
+      end
+
+      class CallSubqueryEndClause < Clause
+        KEYWORD = '}'
+
+        class << self
+          def to_cypher(_clauses, pretty = false)
+            final_keyword(pretty)
           end
         end
       end
