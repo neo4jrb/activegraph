@@ -192,6 +192,38 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'union' do
+    let!(:bartemius) { Teacher.create(name: 'Bartemius Crouch Jr') }
+    let!(:amycus) { Teacher.create(name: 'Amycus Carrow') }
+    let!(:snape) { Teacher.create(name: 'Severus Snape') }
+    let(:potter) { Student.create(name: 'Harry Potter') }
+
+    context 'when common starting query' do
+      it 'result contains all records from two simple queries' do
+        bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        loyal_death_eaters = Teacher.union(bartemius_query_proxy, amycus_query_proxy)
+        expect(loyal_death_eaters).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'result contains all records from multiple complex queries' do
+        quirinus = Teacher.create(name: 'Quirinus Quirrell')
+        teachers = [bartemius, amycus, snape, quirinus]
+        lession = Lesson.create(name: 'Defence Against The Dark Arts', students: [potter], teachers: teachers)
+
+        bartemius_query_proxy = potter.lessons.teachers.where(name: bartemius.name).as(:res_teacher)
+        amycus_query_proxy = Student.where(name: potter.name).lessons.teachers.where(name: amycus.name).as(:res_teacher_2)
+        quirinus_query_proxy = Teacher.all.lessons.teachers.where(name: quirinus.name)
+
+        loyal_to_voldy = Teacher.union(bartemius_query_proxy, amycus_query_proxy, quirinus_query_proxy)
+        expect(loyal_to_voldy).to contain_exactly(bartemius, amycus, quirinus)
+      end
+    end
+
+    context 'with common starting query' do
+    end
+  end
+
   describe 'include?' do
     it 'correctly reports when a node is included in a query result' do
       jimmy.lessons << science
