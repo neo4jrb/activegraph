@@ -938,6 +938,24 @@ describe ActiveGraph::Core::Query do
     end
   end
 
+  # UNION using Subquery
+
+  describe '#union_subquery_cypher' do
+    it 'returned cypher is a sub query made of union of the argument queries' do
+      allow(Person).to receive(:attribute_names).and_return([:age, :name])
+      qp1 = ActiveGraph::Core::Query.new.match(o1: :Person).where(o1: {age: 10}).proxy_as(Person, :o1)
+      qp2 = ActiveGraph::Core::Query.new.match(o2: :Person).where(o2: {name: 'blah'}).proxy_as(Person, :o2)
+      result = ActiveGraph::Core::Query.new.union([qp1, qp2], :result_person).to_cypher
+
+      expect(result).to eq(
+        "CALL {"\
+          "MATCH (o1:`Person`) WHERE (o1.age = $o1_age) RETURN o1 AS result_person"\
+          " UNION "\
+          "MATCH (o2:`Person`) WHERE (o2.name = $o2_name) RETURN o2 AS result_person"\
+        "}"
+      )
+    end
+  end
 
   # START
 
