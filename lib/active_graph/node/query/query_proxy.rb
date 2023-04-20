@@ -99,6 +99,7 @@ module ActiveGraph
         end
 
         def query_from_chain(chain, base_query, var)
+          base_query = _query if chain.first&.clause == :union && !@association && !starting_query
           chain.inject(base_query) do |query, link|
             args = link.args(var, rel_var)
 
@@ -143,7 +144,7 @@ module ActiveGraph
           @model.current_scope = previous
         end
 
-        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit)
+        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit union)
 
         METHODS.each do |method|
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }

@@ -104,6 +104,8 @@ module ActiveGraph
                 [for_arg(model, clause, args[0], *args[1..-1])]
               elsif [:rel_where, :rel_where_not].include?(clause)
                 args.map { |arg| for_arg(model, clause, arg, association) }
+              elsif clause == :union
+                [[new(clause, ->(v, _) { [args, v] })]]
               else
                 args.map { |arg| for_arg(model, clause, arg) }
               end

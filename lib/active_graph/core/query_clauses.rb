@@ -256,6 +256,31 @@ module ActiveGraph
         end
       end
 
+      class UnionClause < Clause
+        KEYWORD = ''
+
+        class << self
+          def from_args(args, params, options = {})
+            union_query_array = args.first.each_with_object([]) do |query_proxy, uqa|
+              core_query = query_proxy.query
+              params.add_params(core_query.parameters)
+
+              uqa << "#{core_query.to_cypher} RETURN #{query_proxy.identity} AS #{args.last}"
+            end
+
+            query_start = 'CALL {'
+            query_end = '}'
+
+            query_str = query_start + union_query_array.join(" UNION ") + query_end
+            [from_arg(query_str, params, options)]
+          end
+
+          def clause_strings(clauses)
+            clauses.map!(&:value)
+          end
+        end
+      end
+
       class WhereClause < Clause
         KEYWORD = 'WHERE'
 
