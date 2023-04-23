@@ -202,7 +202,7 @@ describe 'query_proxy_methods' do
       it 'result contains all records from two simple queries' do
         bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
         amycus_query_proxy = Teacher.where(name: amycus.name)
-        loyal_death_eaters = Teacher.union(bartemius_query_proxy, amycus_query_proxy)
+        loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, amycus_query_proxy)
         expect(loyal_death_eaters).to contain_exactly(bartemius, amycus)
       end
 
@@ -215,7 +215,7 @@ describe 'query_proxy_methods' do
         amycus_query_proxy = Student.where(name: potter.name).lessons.teachers.where(name: amycus.name).as(:res_teacher_2)
         quirinus_query_proxy = Teacher.all.lessons.teachers.where(name: quirinus.name)
 
-        loyal_to_voldy = Teacher.union(bartemius_query_proxy, amycus_query_proxy, quirinus_query_proxy)
+        loyal_to_voldy = Teacher.union(-> {bartemius_query_proxy}, -> {amycus_query_proxy}, -> {quirinus_query_proxy})
         expect(loyal_to_voldy).to contain_exactly(bartemius, amycus, quirinus)
       end
     end

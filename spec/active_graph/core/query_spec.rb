@@ -945,7 +945,7 @@ describe ActiveGraph::Core::Query do
       allow(Person).to receive(:attribute_names).and_return([:age, :name])
       qp1 = ActiveGraph::Core::Query.new.match(o1: :Person).where(o1: {age: 10}).proxy_as(Person, :o1)
       qp2 = ActiveGraph::Core::Query.new.match(o2: :Person).where(o2: {name: 'blah'}).proxy_as(Person, :o2)
-      result = ActiveGraph::Core::Query.new.union([qp1, qp2], :result_person).to_cypher
+      result = ActiveGraph::Core::Query.new.union([-> {qp1}, -> {qp2}], :result_person).to_cypher
 
       expect(result).to eq(
         "CALL {"\

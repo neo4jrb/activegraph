@@ -261,7 +261,8 @@ module ActiveGraph
 
         class << self
           def from_args(args, params, options = {})
-            union_query_array = args.first.each_with_object([]) do |query_proxy, uqa|
+            union_query_array = args.first.each_with_object([]) do |proc, uqa|
+              query_proxy = proc.call
               core_query = query_proxy.query
               params.add_params(core_query.parameters)
 
