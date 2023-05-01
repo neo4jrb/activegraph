@@ -952,7 +952,8 @@ describe ActiveGraph::Core::Query do
           "MATCH (o1:`Person`) WHERE (o1.age = $o1_age) RETURN o1 AS result_person"\
           " UNION "\
           "MATCH (o2:`Person`) WHERE (o2.name = $o2_name) RETURN o2 AS result_person"\
-        "}"
+        "} "\
+        "MATCH (result_person)"
       )
     end
   end

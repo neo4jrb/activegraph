@@ -271,8 +271,9 @@ module ActiveGraph
 
             query_start = 'CALL {'
             query_end = '}'
+            match_clause = " MATCH (#{args.last})"
 
-            query_str = query_start + union_query_array.join(" UNION ") + query_end
+            query_str = query_start + union_query_array.join(" UNION ") + query_end + match_clause
             [from_arg(query_str, params, options)]
           end
 
