@@ -135,7 +135,7 @@ In Neo4j 4.x encryption is not configured by default, while neo4j-ruby-driver 1.
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
 
-Include ``activegrah`` and either ``neo4j-ruby-driver`` or ``neo4j-java-driver`` in your ``Gemfile``:
+Include ``activegraph`` and either ``neo4j-ruby-driver`` or ``neo4j-java-driver`` in your ``Gemfile``:
 
 .. code-block:: ruby
 
