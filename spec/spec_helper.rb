@@ -97,6 +97,16 @@ def delete_schema
   ActiveGraph::Core::Label.drop_indexes
 end
 
+def version?(requirement)
+  require 'pry'
+  binding.pry
+  Gem::Requirement.create(requirement).satisfied_by?(Gem::Version.new(ENV['NEO4J_VERSION']))
+end
+
+def not_version?(requirement)
+  !version?(requirement)
+end
+
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
@@ -230,6 +240,8 @@ RSpec.configure do |config|
     @base_logger = spy('Base logger')
     allow(ActiveGraph::Base).to receive(:logger).and_return(@base_logger)
   end
+
+  config.filter_run_excluding version: method(:not_version?)
 
   # TODO marshalling java objects, is it necessary?
   config.filter_run_excluding :ffi_only if RUBY_PLATFORM =~ /java/

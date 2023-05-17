@@ -192,7 +192,7 @@ describe 'query_proxy_methods' do
     end
   end
 
-  describe 'union' do
+  describe 'union', version: '>4.1' do
     let!(:bartemius) { Teacher.create(name: 'Bartemius Crouch Jr', age: 35) }
     let!(:amycus) { Teacher.create(name: 'Amycus Carrow', age: 48) }
     let!(:snape) { Teacher.create(name: 'Severus Snape') }
