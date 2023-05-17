@@ -938,6 +938,7 @@ describe ActiveGraph::Core::Query do
     end
   end
 
+
   # START
 
   describe '#start' do

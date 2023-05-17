@@ -163,7 +163,7 @@ module ActiveGraph
       # @return [Query]
 
       METHODS = %w[start match optional_match call call_subquery_start using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return order skip limit union call_subquery_end] # rubocop:disable Metrics/LineLength
-      BREAK_METHODS = %(with with_distinct call call_subquery_start call_subquery_end)
+      BREAK_METHODS = %(with with_distinct call call_subquery_start call_subquery_end).split(' ')
 
       CLAUSIFY_CLAUSE = proc { |method| const_get(method.to_s.split('_').map(&:capitalize).join + 'Clause') }
       CLAUSES = METHODS.map(&CLAUSIFY_CLAUSE)
