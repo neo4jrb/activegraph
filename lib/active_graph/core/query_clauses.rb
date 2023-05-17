@@ -268,8 +268,7 @@ module ActiveGraph
 
         class << self
           def from_args(args, params, options = {})
-            query_proxy = args.first
-            params.add_params(query_proxy.query.parameters)
+            params.add_params(args.first.query.parameters)
 
             [from_arg(args, params, options)]
           end
@@ -283,15 +282,6 @@ module ActiveGraph
           end
         end
       end
-
-          def from_args(args, params, options = {})
-            args.flatten!
-            args.map { |arg| from_arg(arg, params, options) }.tap(&:compact!)
-          end
-
-          def from_arg(arg, params, options = {})
-            new(arg, params, options) if !arg.respond_to?(:empty?) || !arg.empty?
-          end
 
       class WhereClause < Clause
         KEYWORD = 'WHERE'

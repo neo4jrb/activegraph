@@ -30,11 +30,12 @@ module ActiveGraph
             def for_union_clause(arg, model, *args)
               links = []
               links << new(:call_subquery_start, nil, *args)
-              # links << new(:with, common_base_query_proxy_identity, *args) if common_base_query_present_before_union?
               arg.each do |union_sub_query_part|
-                links << new(:union, ->(v, _) { [union_sub_query_part, "#{v}_union"] }, *args)
+                sub_query_proxy_part = union_sub_query_part.call rescue model.instance_exec(&union_sub_query_part)
+                links << new(:union, ->(v, _) { [sub_query_proxy_part, "#{v}_union"] }, *args)
               end
               links << new(:call_subquery_end, nil, *args)
+              links << new(:with, ->(v, _) { ["#{v}_union", v] }, *args)
             end
 
             def for_where_clause(arg, model, *args)
