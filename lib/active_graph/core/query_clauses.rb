@@ -262,13 +262,12 @@ module ActiveGraph
         KEYWORD = ''
 
         def from_array(args)
-          query_proxy = args.first
-          "#{query_proxy.to_cypher} RETURN #{query_proxy.identity} AS #{args.last}"
+          "#{args[1]} RETURN #{args[0]} AS #{args.last}"
         end
 
         class << self
           def from_args(args, params, options = {})
-            params.add_params(args.first.query.parameters)
+            params.add_params(args[2])
 
             [from_arg(args, params, options)]
           end

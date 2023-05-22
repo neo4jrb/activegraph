@@ -193,9 +193,9 @@ describe 'query_proxy_methods' do
   end
 
   describe 'union', version: '>4.1' do
-    let!(:bartemius) { Teacher.create(name: 'Bartemius Crouch Jr', age: 35) }
-    let!(:amycus) { Teacher.create(name: 'Amycus Carrow', age: 48) }
-    let!(:snape) { Teacher.create(name: 'Severus Snape') }
+    let!(:bartemius) { Teacher.create(name: 'Bartemius Crouch Jr', age: 34) }
+    let!(:amycus) { Teacher.create(name: 'Amycus Carrow', age: 39) }
+    let!(:snape) { Teacher.create(name: 'Severus Snape', age: 38 ) }
     let(:potter) { Student.create(name: 'Harry Potter') }
 
     context 'when common starting query' do
@@ -203,8 +203,7 @@ describe 'query_proxy_methods' do
         bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
         amycus_query_proxy = Teacher.where(name: amycus.name)
         loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
-        union_proxy = loyal_death_eaters.query.proxy_as(Teacher, :result_teacher2_union).distinct
-        expect(union_proxy).to contain_exactly(bartemius, amycus)
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
       end
 
       it 'result contains all records from multiple complex queries' do
@@ -217,8 +216,24 @@ describe 'query_proxy_methods' do
         quirinus_query_proc = -> { Teacher.all.lessons.teachers.where(name: quirinus.name) }
 
         loyal_to_voldy = Teacher.union(bartemius_query_proc, amycus_query_proc, quirinus_query_proc)
-        union_proxy = loyal_to_voldy.query.proxy_as(Teacher, :result_teacher2_union).distinct
-        expect(union_proxy).to contain_exactly(bartemius, amycus, quirinus)
+        expect(loyal_to_voldy.distinct).to contain_exactly(bartemius, amycus, quirinus)
+      end
+
+      it 'is further queryable' do
+        bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
+        expect(loyal_death_eaters.where(age: 34).distinct).to contain_exactly(bartemius)
+      end
+    end
+
+    context 'with common starting query' do
+      it 'result contains all records from two queries respecting the common starting query' do
+        bartemius_query_proc = -> { Teacher.where(name: bartemius.name).as(:res_teacher) }
+        name_arr = [amycus.name, snape.name]
+        amycus_snape_query_proc = -> { where(name: name_arr) }
+        loyal_death_eaters = Teacher.where_not(age: 38).union(bartemius_query_proc, amycus_snape_query_proc)
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
       end
     end
   end

@@ -3,6 +3,7 @@ module ActiveGraph
     module Query
       class QueryProxy
         class Link
+          OUTER_SUBQUERY_PREFIX = 'outer_'.freeze
           attr_reader :clause
 
           def initialize(clause, arg, args = [])
@@ -19,6 +20,26 @@ module ActiveGraph
             end
           end
 
+          def start_of_subquery?
+            clause == :call_subquery_start
+          end
+
+          def end_of_subquery?
+            clause == :call_subquery_end
+          end
+
+          def subquery_var(original_var)
+            return unless start_of_subquery?
+
+            "#{OUTER_SUBQUERY_PREFIX}#{original_var}"
+          end
+
+          def update_outer_query_var(original_var)
+            return original_var unless end_of_subquery?
+
+            original_var.delete_prefix(OUTER_SUBQUERY_PREFIX)
+          end
+
           class << self
             def for_clause(clause, arg, model, *args)
               method_to_call = "for_#{clause}_clause"
@@ -30,12 +51,49 @@ module ActiveGraph
             def for_union_clause(arg, model, *args)
               links = []
               links << new(:call_subquery_start, nil, *args)
-              arg.each do |union_sub_query_part|
-                sub_query_proxy_part = union_sub_query_part.call rescue model.instance_exec(&union_sub_query_part)
-                links << new(:union, ->(v, _) { [sub_query_proxy_part, "#{v}_union"] }, *args)
+              arg[:subquery_parts].each do |subquery_part|
+                links << init_union_link(arg[:proxy], model, subquery_part, args)
               end
               links << new(:call_subquery_end, nil, *args)
-              links << new(:with, ->(v, _) { ["#{v}_union", v] }, *args)
+              links << post_subquery_with_clause(arg[:first_clause], args)
+            end
+
+            def post_subquery_with_clause(first_clause, args)
+              clause_arg_lambda = lambda do |v, _|
+                if first_clause
+                  [v]
+                else
+                  [v, "#{OUTER_SUBQUERY_PREFIX}#{v}"]
+                end
+              end
+
+              new(:with, clause_arg_lambda, *args)
+            end
+
+            def init_union_link(proxy, model, subquery_part, args)
+              union_proc = if subquery_proxy_part = subquery_part.call rescue nil
+                independent_union_subquery_proc(subquery_proxy_part)
+              else
+                continuation_union_subquery_proc(proxy, model, subquery_part)
+              end
+              new(:union, union_proc, *args)
+            end
+
+            def independent_union_subquery_proc(proxy)
+              union_args = [proxy.identity, proxy.to_cypher, proxy.query.parameters]
+              ->(v, _) { union_args + [v.delete_prefix(OUTER_SUBQUERY_PREFIX)] }
+            end
+
+            def continuation_union_subquery_proc(outer_proxy, model, subquery_part)
+              lambda do |v, _|
+                proxy = outer_proxy.as(v)
+                complete_query = proxy.query.with(proxy.identity).with(proxy.identity)
+                                      .proxy_as(model, proxy.identity).instance_exec(&subquery_part)
+                outer_query_cypher = proxy.to_cypher
+                subquery_cypher = complete_query.to_cypher.delete_prefix(outer_query_cypher)
+                subquery_parameters = (complete_query.query.parameters.to_a - proxy.query.parameters.to_a).to_h
+                [complete_query.identity, subquery_cypher, subquery_parameters] + [v.delete_prefix(OUTER_SUBQUERY_PREFIX)]
+              end
             end
 
             def for_where_clause(arg, model, *args)
