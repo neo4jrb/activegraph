@@ -225,6 +225,12 @@ describe 'query_proxy_methods' do
         loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
         expect(loyal_death_eaters.where(age: 34).distinct).to contain_exactly(bartemius)
       end
+
+      it 'works with self reference' do
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        loyal_death_eaters = Teacher.where(name: bartemius.name).as(:res_teacher).union(-> {}, -> { amycus_query_proxy })
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
+      end
     end
 
     context 'with common starting query' do
@@ -233,6 +239,12 @@ describe 'query_proxy_methods' do
         name_arr = [amycus.name, snape.name]
         amycus_snape_query_proc = -> { where(name: name_arr) }
         loyal_death_eaters = Teacher.where_not(age: 38).union(bartemius_query_proc, amycus_snape_query_proc)
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'works with self reference' do
+        amycus_query_proxy = Teacher.where(age: 39)
+        loyal_death_eaters = Teacher.where(name: bartemius.name).as(:res_teacher).union(-> {}, -> { amycus_query_proxy })
         expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
       end
     end

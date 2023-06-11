@@ -87,8 +87,8 @@ module ActiveGraph
             def continuation_union_subquery_proc(outer_proxy, model, subquery_part)
               lambda do |v, _|
                 proxy = outer_proxy.as(v)
-                complete_query = proxy.query.with(proxy.identity).with(proxy.identity)
-                                      .proxy_as(model, proxy.identity).instance_exec(&subquery_part)
+                proxy_with_clause = proxy.query.with(proxy.identity).with(proxy.identity).proxy_as(model, proxy.identity)
+                complete_query = proxy_with_clause.instance_exec(&subquery_part) || proxy_with_clause
                 outer_query_cypher = proxy.to_cypher
                 subquery_cypher = complete_query.to_cypher.delete_prefix(outer_query_cypher)
                 subquery_parameters = (complete_query.query.parameters.to_a - proxy.query.parameters.to_a).to_h

@@ -98,8 +98,6 @@ def delete_schema
 end
 
 def version?(requirement)
-  require 'pry'
-  binding.pry
   Gem::Requirement.create(requirement).satisfied_by?(Gem::Version.new(ENV['NEO4J_VERSION']))
 end
 
