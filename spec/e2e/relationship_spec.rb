@@ -258,7 +258,6 @@ describe 'Relationship' do
     end
 
     describe 'type checking' do
-      # rubocop:disable Metrics/AbcSize
       def self.it_is_expected_to_satisfy(class_method_value)
         context class_method_value.class.to_s do
           before { MyRelClass.from_class(class_method_value) }
@@ -272,7 +271,6 @@ describe 'Relationship' do
           end
         end
       end
-      # rubocop:enable Metrics/AbcSize
 
       before { stub_node_class('OtherClass') }
 
