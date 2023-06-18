@@ -3,7 +3,7 @@
 ## Code Status
 
 [![Actively Maintained](https://img.shields.io/badge/Maintenance%20Level-Actively%20Maintained-green.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
-[![Build Status](https://secure.travis-ci.org/neo4jrb/neo4j.svg?branch=master)](http://travis-ci.org/neo4jrb/neo4j)
+[![Build Status](https://github.com/neo4jrb/activegraph/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/neo4jrb/activegraph/actions)
 [![Coverage Status](https://coveralls.io/repos/neo4jrb/neo4j/badge.svg?branch=master)](https://coveralls.io/r/neo4jrb/neo4j?branch=master)
 [![Code Climate](https://codeclimate.com/github/neo4jrb/neo4j.svg)](https://codeclimate.com/github/neo4jrb/neo4j)
 
@@ -11,7 +11,7 @@
 
 ### Documentation
 
-All new documentation will be done via our [readthedocs](http://neo4jrb.readthedocs.org) site, though some old documentation has yet to be moved from our [wiki](https://github.com/neo4jrb/neo4j/wiki) 
+All new documentation will be done via our [readthedocs](http://neo4jrb.readthedocs.org) site, though some old documentation has yet to be moved from our [wiki](https://github.com/neo4jrb/neo4j/wiki)
 
 ### Contact Us
 
@@ -47,20 +47,20 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 | **Neo4j Version** | v2.x | v3.x  | >= v4.x | >= 7.0.3 | activegraph 10   | activegraph 11.1 |
 |-------------------|------|-------|---------|----------|------------------|------------------|
-| 1.9.x             | Yes  | No    | No      | No       | No               | No               
-| 2.0.x             | No   | Yes   | No      | No       | No               | No               
-| 2.1.x             | No   | Yes   | Yes *   | Yes      | No               | No               
-| 2.2.x             | No   | No    | Yes     | Yes      | No               | No               
-| 2.3.x             | No   | No    | Yes     | Yes      | No               | No               
-| 3.0, 3.1, 3.3     | No   | No    | No      | Yes      | No               | No               
-| 3.4               | No   | No    | No      | Yes      | Yes              | No               
-| 3.5               | No   | No    | No      | Yes      | Yes              | Yes              
-| 4.0               | No   | No    | No      | No       | Yes              | Yes              
-| 4.1               | No   | No    | No      | No       | No               | Yes              
-| 4.2               | No   | No    | No      | No       | No               | Yes              
-| 4.3               | No   | No    | No      | No       | No               | Yes              
-| 4.4               | No   | No    | No      | No       | No               | Yes              
-| 5.x               | No   | No    | No      | No       | No               | Yes              
+| 1.9.x             | Yes  | No    | No      | No       | No               | No               |
+| 2.0.x             | No   | Yes   | No      | No       | No               | No               |
+| 2.1.x             | No   | Yes   | Yes *   | Yes      | No               | No               |
+| 2.2.x             | No   | No    | Yes     | Yes      | No               | No               |
+| 2.3.x             | No   | No    | Yes     | Yes      | No               | No               |
+| 3.0, 3.1, 3.3     | No   | No    | No      | Yes      | No               | No               |
+| 3.4               | No   | No    | No      | Yes      | Yes              | No               |
+| 3.5               | No   | No    | No      | Yes      | Yes              | Yes              |
+| 4.0               | No   | No    | No      | No       | Yes              | Yes              |
+| 4.1               | No   | No    | No      | No       | No               | Yes              |
+| 4.2               | No   | No    | No      | No       | No               | Yes              |
+| 4.3               | No   | No    | No      | No       | No               | Yes              |
+| 4.4               | No   | No    | No      | No       | No               | Yes              |
+| 5.x               | No   | No    | No      | No       | No               | Yes              |
 
 `*` Neo4j.rb >= 4.x doesn't support Neo4j versions before 2.1.5.  To use 2.1.x you should upgrade to a version >= 2.1.5
 
@@ -68,7 +68,7 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 
 | **Neo4j Feature**          |   v2.x | v3.x | >= v4.x | >= 8.x | >= activegraph 10.0 |
 |----------------------------|--------|------|---------|--------|---------------------|
-| Bolt Protocol              |   No   |  No  | No      | Yes    | Yes                 | 
+| Bolt Protocol              |   No   |  No  | No      | Yes    | Yes                 |
 | Auth                       |   No   |  No  | Yes     | Yes    | Yes                 |
 | Remote Cypher              |   Yes  |  Yes | Yes     | Yes    | No                  |
 | Transactions               |   Yes  |  Yes | Yes     | Yes    | Yes                 |

@@ -1,4 +1,4 @@
-# To run coverage via travis
+# To run coverage in CI
 require 'simplecov'
 require 'dotenv'
 require 'timecop'
