@@ -1,6 +1,6 @@
 # Usage: rails new myapp -m activegraph.rb
 
-gem 'activegraph', '=> 11.1'
+gem 'activegraph', '~> 11.1'
 
 gem_group :development do
   gem 'neo4j-rake_tasks'
@@ -25,7 +25,7 @@ generator = %q[
 
 environment generator
 environment nil, env: 'development' do <<END
-config.neo4j.driver.url = 'neo4j://localhost:7472'
+config.neo4j.driver.url = 'neo4j://localhost:7687'
 config.neo4j.driver.auth_token = Neo4j::Driver::AuthTokens.basic('neo4j', 'password')
 config.neo4j.driver.encryption = false
 END

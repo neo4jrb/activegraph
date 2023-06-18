@@ -1,0 +1,14 @@
+services:
+  database:
+    image: neo4j:community
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    ports:
+      # web interface at http://localhost:7474
+      - 7474:7474 # server.http.listen_address
+      - 7687:7687 # server.bolt.listen_address
+    volumes:
+      - neo4j-data:/data
+
+volumes:
+  neo4j-data:
