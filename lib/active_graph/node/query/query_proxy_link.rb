@@ -51,8 +51,8 @@ module ActiveGraph
             def for_union_clause(arg, model, *args)
               links = []
               links << new(:call_subquery_start, nil, *args)
-              arg[:subquery_parts].each do |subquery_part|
-                links << init_union_link(arg[:proxy], model, subquery_part, args)
+              arg[:subquery_parts].each_with_index do |subquery_part, loop_index|
+                links << init_union_link(arg[:proxy], model, subquery_part, loop_index, args)
               end
               links << new(:call_subquery_end, nil, *args)
               links << post_subquery_with_clause(arg[:first_clause], args)
@@ -70,18 +70,33 @@ module ActiveGraph
               new(:with, clause_arg_lambda, *args)
             end
 
-            def init_union_link(proxy, model, subquery_part, args)
+            def init_union_link(proxy, model, subquery_part, loop_index, args)
               union_proc = if subquery_proxy_part = subquery_part.call rescue nil
-                independent_union_subquery_proc(subquery_proxy_part)
+                independent_union_subquery_proc(subquery_proxy_part, loop_index)
               else
                 continuation_union_subquery_proc(proxy, model, subquery_part)
               end
               new(:union, union_proc, *args)
             end
 
-            def independent_union_subquery_proc(proxy)
-              union_args = [proxy.identity, proxy.to_cypher, proxy.query.parameters]
-              ->(v, _) { union_args + [v.delete_prefix(OUTER_SUBQUERY_PREFIX)] }
+            def independent_union_subquery_proc(proxy, loop_index)
+              proxy_params = proxy.query.parameters
+              proxy_cypher = proxy.to_cypher
+              union_query_index = loop_index
+              subquery_identity = proxy.identity
+
+              ->(identity, _) do
+                prefix = "#{identity}_UNION#{union_query_index}_"
+                if proxy_params.present?
+                  proxy_params = proxy_params.each_with_object({}) do |(param_name, param_val), new_params|
+                    new_params_key = "#{prefix}#{param_name}"
+                    new_params[new_params_key] = param_val
+                    proxy_cypher.gsub!("$#{param_name}", "$#{new_params_key}")
+                    new_params
+                  end
+                end
+                [subquery_identity, proxy_cypher, proxy_params, identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
+              end
             end
 
             def continuation_union_subquery_proc(outer_proxy, model, subquery_part)
@@ -89,8 +104,8 @@ module ActiveGraph
                 proxy = outer_proxy.as(v)
                 proxy_with_clause = proxy.query.with(proxy.identity).with(proxy.identity).proxy_as(model, proxy.identity)
                 complete_query = proxy_with_clause.instance_exec(&subquery_part) || proxy_with_clause
-                outer_query_cypher = proxy.to_cypher
-                subquery_cypher = complete_query.to_cypher.delete_prefix(outer_query_cypher)
+                subquery_cypher = complete_query.to_cypher
+                subquery_cypher = subquery_cypher.delete_prefix(proxy.to_cypher) if proxy.send(:chain).present? || proxy.starting_query
                 subquery_parameters = (complete_query.query.parameters.to_a - proxy.query.parameters.to_a).to_h
                 [complete_query.identity, subquery_cypher, subquery_parameters] + [v.delete_prefix(OUTER_SUBQUERY_PREFIX)]
               end

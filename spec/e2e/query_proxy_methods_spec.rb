@@ -200,7 +200,7 @@ describe 'query_proxy_methods' do
 
     context 'when common starting query' do
       it 'result contains all records from two simple queries' do
-        bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
+        bartemius_query_proxy = Teacher.where(name: bartemius.name)
         amycus_query_proxy = Teacher.where(name: amycus.name)
         loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
         expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
@@ -212,7 +212,7 @@ describe 'query_proxy_methods' do
         lession = Lesson.create(name: 'Defence Against The Dark Arts', students: [potter], teachers: teachers)
 
         bartemius_query_proc = -> { potter.lessons.teachers.where(name: bartemius.name).as(:res_teacher) }
-        amycus_query_proc = -> { Student.where(name: potter.name).lessons.teachers.where(name: amycus.name).as(:res_teacher_2) }
+        amycus_query_proc = -> { Student.where(name: potter.name).lessons.teachers.where(name: amycus.name).as(:res_teacher) }
         quirinus_query_proc = -> { Teacher.all.lessons.teachers.where(name: quirinus.name) }
 
         loyal_to_voldy = Teacher.union(bartemius_query_proc, amycus_query_proc, quirinus_query_proc)
@@ -220,7 +220,7 @@ describe 'query_proxy_methods' do
       end
 
       it 'is further queryable' do
-        bartemius_query_proxy = Teacher.where(name: bartemius.name).as(:res_teacher)
+        bartemius_query_proxy = Teacher.where(name: bartemius.name)
         amycus_query_proxy = Teacher.where(name: amycus.name)
         loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
         expect(loyal_death_eaters.where(age: 34).distinct).to contain_exactly(bartemius)
@@ -228,14 +228,39 @@ describe 'query_proxy_methods' do
 
       it 'works with self reference' do
         amycus_query_proxy = Teacher.where(name: amycus.name)
-        loyal_death_eaters = Teacher.where(name: bartemius.name).as(:res_teacher).union(-> {}, -> { amycus_query_proxy })
+        loyal_death_eaters = Teacher.where(name: bartemius.name).union(-> {}, -> { amycus_query_proxy })
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'allows continuation of original query' do
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        bartemius_name = bartemius.name
+        loyal_death_eaters = Teacher.union(-> { where(name: bartemius_name) }, -> { amycus_query_proxy })
+        expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'works with branches' do
+        lession = Lesson.create(name: 'Occlumency', students: [potter], teachers: [snape])
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        bartemius_name = bartemius.name
+        snape_proxy = Teacher.all.branch { lessons.students }
+
+        all_teachers = Teacher.union(-> { where(name: bartemius_name) }, -> { amycus_query_proxy }, -> { snape_proxy })
+        expect(all_teachers.distinct).to contain_exactly(bartemius, amycus, snape)
+      end
+
+      it 'works after converting in core query and back' do
+        start_of_query = Teacher.all
+        bartemius_query_proxy = start_of_query.query.where("#{start_of_query.identity}.name": bartemius.name).proxy_as(Teacher, start_of_query.identity)
+        amycus_query_proxy = Teacher.where(name: amycus.name)
+        loyal_death_eaters = Teacher.union(-> { bartemius_query_proxy }, -> { amycus_query_proxy })
         expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
       end
     end
 
     context 'with common starting query' do
       it 'result contains all records from two queries respecting the common starting query' do
-        bartemius_query_proc = -> { Teacher.where(name: bartemius.name).as(:res_teacher) }
+        bartemius_query_proc = -> { Teacher.where(name: bartemius.name) }
         name_arr = [amycus.name, snape.name]
         amycus_snape_query_proc = -> { where(name: name_arr) }
         loyal_death_eaters = Teacher.where_not(age: 38).union(bartemius_query_proc, amycus_snape_query_proc)
@@ -244,8 +269,15 @@ describe 'query_proxy_methods' do
 
       it 'works with self reference' do
         amycus_query_proxy = Teacher.where(age: 39)
-        loyal_death_eaters = Teacher.where(name: bartemius.name).as(:res_teacher).union(-> {}, -> { amycus_query_proxy })
+        loyal_death_eaters = Teacher.where(name: bartemius.name).union(-> {}, -> { amycus_query_proxy })
         expect(loyal_death_eaters.distinct).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'works with nested union' do
+        amycus_query_proxy = Teacher.where(age: 39)
+        loyal_death_eaters = Teacher.where(name: bartemius.name).union(-> {}, -> { amycus_query_proxy })
+        all_death_eaters = Teacher.union(-> {Teacher.where(name: snape.name)}, -> {loyal_death_eaters})
+        expect(all_death_eaters.distinct).to contain_exactly(snape, bartemius, amycus)
       end
     end
   end
