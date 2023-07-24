@@ -74,7 +74,7 @@ module ActiveGraph
               union_proc = if subquery_proxy_part = subquery_part.call rescue nil
                 independent_union_subquery_proc(subquery_proxy_part, loop_index)
               else
-                continuation_union_subquery_proc(proxy, model, subquery_part)
+                continuation_union_subquery_proc(proxy, model, subquery_part, loop_index)
               end
               new(:union, union_proc, *args)
             end
@@ -82,32 +82,38 @@ module ActiveGraph
             def independent_union_subquery_proc(proxy, loop_index)
               proxy_params = proxy.query.parameters
               proxy_cypher = proxy.to_cypher
-              union_query_index = loop_index
               subquery_identity = proxy.identity
+              uniq_param_generator = uniq_param_generator_lambda
 
-              ->(identity, _) do
-                prefix = "#{identity}_UNION#{union_query_index}_"
-                if proxy_params.present?
-                  proxy_params = proxy_params.each_with_object({}) do |(param_name, param_val), new_params|
-                    new_params_key = "#{prefix}#{param_name}"
-                    new_params[new_params_key] = param_val
-                    proxy_cypher.gsub!("$#{param_name}", "$#{new_params_key}")
-                    new_params
-                  end
-                end
+              lambda do |identity, _|
+                proxy_params = uniq_param_generator.call(proxy_params, proxy_cypher, identity, loop_index) if proxy_params.present?
                 [subquery_identity, proxy_cypher, proxy_params, identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
               end
             end
 
-            def continuation_union_subquery_proc(outer_proxy, model, subquery_part)
-              lambda do |v, _|
-                proxy = outer_proxy.as(v)
+            def continuation_union_subquery_proc(outer_proxy, model, subquery_part, loop_index)
+              lambda do |identity, _|
+                proxy = outer_proxy.as(identity)
                 proxy_with_clause = proxy.query.with(proxy.identity).with(proxy.identity).proxy_as(model, proxy.identity)
                 complete_query = proxy_with_clause.instance_exec(&subquery_part) || proxy_with_clause
                 subquery_cypher = complete_query.to_cypher
                 subquery_cypher = subquery_cypher.delete_prefix(proxy.to_cypher) if proxy.send(:chain).present? || proxy.starting_query
                 subquery_parameters = (complete_query.query.parameters.to_a - proxy.query.parameters.to_a).to_h
-                [complete_query.identity, subquery_cypher, subquery_parameters] + [v.delete_prefix(OUTER_SUBQUERY_PREFIX)]
+
+                subquery_parameters = uniq_param_generator_lambda.call(subquery_parameters, subquery_cypher, identity, loop_index) if subquery_parameters.present?
+                [complete_query.identity, subquery_cypher, subquery_parameters] + [identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
+              end
+            end
+
+            def uniq_param_generator_lambda
+              lambda do |proxy_params, proxy_cypher, identity, counter|
+                prefix = "#{identity}_UNION#{counter}_"
+                proxy_params.each_with_object({}) do |(param_name, param_val), new_params|
+                  new_params_key = "#{prefix}#{param_name}".to_sym
+                  new_params[new_params_key] = param_val
+                  proxy_cypher.gsub!(/(?<![`'"])\$#{param_name}(?![^\s)])(?![`'"])/, "$#{new_params_key}")
+                  new_params
+                end
               end
             end
 
