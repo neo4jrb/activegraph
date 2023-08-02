@@ -111,7 +111,7 @@ module ActiveGraph
                 proxy_params.each_with_object({}) do |(param_name, param_val), new_params|
                   new_params_key = "#{prefix}#{param_name}".to_sym
                   new_params[new_params_key] = param_val
-                  proxy_cypher.gsub!(/(?<![`'"])\$#{param_name}(?![^\s)])(?![`'"])/, "$#{new_params_key}")
+                  proxy_cypher.gsub!(/\$#{param_name}(?=(?:[^`'"]|'(?:\\.|[^'])*'|"(?:\\.|[^"])*"|`(?:\\.|[^`])*`)*[^'"`]*\z)/, "$#{new_params_key}")
                   new_params
                 end
               end

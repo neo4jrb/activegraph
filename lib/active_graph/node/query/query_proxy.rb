@@ -106,7 +106,7 @@ module ActiveGraph
         end
 
         def set_outer_query_var(var)
-          chain.find { |link| link.start_of_subquery? }&.tap { |link| @outer_query_var = link.subquery_var(var) }
+          chain.find(&:start_of_subquery?)&.tap { |link| @outer_query_var = link.subquery_var(var) }
         end
 
         def query_from_chain(chain, base_query, var)
