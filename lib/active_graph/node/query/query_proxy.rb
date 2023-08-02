@@ -94,18 +94,18 @@ module ActiveGraph
         #
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var, with_labels = true)
-          set_outer_query_var(var)
+          init_outer_query_var(var)
           var_name = @outer_query_var || var
           query_obj = if chain.first&.start_of_subquery? && !@association && !starting_query
-            _query
-          else
-            base_query(var_name, with_labels).params(@params)
-          end
+                        _query
+                      else
+                        base_query(var_name, with_labels).params(@params)
+                      end
 
           query_from_chain(chain, query_obj, var_name).tap { |query| query.proxy_chain_level = _chain_level }
         end
 
-        def set_outer_query_var(var)
+        def init_outer_query_var(var)
           chain.find(&:start_of_subquery?)&.tap { |link| @outer_query_var = link.subquery_var(var) }
         end
 
@@ -162,7 +162,7 @@ module ActiveGraph
         end
 
         def union(*args)
-          hash_args = { proxy: self, subquery_parts: args, first_clause: @chain.blank? }
+          hash_args = {proxy: self, subquery_parts: args, first_clause: @chain.blank?}
           build_deeper_query_proxy(:union, hash_args)
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order

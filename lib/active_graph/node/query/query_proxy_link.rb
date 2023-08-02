@@ -71,11 +71,11 @@ module ActiveGraph
             end
 
             def init_union_link(proxy, model, subquery_part, loop_index, args)
-              union_proc = if subquery_proxy_part = subquery_part.call rescue nil
-                independent_union_subquery_proc(subquery_proxy_part, loop_index)
-              else
-                continuation_union_subquery_proc(proxy, model, subquery_part, loop_index)
-              end
+              union_proc = if subquery_proxy_part = subquery_part.call rescue nil # rubocop:disable Style/RescueModifier
+                             independent_union_subquery_proc(subquery_proxy_part, loop_index)
+                           else
+                             continuation_union_subquery_proc(proxy, model, subquery_part, loop_index)
+                           end
               new(:union, union_proc, *args)
             end
 
@@ -91,7 +91,7 @@ module ActiveGraph
               end
             end
 
-            def continuation_union_subquery_proc(outer_proxy, model, subquery_part, loop_index)
+            def continuation_union_subquery_proc(outer_proxy, model, subquery_part, loop_index) # rubocop:disable Metrics/AbcSize
               lambda do |identity, _|
                 proxy = outer_proxy.as(identity)
                 proxy_with_clause = proxy.query.with(proxy.identity).with(proxy.identity).proxy_as(model, proxy.identity)

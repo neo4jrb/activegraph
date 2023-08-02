@@ -195,7 +195,7 @@ describe 'query_proxy_methods' do
   describe 'union', version: '>4.1' do
     let!(:bartemius) { Teacher.create(name: 'Bartemius Crouch Jr', age: 34) }
     let!(:amycus) { Teacher.create(name: 'Amycus Carrow', age: 39) }
-    let!(:snape) { Teacher.create(name: 'Severus Snape', age: 38 ) }
+    let!(:snape) { Teacher.create(name: 'Severus Snape', age: 38) }
     let(:potter) { Student.create(name: 'Harry Potter') }
 
     context 'when common starting query' do
@@ -209,7 +209,7 @@ describe 'query_proxy_methods' do
       it 'result contains all records from multiple complex queries' do
         quirinus = Teacher.create(name: 'Quirinus Quirrell')
         teachers = [bartemius, amycus, snape, quirinus]
-        lession = Lesson.create(name: 'Defence Against The Dark Arts', students: [potter], teachers: teachers)
+        Lesson.create(name: 'Defence Against The Dark Arts', students: [potter], teachers: teachers)
 
         bartemius_query_proc = -> { potter.lessons.teachers.where(name: bartemius.name).as(:res_teacher) }
         amycus_query_proc = -> { Student.where(name: potter.name).lessons.teachers.where(name: amycus.name).as(:res_teacher) }
@@ -240,7 +240,7 @@ describe 'query_proxy_methods' do
       end
 
       it 'works with branches' do
-        lession = Lesson.create(name: 'Occlumency', students: [potter], teachers: [snape])
+        Lesson.create(name: 'Occlumency', students: [potter], teachers: [snape])
         amycus_query_proxy = Teacher.where(name: amycus.name)
         bartemius_name = bartemius.name
         snape_proxy = Teacher.all.branch { lessons.students }
@@ -276,7 +276,7 @@ describe 'query_proxy_methods' do
       it 'works with nested union' do
         amycus_query_proxy = Teacher.where(age: 39)
         loyal_death_eaters = Teacher.where(name: bartemius.name).union(-> {}, -> { amycus_query_proxy })
-        all_death_eaters = Teacher.union(-> {Teacher.where(name: snape.name)}, -> {loyal_death_eaters})
+        all_death_eaters = Teacher.union(-> { Teacher.where(name: snape.name) }, -> { loyal_death_eaters })
         expect(all_death_eaters.distinct).to contain_exactly(snape, bartemius, amycus)
       end
     end

@@ -1,13 +1,13 @@
 describe ActiveGraph::Node::Query::QueryProxy::Link do
   describe 'label generation' do
     let(:generator) { described_class.uniq_param_generator_lambda }
-    let(:params) { { result_teacher2_name: 'blah' } }
+    let(:params) { {result_teacher2_name: 'blah'} }
     let(:cypher_str) { "WHERE (result_teacher2.name = $#{old_param_key})" }
     let(:id) { 'n' }
     let(:counter) { 1 }
     let!(:old_param_key) { params.keys.first }
     let(:new_param_key) { "#{id}_UNION#{counter}_#{old_param_key}".to_sym }
-    let(:expected_params) { { new_param_key => params.values.first } }
+    let(:expected_params) { {new_param_key => params.values.first} }
 
     subject { generator.call(params, cypher_str, id, counter) }
 
@@ -16,7 +16,7 @@ describe ActiveGraph::Node::Query::QueryProxy::Link do
     end
 
     it 'replaces param name in cypher string' do
-      expected_cypher_str = cypher_str.gsub("#{old_param_key}", new_param_key.to_s).tap { subject }
+      expected_cypher_str = cypher_str.gsub(old_param_key.to_s, new_param_key.to_s).tap { subject }
       expect(cypher_str).to eq(expected_cypher_str)
     end
 
@@ -85,8 +85,8 @@ describe ActiveGraph::Node::Query::QueryProxy::Link do
 
     context 'with spaces around quotes' do
       let(:combinations) do
-        "'$#{old_param_key}', '$#{old_param_key} ', ' $#{old_param_key}'," +
-        " ' $#{old_param_key}  ', 'sa as $#{old_param_key} da d asd'"
+        "'$#{old_param_key}', '$#{old_param_key} ', ' $#{old_param_key}',\
+          ' $#{old_param_key}  ', 'sa as $#{old_param_key} da d asd'"
       end
       let(:cypher_str) { "WHERE (result_teacher2.some_attr = #{combinations} AND result_teacher2.a = $#{old_param_key})" }
 
@@ -101,10 +101,10 @@ describe ActiveGraph::Node::Query::QueryProxy::Link do
       let(:cypher_str) { "WHERE (result_teacher2.some_attr = $#{params.keys.last} ) AND (result_teacher2.name = $#{old_param_key})" }
 
       it 'ignores variable names in single quote' do
-        expected_key_1 = "#{id}_UNION#{counter}_#{params.keys.last}"
-        expected_key_2 = "#{id}_UNION#{counter}_#{old_param_key}"
-        expect(subject).to eq({ expected_key_1.to_sym => ['blah'], expected_key_2.to_sym => 'blah' })
-        expect(cypher_str).to eq("WHERE (result_teacher2.some_attr = $#{expected_key_1} ) AND (result_teacher2.name = $#{expected_key_2})")
+        expected_key1 = "#{id}_UNION#{counter}_#{params.keys.last}"
+        expected_key2 = "#{id}_UNION#{counter}_#{old_param_key}"
+        expect(subject).to eq({expected_key1.to_sym => ['blah'], expected_key2.to_sym => 'blah'})
+        expect(cypher_str).to eq("WHERE (result_teacher2.some_attr = $#{expected_key1} ) AND (result_teacher2.name = $#{expected_key2})")
       end
     end
   end
