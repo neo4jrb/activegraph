@@ -94,13 +94,25 @@ module ActiveGraph
         #
         #   student.lessons.query_as(:l).with('your cypher here...')
         def query_as(var, with_labels = true)
-          query_from_chain(chain, base_query(var, with_labels).params(@params), var)
-            .tap { |query| query.proxy_chain_level = _chain_level }
+          init_outer_query_var(var)
+          var_name = @outer_query_var || var
+          query_obj = if chain.first&.start_of_subquery? && !@association && !starting_query
+                        _query
+                      else
+                        base_query(var_name, with_labels).params(@params)
+                      end
+
+          query_from_chain(chain, query_obj, var_name).tap { |query| query.proxy_chain_level = _chain_level }
+        end
+
+        def init_outer_query_var(var)
+          chain.find(&:start_of_subquery?)&.tap { |link| @outer_query_var = link.subquery_var(var) }
         end
 
         def query_from_chain(chain, base_query, var)
           chain.inject(base_query) do |query, link|
             args = link.args(var, rel_var)
+            var = link.update_outer_query_var(var)
 
             args.is_a?(Array) ? query.send(link.clause, *args) : query.send(link.clause, args)
           end
@@ -143,10 +155,15 @@ module ActiveGraph
           @model.current_scope = previous
         end
 
-        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit)
+        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit union)
 
         METHODS.each do |method|
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
+        end
+
+        def union(*args)
+          hash_args = {proxy: self, subquery_parts: args, first_clause: @chain.blank?}
+          build_deeper_query_proxy(:union, hash_args)
         end
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
         alias node_where where

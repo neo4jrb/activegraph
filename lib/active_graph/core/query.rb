@@ -162,8 +162,8 @@ module ActiveGraph
       # DETACH DELETE clause
       # @return [Query]
 
-      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return order skip limit] # rubocop:disable Layout/LineLength
-      BREAK_METHODS = %(with with_distinct call)
+      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return order skip limit union call_subquery_start call_subquery_end] # rubocop:disable Layout/LineLength
+      BREAK_METHODS = %w(with with_distinct call call_subquery_start call_subquery_end)
 
       CLAUSIFY_CLAUSE = proc { |method| const_get(method.to_s.split('_').map(&:capitalize).join + 'Clause') }
       CLAUSES = METHODS.map(&CLAUSIFY_CLAUSE)

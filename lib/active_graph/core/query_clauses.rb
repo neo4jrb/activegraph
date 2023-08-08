@@ -28,7 +28,7 @@ module ActiveGraph
         def value
           return @value if @value
 
-          [String, Symbol, Integer, Hash, NilClass].each do |arg_class|
+          [String, Symbol, Integer, Hash, NilClass, Array].each do |arg_class|
             from_method = "from_#{arg_class.name.downcase}"
             return @value = send(from_method, @arg) if @arg.is_a?(arg_class) && respond_to?(from_method)
           end
@@ -130,13 +130,15 @@ module ActiveGraph
           def to_cypher(clauses, pretty = false)
             string = clause_string(clauses, pretty)
 
-            final_keyword = if pretty
-                              "#{clause_color}#{keyword}#{ANSI::CLEAR}"
-                            else
-                              keyword
-                            end
+            "#{final_keyword(pretty)} #{string}" if !string.empty?
+          end
 
-            "#{final_keyword} #{string}" if !string.empty?
+          def final_keyword(pretty)
+            if pretty
+              "#{clause_color}#{keyword}#{ANSI::CLEAR}"
+            else
+              keyword
+            end
           end
 
           def clause_string(clauses, pretty)
@@ -256,6 +258,30 @@ module ActiveGraph
         end
       end
 
+      class UnionClause < Clause
+        KEYWORD = ''
+
+        def from_array(args)
+          "#{args[1]} RETURN #{args[0]} AS #{args.last}"
+        end
+
+        class << self
+          def from_args(args, params, options = {})
+            params.add_params(args[2])
+
+            [from_arg(args, params, options)]
+          end
+
+          def clause_strings(clauses)
+            clauses.map!(&:value)
+          end
+
+          def clause_join
+            ' UNION '
+          end
+        end
+      end
+
       class WhereClause < Clause
         KEYWORD = 'WHERE'
 
@@ -345,6 +371,38 @@ module ActiveGraph
 
           def clause_join
             " #{KEYWORD} "
+          end
+        end
+      end
+
+      class CallSubqueryStartClause < Clause
+        KEYWORD = 'CALL {'
+
+        def from_nilclass(_value)
+          ' '
+        end
+
+        def from_string(value)
+          value
+        end
+
+        class << self
+          def to_cypher(clauses, pretty = false)
+            super || final_keyword(pretty)
+          end
+
+          def clause_strings(clauses)
+            clauses.map!(&:value)
+          end
+        end
+      end
+
+      class CallSubqueryEndClause < Clause
+        KEYWORD = '}'
+
+        class << self
+          def to_cypher(_clauses, pretty = false)
+            final_keyword(pretty)
           end
         end
       end
