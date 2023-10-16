@@ -18,9 +18,10 @@ module ActiveGraph::Shared
 
     # Methods deprecated on the Object class which can be safely overridden
     DEPRECATED_OBJECT_METHODS = %w(id type)
+    ATTRIBUTES_METHOD_PATTERNS = Gem::Requirement.create('>= 7.1').satisfied_by?(Gem.loaded_specs["activesupport"].version) ? :attribute_method_patterns : :attribute_method_matchers
 
     included do
-      attribute_method_suffix '' if attribute_method_matchers.none? { |matcher| matcher.prefix == '' && matcher.suffix == '' }
+      attribute_method_suffix '' if send(ATTRIBUTES_METHOD_PATTERNS).none? { |matcher| matcher.prefix == '' && matcher.suffix == '' }
       attribute_method_suffix '='
       attribute_method_suffix '?'
     end
@@ -204,7 +205,7 @@ module ActiveGraph::Shared
 
       # Expand an attribute name into its generated methods names
       def attribute_methods(name)
-        attribute_method_matchers.map { |matcher| matcher.method_name name }
+        send(ATTRIBUTES_METHOD_PATTERNS).map { |matcher| matcher.method_name name }
       end
 
       # Ruby inherited hook to assign superclass attributes to subclasses

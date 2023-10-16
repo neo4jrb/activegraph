@@ -21,15 +21,17 @@ if ENV['COVERAGE']
 end
 
 require 'bundler/setup'
-require 'rspec'
 require 'its'
 require 'fileutils'
 require 'tmpdir'
 require 'logger'
 
+require 'active_support/core_ext/enumerable'
+
 require 'active_graph/core'
 require 'active_graph'
 require 'unique_class'
+require 'rspec'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'
 

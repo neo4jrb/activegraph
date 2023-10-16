@@ -1,8 +1,10 @@
-require 'active_support/per_thread_registry'
-
 module ActiveGraph::Node
   module Scope
     extend ActiveSupport::Concern
+
+    included do
+      thread_mattr_accessor :current_scope
+    end
 
     module ClassMethods
       # Similar to ActiveRecord scope
@@ -86,14 +88,6 @@ module ActiveGraph::Node
         end
       end
 
-      def current_scope #:nodoc:
-        ScopeRegistry.value_for(:current_scope, base_class.to_s)
-      end
-
-      def current_scope=(scope) #:nodoc:
-        ScopeRegistry.set_value_for(:current_scope, base_class.to_s, scope)
-      end
-
       def all(new_var = nil)
         var = new_var || (current_scope ? current_scope.node_identity : :n)
         if current_scope
@@ -137,39 +131,6 @@ module ActiveGraph::Node
 
       def query_proxy_or_target
         @query_proxy_or_target ||= @query_proxy || @target
-      end
-    end
-
-
-    # Stolen from ActiveRecord
-    # https://github.com/rails/rails/blob/08754f12e65a9ec79633a605e986d0f1ffa4b251/activerecord/lib/active_record/scoping.rb#L57
-    class ScopeRegistry # :nodoc:
-      extend ActiveSupport::PerThreadRegistry
-
-      VALID_SCOPE_TYPES = [:current_scope, :ignore_default_scope]
-
-      def initialize
-        @registry = Hash.new { |hash, key| hash[key] = {} }
-      end
-
-      # Obtains the value for a given +scope_name+ and +variable_name+.
-      def value_for(scope_type, variable_name)
-        raise_invalid_scope_type!(scope_type)
-        @registry[scope_type][variable_name]
-      end
-
-      # Sets the +value+ for a given +scope_type+ and +variable_name+.
-      def set_value_for(scope_type, variable_name, value)
-        raise_invalid_scope_type!(scope_type)
-        @registry[scope_type][variable_name] = value
-      end
-
-      private
-
-      def raise_invalid_scope_type!(scope_type)
-        return if VALID_SCOPE_TYPES.include?(scope_type)
-
-        fail ArgumentError, "Invalid scope type '#{scope_type}' sent to the registry. Scope types must be included in VALID_SCOPE_TYPES"
       end
     end
   end

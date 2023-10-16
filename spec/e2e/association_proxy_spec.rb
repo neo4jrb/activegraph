@@ -297,7 +297,6 @@ describe 'Association Proxy' do
     end
 
     context 'when requiring "active_support/core_ext/enumerable"' do
-      require 'active_support/core_ext/enumerable'
       let(:lessons) { billy.lessons }
 
       it 'uses the correct `pluck` method' do

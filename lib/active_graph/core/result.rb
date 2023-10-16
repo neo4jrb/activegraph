@@ -16,6 +16,11 @@ module ActiveGraph
         @records&.each(&block) || super
       end
 
+      ## To avoid to_a on Neo4j::Driver::Result as that one does not call the above block
+      def to_a
+        map.to_a
+      end
+
       def store
         return if @records
         keys

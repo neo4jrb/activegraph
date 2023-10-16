@@ -1,6 +1,4 @@
 describe 'load hooks' do
-  require 'active_support'
-
   module HookedIn
     def hooked_in; end
   end
