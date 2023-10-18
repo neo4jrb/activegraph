@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe ActiveGraph::Core::Query::Parameters do
   let(:parameters) { ActiveGraph::Core::Query::Parameters.new }
 

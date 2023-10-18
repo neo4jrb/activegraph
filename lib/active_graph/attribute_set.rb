@@ -1,7 +1,3 @@
-# frozen_string_literal: true
-
-require 'active_model/attribute_set'
-
 module ActiveGraph
   class AttributeSet < ActiveModel::AttributeSet
     def initialize(attr_hash, attr_list)

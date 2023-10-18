@@ -1,5 +1,3 @@
-require 'active_graph/class_arguments'
-
 module ActiveGraph::Relationship
   module Property
     extend ActiveSupport::Concern

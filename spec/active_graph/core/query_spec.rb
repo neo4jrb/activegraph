@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 class DocGenerator
   QUERY_DOCS_PATH = File.join('..', 'neo4j', 'docs')
 

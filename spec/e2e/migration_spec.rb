@@ -1,4 +1,3 @@
-
 describe 'migration tasks' do
   let_env_variable('MIGRATIONS_SILENCED') { 'true' }
 

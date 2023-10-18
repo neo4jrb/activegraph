@@ -1,6 +1,6 @@
 module ActiveGraph
   module Core
-    class Query
+    module QueryExt
       # Creates a ActiveGraph::Node::Query::QueryProxy object that builds off of a Core::Query object.
       #
       # @param [Class] model An Node model to be used as the start of a new QueryuProxy chain

@@ -1,5 +1,3 @@
-require 'active_graph/migrations/schema'
-
 describe ActiveGraph::Migrations::Schema do
   before { delete_schema }
 

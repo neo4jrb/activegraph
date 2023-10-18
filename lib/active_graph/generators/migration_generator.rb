@@ -1,7 +1,3 @@
-# frozen_string_literal: true
-
-require File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'active_graph.rb')
-
 module ActiveGraph
   module Generators
     class MigrationGenerator < ::Rails::Generators::NamedBase

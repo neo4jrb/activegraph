@@ -1,8 +1,3 @@
-require 'active_graph/core/instrumentable'
-require 'active_graph/transaction'
-require 'active_graph/core/query_builder'
-require 'active_graph/core/record'
-
 module ActiveGraph
   module Core
     module Querable

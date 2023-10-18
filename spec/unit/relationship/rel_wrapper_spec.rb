@@ -1,4 +1,4 @@
-describe ActiveGraph::RelWrapping do
+describe ActiveGraph::Relationship::Wrapping do
   let(:id) { 1 }
   let(:type) { :DEFAULT }
   let(:properties) { {} }
@@ -6,7 +6,7 @@ describe ActiveGraph::RelWrapping do
   let(:end_node_id) { 2 }
 
   let(:rel) { double(start_node_id: start_node_id, end_node_id: end_node_id, type: type, properties: properties) }
-  subject { ActiveGraph::RelWrapping.wrapper(rel) }
+  subject { ActiveGraph::Relationship::Wrapping.wrapper(rel) }
 
   it { should eq(rel) }
 

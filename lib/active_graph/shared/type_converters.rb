@@ -1,9 +1,3 @@
-require 'date'
-require 'bigdecimal'
-require 'bigdecimal/util'
-require 'active_support/core_ext/big_decimal/conversions'
-require 'active_support/core_ext/string/conversions'
-
 module ActiveGraph::Shared
   class Boolean; end
 

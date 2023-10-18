@@ -1,7 +1,3 @@
-require 'active_graph/core/query_clauses'
-require 'active_graph/core/query_find_in_batches'
-require 'active_support/notifications'
-
 module ActiveGraph
   module Core
     # Allows for generation of cypher queries via ruby method calls (inspired by ActiveRecord / arel syntax)
@@ -15,8 +11,8 @@ module ActiveGraph
     class Query
       include ActiveGraph::Core::QueryClauses
       include ActiveGraph::Core::QueryFindInBatches
+      include QueryExt
       DEFINED_CLAUSES = {}
-
 
       attr_accessor :clauses
 
@@ -247,7 +243,7 @@ module ActiveGraph
           neo_id = (node_object.respond_to?(:neo_id) ? node_object.neo_id : node_object)
 
           match_method = optional_match ? :optional_match : :match
-          query.send(match_method, variable).where(variable => {neo_id: neo_id})
+          query.send(match_method, variable).where(variable => { neo_id: })
         end
       end
 
@@ -270,7 +266,6 @@ module ActiveGraph
       # Class is Enumerable.  Each yield is a Hash with the key matching the variable returned and the value being the value for that key from the response
       # @return [Array]
       # @raise [ActiveGraph::Server::CypherResponse::ResponseError] Raises errors from neo4j server
-
 
       # Executes a query without returning the result
       # @return [Boolean] true if successful
@@ -318,6 +313,7 @@ module ActiveGraph
       # @return [String] Resulting cypher query string
       EMPTY = ' '
       NEWLINE = "\n"
+
       def to_cypher(options = {})
         join_string = options[:pretty] ? NEWLINE : EMPTY
 
@@ -334,6 +330,7 @@ module ActiveGraph
         cypher_string = "CYPHER #{@options[:parser]} #{cypher_string}" if @options[:parser]
         cypher_string.tap(&:strip!)
       end
+
       alias cypher to_cypher
 
       def pretty_cypher

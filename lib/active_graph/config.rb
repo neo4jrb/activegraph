@@ -26,7 +26,6 @@ module ActiveGraph
 
       # @return [Hash] the default file loaded by yaml
       def defaults
-        require 'yaml'
         @defaults ||= ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(default_file))
       end
 

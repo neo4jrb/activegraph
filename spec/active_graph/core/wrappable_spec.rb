@@ -1,6 +1,3 @@
-require 'spec_helper'
-require 'active_graph/core/wrappable'
-
 describe ActiveGraph::Core::Wrappable do
   before do
     stub_const 'WrapperClass', (Class.new do
@@ -18,10 +15,10 @@ describe ActiveGraph::Core::Wrappable do
 
   describe '.wrapper_callback' do
     it 'does not allow for two callbacks' do
-      WrappableClass.wrapper_callback(->(obj) { WrapperClass.new(obj) })
+      WrappableClass.wrapper_callback(&WrapperClass.method(:new))
 
       expect do
-        WrappableClass.wrapper_callback(-> {})
+        WrappableClass.wrapper_callback {}
       end.to raise_error(/Callback already specified!/)
     end
 
@@ -31,7 +28,7 @@ describe ActiveGraph::Core::Wrappable do
     end
 
     it 'allow users to specify a callback which will create a wrapper object' do
-      WrappableClass.wrapper_callback(->(obj) { WrapperClass.new(obj) })
+      WrappableClass.wrapper_callback(&WrapperClass.method(:new))
 
       obj = WrappableClass.new
       wrapper_obj = obj.wrap

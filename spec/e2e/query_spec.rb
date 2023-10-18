@@ -1,5 +1,3 @@
-require 'set'
-
 describe 'Query API' do
   before(:each) do
     clear_model_memory_caches

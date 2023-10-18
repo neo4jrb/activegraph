@@ -1,8 +1,3 @@
-# frozen_string_literal: true
-
-require 'active_graph/core/result'
-require 'active_support/core_ext/module/attribute_accessors'
-
 module ActiveGraph
   module Core
     module Record

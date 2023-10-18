@@ -1,11 +1,5 @@
-require 'orm_adapter'
-
 module ActiveGraph
   module Node
-    module ClassMethods
-      include OrmAdapter::ToAdapter
-    end
-
     class OrmAdapter < ::OrmAdapter::Base
       module ClassMethods
         include ActiveModel::Callbacks

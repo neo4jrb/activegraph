@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe ActiveGraph::Base do
   before { described_class.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
 
@@ -286,7 +284,7 @@ describe ActiveGraph::Base do
             klass = Neo4j::Driver::Types.const_get(core_class)
             @procs[core_class] = klass.instance_variable_get(:@wrapper_callback)
             klass.clear_wrapper_callback
-            klass.wrapper_callback(WrapperClass.method(:new))
+            klass.wrapper_callback(&WrapperClass.method(:new))
           end
         end
 

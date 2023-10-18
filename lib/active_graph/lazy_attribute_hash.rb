@@ -1,5 +1,3 @@
-require 'active_model/attribute_set'
-
 module ActiveGraph
   class LazyAttributeHash < ActiveModel::LazyAttributeHash
     def initialize(values, attr_list)

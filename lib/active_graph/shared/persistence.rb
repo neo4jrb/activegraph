@@ -217,7 +217,7 @@ module ActiveGraph::Shared
       if self.new_record?
         "#{model_cache_key}/new"
       elsif self.respond_to?(:updated_at) && !self.updated_at.blank?
-        "#{model_cache_key}/#{neo_id}-#{self.updated_at.utc.to_s(:number)}"
+        "#{model_cache_key}/#{neo_id}-#{self.updated_at.utc.to_fs(:number)}"
       else
         "#{model_cache_key}/#{neo_id}"
       end

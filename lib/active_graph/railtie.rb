@@ -1,9 +1,3 @@
-require 'active_support/notifications'
-require 'rails/railtie'
-# Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
-require 'action_dispatch/railtie'
-require 'active_graph'
-
 module ActiveGraph
   class Railtie < ::Rails::Railtie
     def empty_config

@@ -1,8 +1,3 @@
-require 'active_support/concern'
-require 'active_support/notifications'
-require 'active_graph/ansi'
-require 'active_graph/core/logging'
-
 module ActiveGraph
   module Core
     module Instrumentable

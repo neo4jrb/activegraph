@@ -1,7 +1,3 @@
-require 'rake'
-require 'active_support/concern'
-require 'active_graph/migration'
-
 if !defined?(Rails) && !Rake::Task.task_defined?('environment')
   desc 'Run a script against the database to perform system-wide changes'
   task :environment do

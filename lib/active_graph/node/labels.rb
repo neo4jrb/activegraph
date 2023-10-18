@@ -1,5 +1,3 @@
-require 'active_graph/core/label'
-
 module ActiveGraph
   module Node
     # Provides a mapping between neo4j labels and Ruby classes
@@ -76,7 +74,7 @@ module ActiveGraph
 
       def self.clear_wrapped_models
         MODELS_FOR_LABELS_CACHE.clear
-        ActiveGraph::NodeWrapping::CONSTANTS_FOR_LABELS_CACHE.clear
+        ActiveGraph::Node::Wrapping::CONSTANTS_FOR_LABELS_CACHE.clear
       end
 
       module ClassMethods

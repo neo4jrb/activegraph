@@ -66,6 +66,7 @@ module ActiveGraph
     end
 
     module ClassMethods
+      include ::OrmAdapter::ToAdapter
       def nodeify(object)
         if object.is_a?(::ActiveGraph::Node) || object.nil?
           object

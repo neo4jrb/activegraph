@@ -1,6 +1,3 @@
-require 'active_graph/core/querable'
-require 'active_graph/core/schema'
-
 module ActiveGraph
   # To contain any base login for Node/Relationship which
   # is external to the main classes

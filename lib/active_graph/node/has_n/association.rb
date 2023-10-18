@@ -1,6 +1,3 @@
-require 'active_support/inflector/inflections'
-require 'active_graph/class_arguments'
-
 module ActiveGraph
   module Node
     module HasN

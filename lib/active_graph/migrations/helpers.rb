@@ -1,14 +1,7 @@
-require 'benchmark'
-
 module ActiveGraph
   module Migrations
     module Helpers
       extend ActiveSupport::Concern
-      extend ActiveSupport::Autoload
-
-      autoload :Schema
-      autoload :IdProperty
-      autoload :Relationships
 
       PROPERTY_ALREADY_DEFINED = 'Property `%{new_property}` is already defined in `%{label}`. '\
                                  'To overwrite, call `remove_property(:%{label}, :%{new_property})` before this method.'.freeze

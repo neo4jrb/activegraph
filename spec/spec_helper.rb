@@ -28,9 +28,10 @@ require 'logger'
 
 require 'active_support/core_ext/enumerable'
 
-require 'active_graph/core'
+require 'rails'
 require 'active_graph'
 require 'unique_class'
+require 'ostruct'
 require 'rspec'
 
 require 'pry' if ENV['APP_ENV'] == 'debug'

@@ -1,9 +1,5 @@
-require 'ostruct'
-
 module Rails
   describe 'railtie' do
-    require 'active_graph/railtie'
-
     after(:context) { set_default_driver }
 
     describe '#setup!' do

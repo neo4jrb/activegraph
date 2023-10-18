@@ -1,4 +1,3 @@
-require 'set'
 module ActiveGraph
   # This is here to support the removed functionality of being able to
   # defined indexes and constraints on models

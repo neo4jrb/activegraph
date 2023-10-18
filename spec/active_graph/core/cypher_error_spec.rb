@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module ActiveGraph
   module Core
     describe CypherError do

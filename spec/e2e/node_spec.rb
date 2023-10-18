@@ -739,7 +739,7 @@ describe 'ActiveGraph::Node' do
       let(:model) { IceLolly.create(flavour: 'vanilla', required_on_create: true, required_on_update: true) }
 
       it 'should respond with a valid cache key' do
-        expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/#{model.neo_id}-#{model.updated_at.utc.to_s(:number)}"
+        expect(model.cache_key).to eq "#{model.class.model_name.cache_key}/#{model.neo_id}-#{model.updated_at.utc.to_fs(:number)}"
       end
 
       context 'when changed' do

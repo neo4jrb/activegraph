@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe ActiveGraph::Transactions do
   let(:read_query) { 'RETURN 1' }
   let(:write_query) { 'CREATE (n:Student) RETURN count(n)' }

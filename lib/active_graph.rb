@@ -1,125 +1,54 @@
+require 'benchmark'
+require 'bigdecimal'
+require 'bigdecimal/util'
+require 'date'
 require 'forwardable'
-require 'active_graph/version'
-
-require 'active_graph/core'
-require 'active_graph/core/query_ext' # From this gem
-
-require 'active_support/core_ext/module/attribute_accessors_per_thread'
-require 'active_graph/secure_random_ext'
-require 'active_graph/transactions'
-require 'active_graph/base'
-require 'active_graph/model_schema'
-
 require 'active_model'
-require 'active_support/concern'
-require 'active_support/core_ext/class/attribute.rb'
-require 'active_support/core_ext/class/subclasses.rb'
+require 'active_model/attribute_set'
+require 'active_support/core_ext/big_decimal/conversions'
+require 'active_support/core_ext/class/attribute'
+require 'active_support/core_ext/class/subclasses'
 require 'active_support/core_ext/module/attribute_accessors'
+require 'active_support/core_ext/module/attribute_accessors_per_thread'
+require 'active_support/core_ext/string/conversions'
+require 'active_support/inflector'
+require 'active_support/inflector/inflections'
+require 'active_support/notifications'
 require 'json'
+require 'neo4j/driver'
+require 'orm_adapter'
+require 'rake'
+require 'set'
+require 'sorted_set'
+require 'yaml'
 
-require 'active_graph/lazy_attribute_hash'
-require 'active_graph/attribute_set'
-require 'active_graph/errors'
-require 'active_graph/config'
-require 'active_graph/wrapper'
-require 'active_graph/relationship/rel_wrapper'
-require 'active_graph/node/node_wrapper'
-require 'active_graph/shared/type_converters'
-require 'active_graph/shared/rel_type_converters'
-require 'active_graph/shared/marshal'
-require 'active_graph/type_converters'
-require 'active_graph/paginated'
-require 'active_graph/schema/operation'
-
-require 'active_graph/timestamps'
-require 'active_graph/undeclared_properties'
-
-require 'active_graph/shared/callbacks'
-require 'active_graph/shared/filtered_hash'
-require 'active_graph/shared/declared_property/index'
-require 'active_graph/shared/declared_property'
-require 'active_graph/shared/declared_properties'
-require 'active_graph/shared/enum'
-require 'active_graph/shared/mass_assignment'
-require 'active_graph/shared/attributes'
-require 'active_graph/shared/typecasted_attributes'
-require 'active_graph/shared/property'
-require 'active_graph/shared/persistence'
-require 'active_graph/shared/validations'
-require 'active_graph/shared/identity'
-require 'active_graph/shared/serialized_properties'
-require 'active_graph/shared/typecaster'
-require 'active_graph/shared/initialize'
-require 'active_graph/shared/query_factory'
-require 'active_graph/shared/cypher'
-require 'active_graph/shared/permitted_attributes'
-require 'active_graph/shared'
-
-require 'active_graph/relationship/callbacks'
-require 'active_graph/relationship/initialize'
-require 'active_graph/relationship/property'
-require 'active_graph/relationship/persistence/query_factory'
-require 'active_graph/relationship/persistence'
-require 'active_graph/relationship/validations'
-require 'active_graph/relationship/query'
-require 'active_graph/relationship/related_node'
-require 'active_graph/relationship/types'
-require 'active_graph/relationship'
-
-require 'active_graph/node/dependent_callbacks'
-require 'active_graph/node/node_list_formatter'
-require 'active_graph/node/dependent'
-require 'active_graph/node/dependent/query_proxy_methods'
-require 'active_graph/node/dependent/association_methods'
-require 'active_graph/node/enum'
-require 'active_graph/node/query_methods'
-require 'active_graph/node/query/query_proxy_methods'
-require 'active_graph/node/query/query_proxy_methods_of_mass_updating'
-require 'active_graph/node/query/query_proxy_enumerable'
-require 'active_graph/node/query/query_proxy_find_in_batches'
-require 'active_graph/node/query/query_proxy_eager_loading'
-require 'active_graph/node/query/query_proxy_eager_loading/association_tree'
-require 'active_graph/node/query/query_proxy_link'
-require 'active_graph/node/labels/index'
-require 'active_graph/node/labels/reloading'
-require 'active_graph/node/labels'
-require 'active_graph/node/id_property/accessor'
-require 'active_graph/node/id_property'
-require 'active_graph/node/callbacks'
-require 'active_graph/node/initialize'
-require 'active_graph/node/property'
-require 'active_graph/node/persistence'
-require 'active_graph/node/validations'
-require 'active_graph/node/rels'
-require 'active_graph/node/reflection'
-require 'active_graph/node/unpersisted'
-require 'active_graph/node/has_n'
-require 'active_graph/node/has_n/association_cypher_methods'
-require 'active_graph/node/has_n/association/rel_wrapper'
-require 'active_graph/node/has_n/association/rel_factory'
-require 'active_graph/node/has_n/association'
-require 'active_graph/node/query/query_proxy'
-require 'active_graph/node/query'
-require 'active_graph/node/scope'
-require 'active_graph/node'
-
-require 'active_support/concern'
-require 'active_graph/core/cypher_error'
-require 'active_graph/core/schema_errors'
-
-module ActiveGraph
-  extend ActiveSupport::Autoload
-  autoload :Migrations
-  autoload :Migration
+if defined?(Rails)
+  # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
+  require 'action_dispatch/railtie'
+  require 'rails/generators'
+  require 'rails/generators/active_model'
+  require 'rails/generators/named_base'
+  require 'rails/railtie'
 end
+
+loader = Zeitwerk::Loader.for_gem
+unless defined?(Rails)
+  loader.ignore(File.expand_path('active_graph/generators', __dir__))
+  loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
+end
+loader.inflector.inflect("ansi" => "ANSI")
+loader.setup
+# loader.eager_load
+
+Neo4j::Driver::Result.prepend ActiveGraph::Core::Result
+Neo4j::Driver::Record.prepend ActiveGraph::Core::Record
+Neo4j::Driver::Transaction.prepend ActiveGraph::Transaction
+Neo4j::Driver::Types::Entity.include ActiveGraph::Core::Wrappable
+Neo4j::Driver::Types::Entity.prepend ActiveGraph::Core::Entity
+Neo4j::Driver::Types::Node.prepend ActiveGraph::Core::Node
+Neo4j::Driver::Types::Node.wrapper_callback(&ActiveGraph::Node::Wrapping.method(:wrapper))
+Neo4j::Driver::Types::Relationship.wrapper_callback(&ActiveGraph::Relationship::Wrapping.method(:wrapper))
+SecureRandom.singleton_class.prepend ActiveGraph::SecureRandomExt
+Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute if defined?(Rails)
 
 load 'active_graph/tasks/migration.rake'
-
-require 'active_graph/node/orm_adapter'
-if defined?(Rails)
-  require 'rails/generators'
-  require 'rails/generators/active_graph_generator'
-end
-
-Neo4j::Driver::Transaction.prepend ActiveGraph::Transaction
-SecureRandom.singleton_class.prepend ActiveGraph::SecureRandomExt

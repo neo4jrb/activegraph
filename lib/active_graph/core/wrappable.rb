@@ -8,7 +8,7 @@ module ActiveGraph
       end
 
       class_methods do
-        def wrapper_callback(proc)
+        def wrapper_callback(&proc)
           fail 'Callback already specified!' if @wrapper_callback
           @wrapper_callback = proc
         end

@@ -1,13 +1,5 @@
 module ActiveGraph
   module Migrations
-    extend ActiveSupport::Autoload
-    autoload :Helpers
-    autoload :MigrationFile
-    autoload :Base
-    autoload :Runner
-    autoload :SchemaMigration
-    autoload :CheckPending
-
     class << self
       def check_for_pending_migrations!
         return if ActiveGraph::Config.configuration['skip_migration_check']

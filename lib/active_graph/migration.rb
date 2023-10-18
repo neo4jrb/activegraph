@@ -1,6 +1,3 @@
-require 'benchmark'
-require 'active_graph/migrations/helpers/id_property'
-
 module ActiveGraph
   class Migration
     def migrate
