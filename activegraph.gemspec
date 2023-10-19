@@ -31,10 +31,9 @@ DESCRIPTION
   }
 
   s.add_dependency('activemodel', '>= 4.0')
-  # s.add_dependency('activesupport', '>= 4.0')
-  s.add_dependency('activesupport', '>= 4.0', '< 7.1')
+  s.add_dependency('activesupport', '>= 4.0')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
-  s.add_dependency('neo4j-ruby-driver', '>= 5.13.0.alpha.3')
+  s.add_dependency('neo4j-ruby-driver', '< 5')
   s.add_dependency('orm_adapter', '>= 0.5.0')
   s.add_dependency('sorted_set')
   s.add_development_dependency('guard')
@@ -48,6 +47,5 @@ DESCRIPTION
   s.add_development_dependency('rubocop', '>= 0.56.0')
   s.add_development_dependency('yard')
   s.add_development_dependency('dryspec')
-  # s.add_development_dependency('rspec', '< 3.10') # Cannot proxy frozen objects
-  s.add_development_dependency('rspec') # Cannot proxy frozen objects
+  s.add_development_dependency('rspec')
 end
