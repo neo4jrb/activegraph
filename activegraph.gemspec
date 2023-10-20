@@ -30,7 +30,7 @@ DESCRIPTION
     'bug_tracker_uri' => 'https://github.com/neo4jrb/activegraph/issues'
   }
 
-  s.add_dependency('activemodel', '>= 4')
+  s.add_dependency('activemodel', '>= 7')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
   s.add_dependency('neo4j-ruby-driver', '>= 4.4.1', '< 5')
   s.add_dependency('orm_adapter', '>= 0.5.0')
@@ -41,7 +41,7 @@ DESCRIPTION
   s.add_development_dependency('neo4j-rake_tasks', '>= 0.3.0')
   s.add_development_dependency('os')
   s.add_development_dependency('pry')
-  s.add_development_dependency('railties', '>= 4')
+  s.add_development_dependency('railties', '>= 7')
   s.add_development_dependency('rake')
   s.add_development_dependency('rubocop', '>= 0.56.0')
   s.add_development_dependency('yard')
