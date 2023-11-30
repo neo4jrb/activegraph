@@ -51,6 +51,10 @@ module ActiveGraph
         def replace_with(node_or_nodes)
           node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
           original_ids = self.pluck(:id)
+          $concurrency_queue << 'ready' if $concurrency_test # completed read above so send signal in the queue
+          while $concurrency_test && $concurrency_test_wait # wait till other thread has also completed its read
+            sleep 1
+          end
           delete_rels_for_nodes(original_ids, node_or_nodes.collect(&:id))
           add_rels(node_or_nodes, original_ids)
         end

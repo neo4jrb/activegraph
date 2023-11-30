@@ -103,6 +103,59 @@ describe ActiveGraph::Relationship::Persistence::QueryFactory do
         expect(from_node.reload.to_classes).to be_empty
       end
 
+      it 'does not create duplicate has_one relationship' do
+        from_node.save
+        to_node.save
+        begin
+          $concurrency_test = true
+          $concurrency_queue = Queue.new
+          $concurrency_test_wait = true
+          t1 = Thread.new { to_node.update(from_class: from_node) }
+          t2 = Thread.new { to_node.update(from_class: from_node) }
+          while $concurrency_queue.size < 2
+            # wait till both thread have complted read query
+            sleep 1
+          end
+          $concurrency_test_wait = false # make threads resume their work
+          [t1, t2].join # wait for the threads to finish
+
+          # to_node.from_class only returns 1 result but in db there are two rels associated with this node
+          # this assertion fails with with result 2 proving the presence of bug
+          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
+        ensure
+          $concurrency_test = nil
+          $concurrency_test_wait = nil
+          $concurrency_queue = nil
+        end
+      end
+
+      it 'does not create two rels with different nodes in has_one relationship' do
+        from_node.save
+        to_node.save
+        from_node_two = FromClass.create(name: 'foo-2')
+        begin
+          $concurrency_test = true
+          $concurrency_queue = Queue.new
+          $concurrency_test_wait = true
+          t1 = Thread.new { to_node.update(from_class: from_node) }
+          t2 = Thread.new { to_node.update(from_class: from_node_two) }
+          while $concurrency_queue.size < 2
+            # wait till both thread have complted read query
+            sleep 1
+          end
+          $concurrency_test_wait = false # make threads resume their work
+          [t1, t2].join # wait for the threads to finish
+
+          # to_node.from_class only returns 1 result but in db there are two rels associated with this node
+          # this assertion fails with with result 2 proving the presence of bug
+          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
+        ensure
+          $concurrency_test = nil
+          $concurrency_test_wait = nil
+          $concurrency_queue = nil
+        end
+      end
+
       it 'delets has_one rel from from_node when new relation is created' do
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
