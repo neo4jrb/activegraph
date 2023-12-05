@@ -50,11 +50,8 @@ module ActiveGraph
         # Executed in the database, callbacks will not be run.
         def replace_with(node_or_nodes)
           node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
+          ActiveGraph::Base.lock_node(start_object) unless start_object.new_record?
           original_ids = self.pluck(:id)
-          $concurrency_queue << 'ready' if $concurrency_test # completed read above so send signal in the queue
-          while $concurrency_test && $concurrency_test_wait # wait till other thread has also completed its read
-            sleep 1
-          end
           delete_rels_for_nodes(original_ids, node_or_nodes.collect(&:id))
           add_rels(node_or_nodes, original_ids)
         end
@@ -66,12 +63,13 @@ module ActiveGraph
         end
 
         def delete_rels_for_nodes(original_ids, new_ids)
-          ids = original_ids.select { |id| !new_ids.include?(id) }
-          return unless ids.present?
+          ids_to_be_removed = original_ids - new_ids
+          return unless ids_to_be_removed.present?
+
           if association.dependent
-            start_object.public_send("dependent_#{association.dependent}_callback", association, ids)
+            start_object.public_send("dependent_#{association.dependent}_callback", association, ids_to_be_removed)
           else
-            self.where(id: ids).delete_all_rels
+            self.where(id: ids_to_be_removed).delete_all_rels
           end
         end
 
