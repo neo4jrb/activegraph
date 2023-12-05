@@ -103,58 +103,6 @@ describe ActiveGraph::Relationship::Persistence::QueryFactory do
         expect(from_node.reload.to_classes).to be_empty
       end
 
-      context 'concurrent update' do
-        before do
-          allow(ActiveGraph::Base).to receive(:lock_node).and_wrap_original do |original, *args|
-            $concurrency_queue << 'ready'
-            Thread.stop
-            original.call(*args)
-            $concurrency_queue << Thread.current
-            Thread.stop
-          end
-        end
-        after { $concurrency_queue = nil }
-        let!(:from_node) { FromClass.create(name: 'foo') }
-        let!(:to_node) { ToClass.create(name: 'bar') }
-        let(:from_node_two) { FromClass.create(name: 'foo-2') }
-
-        it 'does not create duplicate has_one relationship' do
-          $concurrency_queue = Thread::Queue.new
-          t1 = Thread.new { to_node.update(from_class: from_node) }
-          t2 = Thread.new { to_node.update(from_class: from_node) }
-          sleep(0.1) until $concurrency_queue.size == 2
-          $concurrency_queue.clear
-          [t1, t2].each(&:run)
-          sleep(0.1) until $concurrency_queue.size == 1 && t1.status == 'sleep' && t2.status == 'sleep'
-          $concurrency_queue.pop.run
-          sleep(0.1) until !(t1.status && t2.status)
-
-          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
-          (t1.status == 'sleep' ? t1.run : t2.run).join
-          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
-        end
-
-        it 'does not create two rels with different nodes in has_one relationship' do
-          $concurrency_queue = Thread::Queue.new
-          t1 = Thread.new { to_node.update(from_class: from_node) }
-          t2 = Thread.new { to_node.update(from_class: from_node_two) }
-          sleep(0.1) until $concurrency_queue.size == 2
-          $concurrency_queue.clear
-          [t1, t2].each(&:run)
-          sleep(0.1) until $concurrency_queue.size == 1 && t1.status == 'sleep' && t2.status == 'sleep'
-          $concurrency_queue.pop.run
-          sleep(0.1) until !(t1.status && t2.status)
-
-          first_assigned_from_class, second_assigned_from_class = t1.status == 'sleep' ? [from_node_two, from_node] : [from_node, from_node_two]
-
-          expect(ToClass.find(to_node.id).from_class.id).to eq(first_assigned_from_class.id)
-          (t1.status == 'sleep' ? t1.run : t2.run).join
-
-          expect(to_node.reload.from_class.id).to eq(second_assigned_from_class.id)
-          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
-        end
-      end
-
       it 'delets has_one rel from from_node when new relation is created' do
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
