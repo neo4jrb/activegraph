@@ -29,7 +29,7 @@ module ActiveGraph
       alias transaction write_transaction
 
       def lock_node(node)
-        node.as(:n).query.set('n._LOCK_ = null').exec if tx&.open? || explicit_session&.open?
+        node.as(:n).query.remove('n._LOCK_').exec if tx&.open? || explicit_session&.open?
       end
 
       private
