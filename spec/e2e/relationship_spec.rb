@@ -354,7 +354,7 @@ describe 'Relationship' do
     let(:f1) { FromClass.create }
     let(:t1) { ToClass.create }
     let(:result) do
-      ActiveGraph::Base.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
+      ActiveGraph::Base.query('MATCH (start)-[r]-() WHERE elementId(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
     context 'with a rel type requiring backticks' do
@@ -495,8 +495,8 @@ describe 'Relationship' do
 
       describe 'neo id queries' do
         it 'aliases #{related_node}_neo_id to #{related_node}.neo_id' do
-          expect(rel1.start_node_id).to eq rel1.from_node.neo_id
-          expect(rel1.end_node_id).to eq rel1.to_node.neo_id
+          expect(rel1.start_node_element_id).to eq rel1.from_node.neo_id
+          expect(rel1.end_node_element_id).to eq rel1.to_node.neo_id
         end
       end
     end
@@ -533,7 +533,7 @@ describe 'Relationship' do
       end
 
       it 'with no results' do
-        expect { MyRelClass.find(8_675_309) }.to raise_error(ActiveGraph::RecordNotFound)
+        expect { MyRelClass.find('8_675_309') }.to raise_error(ActiveGraph::RecordNotFound)
       end
     end
 

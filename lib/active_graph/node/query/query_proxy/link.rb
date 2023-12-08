@@ -158,11 +158,11 @@ module ActiveGraph
 
             def for_association(name, value, n_string, model)
               neo_id = value.try(:neo_id) || value
-              fail ArgumentError, "Invalid value for '#{name}' condition" if not neo_id.is_a?(Integer)
+              fail ArgumentError, "Invalid value for '#{name}' condition" unless neo_id.is_a?(String)
 
               [
                 new(:match, ->(v, _) { "(#{v})#{model.associations[name].arrow_cypher}(#{n_string})" }),
-                new(:where, ->(_, _) { {"ID(#{n_string})" => neo_id.to_i} })
+                new(:where, ->(_, _) { {"elementId(#{n_string})" => neo_id} })
               ]
             end
 

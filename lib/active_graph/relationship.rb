@@ -10,6 +10,7 @@ module ActiveGraph
     include ActiveGraph::Relationship::Initialize
     include ActiveGraph::Shared::Identity
     include ActiveGraph::Shared::Marshal
+    include ActiveGraph::Node::IdProperty
     include ActiveGraph::Shared::SerializedProperties
     include ActiveGraph::Relationship::Property
     include ActiveGraph::Relationship::Persistence
@@ -58,7 +59,7 @@ module ActiveGraph
     private
 
     def node_or_nil(node)
-      node.is_a?(ActiveGraph::Node) || node.is_a?(Integer) ? node : nil
+      node.is_a?(ActiveGraph::Node) || node.is_a?(String) ? node : nil
     end
 
     def hash_or_nil(node_or_hash, hash_or_nil)

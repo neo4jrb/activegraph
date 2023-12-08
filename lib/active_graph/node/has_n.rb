@@ -282,7 +282,7 @@ module ActiveGraph::Node
       query_proxy = self.class.as(:previous).where(neo_id: result_cache.map(&:neo_id))
       query_proxy = self.class.send(:association_query_proxy, association_name, previous_query_proxy: query_proxy, node: :next, optional: true)
 
-      Hash[*query_proxy.pluck('ID(previous)', 'collect(next)').flatten(1)].each_value do |records|
+      Hash[*query_proxy.pluck('elementId(previous)', 'collect(next)').flatten(1)].each_value do |records|
         records.each do |record|
           record.instance_variable_set('@source_proxy_result_cache', records)
         end

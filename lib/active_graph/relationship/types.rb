@@ -67,6 +67,14 @@ module ActiveGraph
           !!@type
         end
 
+        def mapped_element_name
+          @type
+        end
+
+        def mapped_element
+          Core::Type.new(mapped_element_name)
+        end
+
         private
 
         def assign_type!(given_type, auto)

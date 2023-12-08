@@ -88,7 +88,7 @@ module ActiveGraph
         def include?(other, target = nil)
           query_with_target(target) do |var|
             where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
-                             "ID(#{var}) = $other_node_id"
+                             "elementId(#{var}) = $other_node_id"
                            else
                              "#{var}.#{association_id_key} = $other_node_id"
                            end
@@ -99,12 +99,12 @@ module ActiveGraph
         end
 
         def exists?(node_condition = nil, target = nil)
-          unless [Integer, String, Hash, NilClass].any? { |c| node_condition.is_a?(c) }
+          unless [String, Hash, NilClass].any? { |c| node_condition.is_a?(c) }
             fail(ActiveGraph::InvalidParameterError, ':exists? only accepts ids or conditions')
           end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
-            result = start_q.query.reorder.return("ID(#{var}) AS proof_of_life LIMIT 1").first
+            result = start_q.query.reorder.return("elementId(#{var}) AS proof_of_life LIMIT 1").first
             !!result
           end
         end
@@ -119,9 +119,9 @@ module ActiveGraph
         def match_to(node)
           first_node = node.is_a?(Array) ? node.first : node
           where_arg = if first_node.respond_to?(:neo_id)
-                        {neo_id: node.is_a?(Array) ? node.map(&:neo_id) : node}
+                        { neo_id: node.is_a?(Array) ? node.map(&:neo_id) : node }
                       elsif !node.nil?
-                        {association_id_key => node.is_a?(Array) ? ids_array(node) : node}
+                        { association_id_key => node.is_a?(Array) ? ids_array(node) : node }
                       else
                         # support for null object pattern
                         '1 = 2'
@@ -129,7 +129,6 @@ module ActiveGraph
 
           self.where(where_arg)
         end
-
 
         # Gives you the first relationship between the last link of a QueryProxy chain and a given node
         # Shorthand for `MATCH (start)-[r]-(other_node) WHERE ID(other_node) = #{other_node.neo_id} RETURN r`
@@ -145,6 +144,7 @@ module ActiveGraph
         def rels_to(node)
           self.match_to(node).pluck(rel_var)
         end
+
         alias all_rels_to rels_to
 
         # When called, this method returns a single node that satisfies the match specified in the params hash.
@@ -260,7 +260,7 @@ module ActiveGraph
                                     [self.query.with(identity),
                                      proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
                                   else
-                                    ord_prop = (func == LAST ? {order_property => :DESC} : order_property)
+                                    ord_prop = (func == LAST ? { order_property => :DESC } : order_property)
                                     [self.order(ord_prop).limit(1),
                                      proc { |var| var }]
                                   end
@@ -285,16 +285,14 @@ module ActiveGraph
           yield(target || identity)
         end
 
-        def exists_query_start(condition, target)
-          case condition
-          when Integer
-            self.where("ID(#{target}) = $exists_condition").params(exists_condition: condition)
-          when Hash
-            self.where(condition.keys.first => condition.values.first)
-          when String
-            self.where(model.primary_key => condition)
+        def exists_query_start(condition, target = nil)
+          return self unless condition
+          return exists_query_start(model.primary_key => condition) if condition.is_a?(String)
+
+          if condition.key?(:neo_id)
+            where("elementId(#{target}) = $neo_id").params(**condition.slice(:neo_id))
           else
-            self
+            where(**condition)
           end
         end
       end

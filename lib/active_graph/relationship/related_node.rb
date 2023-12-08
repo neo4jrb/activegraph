@@ -17,7 +17,7 @@ module ActiveGraph::Relationship
 
     # Loads the node if needed, then conducts comparison.
     def ==(other)
-      loaded if @node.is_a?(Integer)
+      loaded if @node.is_a?(String)
       @node == other
     end
 
@@ -70,7 +70,7 @@ module ActiveGraph::Relationship
     end
 
     def respond_to_missing?(method_name, include_private = false)
-      loaded if @node.is_a?(Numeric)
+      loaded if @node.is_a?(String)
       @node.respond_to?(method_name) ? true : super
     end
 
@@ -85,7 +85,7 @@ module ActiveGraph::Relationship
     end
 
     def valid_node_param?(node)
-      node.nil? || node.is_a?(Integer) || node.respond_to?(:neo_id)
+      node.nil? || node.is_a?(String) || node.respond_to?(:neo_id)
     end
   end
 end

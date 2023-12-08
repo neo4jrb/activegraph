@@ -1,5 +1,5 @@
 describe ActiveGraph::Base do
-  before { described_class.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
+  before { described_class.query('MATCH (n) DETACH DELETE n') }
 
   subject { described_class }
 

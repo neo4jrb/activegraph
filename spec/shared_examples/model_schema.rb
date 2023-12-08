@@ -35,7 +35,7 @@ shared_examples 'does not raise schema error' do |model|
 end
 
 shared_examples 'raises schema error including' do |index_or_constraint, model, property_name|
-  let(:label) { model.to_s.constantize.mapped_label_name }
+  let(:label) { model.to_s.constantize.mapped_element_name }
   it "raises error including #{index_or_constraint} for #{model}.#{property_name}" do
     expect do
       model.to_s.constantize.first
@@ -44,7 +44,7 @@ shared_examples 'raises schema error including' do |index_or_constraint, model, 
 end
 
 shared_examples 'raises schema error not including' do |index_or_constraint, model, property_name = ''|
-  let(:label) { model.to_s.constantize.mapped_label_name }
+  let(:label) { model.to_s.constantize.mapped_element_name }
   it "raises error not including #{index_or_constraint} for #{model}.#{property_name}" do
     begin
       model.to_s.constantize.first

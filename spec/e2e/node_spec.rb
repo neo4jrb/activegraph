@@ -76,7 +76,7 @@ describe 'ActiveGraph::Node' do
     let(:ingredients) { { suger: 20, water: 50 } }
     let(:storage) { [1, 2, 3].pack('C*') }
     let(:best_before) { 6.months }
-    let(:place) { Neo4j::Driver::Types::Point.new(x:10, y:5) }
+    let(:place) { Neo4j::Driver::Types::Point.new(x: 10, y: 5) }
     let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
     let(:local_time) { Neo4j::Driver::Types::LocalTime.new(Time.now) }
     let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now.utc) }
@@ -211,7 +211,7 @@ describe 'ActiveGraph::Node' do
         create_constraint(:Uniqueness, :unique_property, type: :unique)
         stub_node_class('Uniqueness') do
           property :unique_property, type: String
-          validates :unique_property, uniqueness: {case_sensitive: false}
+          validates :unique_property, uniqueness: { case_sensitive: false }
         end
       end
 
@@ -331,7 +331,6 @@ describe 'ActiveGraph::Node' do
       include_context 'after_commit', :c, transactions_count: 2, fail_transaction: true
     end
 
-
     context 'that raise errors' do
       before do
         [:create, :update, :destroy].each { |m| Company.reset_callbacks(m) }
@@ -382,12 +381,12 @@ describe 'ActiveGraph::Node' do
   before(:each) do
     stub_node_class('Person') do
       property :name
-      property :age,          type: Integer
-      property :start,        type: Time
+      property :age, type: Integer
+      property :start, type: Time
       property :links
-      property :datetime,     type: DateTime
-      property :date,         type: Date
-      property :time,         type: Time
+      property :datetime, type: DateTime
+      property :date, type: Date
+      property :time, type: Time
       property :numbers
 
       serialize :links
@@ -433,7 +432,7 @@ describe 'ActiveGraph::Node' do
       person = Person.new(name: 'John')
       expect(person.neo_id).to be_nil
       person.save
-      expect(person.neo_id).to be_a(Integer)
+      expect(person.neo_id).to be_a(String)
       expect(person.exist?).to be true
     end
 
@@ -448,7 +447,7 @@ describe 'ActiveGraph::Node' do
 
     it 'can create the node' do
       person = Person.create(name: 'andreas', age: 21)
-      expect(person.neo_id).to be_a(Integer)
+      expect(person.neo_id).to be_a(String)
       expect(person[:name]).to eq('andreas')
       expect(person[:age]).to eq(21)
       expect(person.exist?).to be true
@@ -576,8 +575,8 @@ describe 'ActiveGraph::Node' do
       person.age = 22
       person.save
 
-      person2 = neo4j_query('MATCH (p:Person) WHERE ID(p) = $neo_id RETURN p',
-                            {neo_id: person.neo_id},
+      person2 = neo4j_query('MATCH (p:Person) WHERE elementId(p) = $neo_id RETURN p',
+                            { neo_id: person.neo_id },
                             wrap: false).first[:p]
       expect(person2.properties).to match hash_including age: 22, name: 'andreas'
     end
@@ -683,7 +682,7 @@ describe 'ActiveGraph::Node' do
 
   describe 'serialization' do
     let!(:chris) { Person.create(name: 'chris') }
-    let(:links) { {'neo4j' => 'http://www.neo4j.org', 'neotech' => 'http://www.neotechnology.com/'} }
+    let(:links) { { 'neo4j' => 'http://www.neo4j.org', 'neotech' => 'http://www.neotechnology.com/' } }
 
     it 'correctly identifies properties for serialization' do
       expect(Person.serialized_properties).to include(:links)
@@ -717,7 +716,7 @@ describe 'ActiveGraph::Node' do
 
     let(:datetime_db_value) do
       query = new_query.match(p: :Person)
-                       .where(p: {neo_id: person.neo_id})
+                       .where(p: { neo_id: person.neo_id })
                        .return('p.datetime AS datetime')
       ActiveGraph::Base.query(query).first[:datetime]
     end

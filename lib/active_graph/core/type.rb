@@ -1,6 +1,6 @@
 module ActiveGraph
   module Core
-    class Label < Element
+    class Type < Element
     end
   end
 end

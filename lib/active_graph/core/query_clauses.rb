@@ -158,7 +158,7 @@ module ActiveGraph
           end
 
           def from_key_and_single_value(key, value)
-            value.to_sym == :neo_id ? "ID(#{key})" : "#{key}.#{value}"
+            value.to_sym == :neo_id ? "elementId(#{key})" : "#{key}.#{value}"
           end
         end
 
@@ -316,8 +316,8 @@ module ActiveGraph
         def hash_key_value_string(key, value, previous_keys)
           value.map do |k, v|
             if k.to_sym == :neo_id
-              v = Array(v).map { |item| (item.respond_to?(:neo_id) ? item.neo_id : item).to_i }
-              key_value_string("ID(#{key})", v)
+              v = Array(v).map { |item| item.respond_to?(:neo_id) ? item.neo_id : item }
+              key_value_string("elementId(#{key})", v)
             else
               "#{key}.#{from_key_and_value(k, v, previous_keys + [key])}"
             end

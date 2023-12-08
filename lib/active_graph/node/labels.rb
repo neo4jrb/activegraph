@@ -108,7 +108,7 @@ module ActiveGraph
 
         # Deletes all nodes and connected relationships from Cypher.
         def delete_all
-          neo4j_query("MATCH (n:`#{mapped_label_name}`) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
+          neo4j_query("MATCH (n:`#{mapped_label_name}`) DETACH DELETE n")
         end
 
         # Returns each node to Ruby and calls `destroy`. Be careful, as this can be a very slow operation if you have many nodes. It will generate at least
@@ -126,6 +126,8 @@ module ActiveGraph
         def mapped_label_name
           @mapped_label_name || label_for_model
         end
+
+        alias mapped_element_name mapped_label_name
 
         # @return [ActiveGraph::Label] the label for this class
         def mapped_label
@@ -160,6 +162,7 @@ module ActiveGraph
 
           self.mapped_label_name = name
         end
+
         # rubocop:enable Naming/AccessorMethodName
 
         private
@@ -184,20 +187,18 @@ module ActiveGraph
         end
 
         def label_for_model
-          (self.name.nil? ? object_id.to_s.to_sym : decorated_label_name)
+          name.nil? ? object_id.to_s.to_sym : decorated_label_name
         end
 
         def decorated_label_name
-          name =  case ActiveGraph::Config[:module_handling]
-                  when :demodulize
-                    self.name.demodulize
-                  when Proc
-                    ActiveGraph::Config[:module_handling].call self.name
-                  else
-                    self.name
-                  end
-
-          name.to_sym
+          case ActiveGraph::Config[:module_handling]
+          when :demodulize
+            name.demodulize
+          when Proc
+            ActiveGraph::Config[:module_handling].call name
+          else
+            name
+          end.to_sym
         end
       end
     end

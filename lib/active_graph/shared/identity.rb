@@ -4,6 +4,7 @@ module ActiveGraph
       def ==(other)
         other.class == self.class && other.id == id
       end
+
       alias eql? ==
 
       # Returns an Enumerable of all (primary) key attributes
@@ -12,10 +13,12 @@ module ActiveGraph
         _persisted_obj ? [id] : nil
       end
 
-      # @return [Integer, nil] the neo4j id of the node if persisted or nil
-      def neo_id
-        _persisted_obj ? _persisted_obj.id : nil
+      # @return [String, nil] the neo4j id of the node if persisted or nil
+      def element_id
+        _persisted_obj&.element_id
       end
+
+      alias neo_id element_id
 
       def id
         if self.class.id_property_name

@@ -6,16 +6,16 @@ module ActiveGraph::Relationship
 
     module ClassMethods
       # Returns the object with the specified neo4j id.
-      # @param [String,Integer] id of node to find
+      # @param [String] id of node to find
       def find(id)
-        fail "Unknown argument #{id.class} in find method (expected String or Integer)" if !(id.is_a?(String) || id.is_a?(Integer))
+        fail "Unknown argument #{id.class} in find method (expected String)" unless id.is_a?(String)
         find_by_id(id)
       end
 
       # Loads the relationship using its neo_id.
       def find_by_id(key)
         query = ActiveGraph::Base.new_query
-        result = query.match('()-[r]-()').where('ID(r)' => key.to_i).limit(1).return(:r).first
+        result = query.match('()-[r]-()').where('elementId(r)' => key).limit(1).return(:r).first
         fail RecordNotFound.new("Couldn't find #{name} with 'id'=#{key.inspect}", name, key) if result.blank?
         result[:r]
       end
@@ -36,11 +36,11 @@ module ActiveGraph::Relationship
       end
 
       def first
-        all_query.limit(1).order('ID(r1)').pluck(:r1).first
+        all_query.limit(1).order('r1.created_at').pluck(:r1).first
       end
 
       def last
-        all_query.limit(1).order('ID(r1) DESC').pluck(:r1).first
+        all_query.limit(1).order('r1.created_at DESC').pluck(:r1).first
       end
 
       private

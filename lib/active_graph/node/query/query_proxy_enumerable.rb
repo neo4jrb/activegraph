@@ -62,22 +62,22 @@ module ActiveGraph
         # Does exactly what you would hope. Without it, comparing `bobby.lessons == sandy.lessons` would evaluate to false because it
         # would be comparing the QueryProxy objects, not the lessons themselves.
         def ==(other)
-          self.to_a == other
+          to_a == other
         end
 
         # For getting variables which have been defined as part of the association chain
         def pluck(*args)
-          transformable_attributes = (model ? model.attribute_names : []) + %w(uuid neo_id)
+          transformable_attributes = (model ? model.attribute_names + [model.id_property_name.to_s] : []) + %w(uuid neo_id)
           arg_list = args.map do |arg|
             arg = ActiveGraph::Node::Query::QueryProxy::Link.converted_key(model, arg)
             if transformable_attributes.include?(arg.to_s)
-              {identity => arg}
+              { identity => arg }
             else
               arg
             end
           end
 
-          self.query.pluck(*arg_list)
+          query.pluck(*arg_list)
         end
 
         protected

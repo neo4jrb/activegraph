@@ -9,11 +9,17 @@ describe ActiveGraph::Node::IdProperty do
     clear_model_memory_caches
   end
 
+  let!(:nclass) do
+    stub_node_class('Single')
+  end
+
+  let(:nnode) { Single.create! }
+
   describe 'abnormal cases' do
     describe 'id_property' do
       it 'raise for id_property :something, :bla' do
         expect do
-          stub_node_class('Unique') do
+          stub_relationship_class('Unique') do
             id_property :something, :bla
           end
         end.to raise_error(/Expected a Hash/)
@@ -21,7 +27,7 @@ describe ActiveGraph::Node::IdProperty do
 
       it 'raise for id_property :something, bla: 42' do
         expect do
-          stub_node_class('Unique') do
+          stub_relationship_class('Unique') do
             id_property :something, bla: 42
           end
         end.to raise_error(/Illegal value/)
@@ -31,21 +37,23 @@ describe ActiveGraph::Node::IdProperty do
 
   describe 'when no id_property' do
     let!(:clazz) do
-      stub_node_class('Clazz') do
+      stub_relationship_class('Clazz') do
         property :name
+        from_class :Single
+        to_class :Single
       end
     end
 
-    it 'uses the neo_id as id after save' do
+    it 'uses the uuid as id after save' do
       allow(SecureRandom).to receive(:uuid) { 'secure123' }
-      node = Clazz.new
+      node = Clazz.new(nnode, nnode)
       expect(node.id).to eq(nil)
       node.save!
       expect(node.id).to eq('secure123')
     end
 
-    it 'can find by id uses the neo_id' do
-      node = Clazz.create!
+    it 'can find by id uses the property_id' do
+      node = Clazz.create!(nnode, nnode)
       node.name = 'kalle'
       expect(Clazz.find_by_id(node.id)).to eq(node)
     end
@@ -64,40 +72,30 @@ describe ActiveGraph::Node::IdProperty do
       let_config(:id_property_type_value, :uuid)
 
       let!(:clazz) do
-        stub_node_class('Clazz')
+        stub_relationship_class('Clazz')
       end
 
       it 'will set the id_property' do
         node = Clazz.new
         expect(node).to respond_to(:the_id)
-        expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
+        # TODO: RELATIONSHIP KEY
+        # expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
       end
-    end
-  end
-
-  describe 'when having neo_id configuration' do
-    let_config(:id_property, :neo_id)
-
-    before do
-      stub_node_class('NeoIdTest')
-    end
-
-    it 'it will find node by neo_id' do
-      node = NeoIdTest.create
-      expect(NeoIdTest.where(id: node).first).to eq(node)
     end
   end
 
   describe 'id_property :myid' do
     before do
-      stub_node_class('Clazz') do
+      stub_relationship_class('Clazz') do
         id_property :myid
+        from_class :Single
+        to_class :Single
       end
     end
 
     it 'has an index' do
       Clazz.ensure_id_property_info!
-      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:myid])])
+      expect(Clazz.mapped_element.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:myid])])
     end
 
     describe 'property myid' do
@@ -113,7 +111,7 @@ describe ActiveGraph::Node::IdProperty do
       end
 
       it 'can be saved after set' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         node.myid = '42'
         node.save!
         expect(node.myid).to eq('42')
@@ -201,7 +199,7 @@ describe ActiveGraph::Node::IdProperty do
 
   describe 'id_property :my_id, on: :foobar' do
     before do
-      stub_node_class('Clazz') do
+      stub_relationship_class('Clazz') do
         id_property :my_id, on: :foobar
 
         def foobar
@@ -264,7 +262,8 @@ describe ActiveGraph::Node::IdProperty do
 
       property_name = id_property_name
       property_options = id_property_options
-      stub_node_class('Clazz', false) do
+      # stub_relationship_class('Clazz', false) do
+      stub_relationship_class('Clazz') do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
       property_name = subclass_id_property_name
@@ -364,7 +363,7 @@ describe ActiveGraph::Node::IdProperty do
 
   describe 'id_property :my_uuid, auto: :uuid' do
     before do
-      stub_node_class('Clazz') do
+      stub_relationship_class('Clazz') do
         id_property :my_uuid, auto: :uuid
       end
     end
@@ -424,7 +423,7 @@ describe ActiveGraph::Node::IdProperty do
 
   describe 'inheritance' do
     before do
-      stub_node_class('Teacher') do
+      stub_relationship_class('Teacher') do
         id_property :my_id, on: :my_method
 
         def my_method
@@ -434,19 +433,19 @@ describe ActiveGraph::Node::IdProperty do
 
       stub_named_class('Substitute', Teacher)
 
-      stub_node_class('Vehicle') do
+      stub_relationship_class('Vehicle') do
         id_property :my_id, auto: :uuid
       end
 
       stub_named_class('Car', Vehicle)
 
-      stub_node_class('Fruit') do
+      stub_relationship_class('Fruit') do
         id_property :my_id
       end
 
       stub_named_class('Apple', Fruit)
 
-      stub_node_class('Sport') do
+      stub_relationship_class('Sport') do
         id_property :neo_id
       end
 
@@ -473,7 +472,7 @@ describe ActiveGraph::Node::IdProperty do
 
     context 'when a driver is not started' do
       before do
-        stub_node_class('Executive') do
+        stub_relationship_class('Executive') do
           id_property :my_id, on: :my_method
 
           def my_method

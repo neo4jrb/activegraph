@@ -92,7 +92,7 @@ def clear_model_memory_caches
 end
 
 def delete_db(executor = ActiveGraph::Base)
-  executor.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r')
+  executor.query('MATCH (n) DETACH DELETE n')
 end
 
 def delete_schema

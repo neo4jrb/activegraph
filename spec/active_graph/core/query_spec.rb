@@ -366,7 +366,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.where(q: {neo_id: 22})' do
-      it_generates 'WHERE (ID(q) = $ID_q)', ID_q: 22
+      it_generates 'WHERE (elementId(q) = $elementId_q)', elementId_q: 22
     end
 
     describe ".where(q: {age: 30, name: 'Brian'})" do
@@ -457,17 +457,17 @@ describe ActiveGraph::Core::Query do
       let(:node_object) { double(neo_id: 246) }
 
       describe '.match_nodes(var: node_object)' do
-        it_generates 'MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 246
+        it_generates 'MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 246
       end
 
       describe '.optional_match_nodes(var: node_object)' do
-        it_generates 'OPTIONAL MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 246
+        it_generates 'OPTIONAL MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 246
       end
     end
 
     context 'integer' do
       describe '.match_nodes(var: 924)' do
-        it_generates 'MATCH (var) WHERE (ID(var) = $ID_var)', ID_var: 924
+        it_generates 'MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 924
       end
     end
 
@@ -476,7 +476,7 @@ describe ActiveGraph::Core::Query do
       let(:post) { double(neo_id: 123) }
 
       describe '.match_nodes(user: user, post: post)' do
-        it_generates 'MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)', ID_user: 246, ID_post: 123
+        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user) AND (elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 123
       end
     end
 
@@ -484,7 +484,7 @@ describe ActiveGraph::Core::Query do
       let(:user) { double(neo_id: 246) }
 
       describe '.match_nodes(user: user, post: 652)' do
-        it_generates 'MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)', ID_user: 246, ID_post: 652
+        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user) AND (elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 652
       end
     end
   end
@@ -534,11 +534,11 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.return(q: :neo_id)' do
-      it_generates 'RETURN ID(q)'
+      it_generates 'RETURN elementId(q)'
     end
 
     describe '.return(q: [:neo_id, :prop])' do
-      it_generates 'RETURN ID(q), q.prop'
+      it_generates 'RETURN elementId(q), q.prop'
     end
   end
 
@@ -562,7 +562,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.order(q: :neo_id)' do
-      it_generates 'ORDER BY ID(q)'
+      it_generates 'ORDER BY elementId(q)'
     end
 
     describe '.order(q: [:age, {name: :desc}])' do
@@ -570,7 +570,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.order(q: [:age, {neo_id: :desc}])' do
-      it_generates 'ORDER BY q.age, ID(q) DESC'
+      it_generates 'ORDER BY q.age, elementId(q) DESC'
     end
 
     describe '.order(q: [:age, {name: :desc, grade: :asc}])' do
@@ -578,7 +578,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.order(q: [:age, {name: :desc, neo_id: :asc}])' do
-      it_generates 'ORDER BY q.age, q.name DESC, ID(q) ASC'
+      it_generates 'ORDER BY q.age, q.name DESC, elementId(q) ASC'
     end
 
     describe '.order(q: {age: :asc, name: :desc})' do
@@ -586,7 +586,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.order(q: {age: :asc, neo_id: :desc})' do
-      it_generates 'ORDER BY q.age ASC, ID(q) DESC'
+      it_generates 'ORDER BY q.age ASC, elementId(q) DESC'
     end
 
     describe ".order(q: [:age, 'name desc'])" do
@@ -594,7 +594,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".order(q: [:neo_id, 'name desc'])" do
-      it_generates 'ORDER BY ID(q), q.name desc'
+      it_generates 'ORDER BY elementId(q), q.name desc'
     end
   end
 

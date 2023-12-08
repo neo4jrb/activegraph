@@ -2,12 +2,12 @@ module ActiveGraph
   module Node
     module QueryMethods
       def exists?(node_condition = nil)
-        unless [Integer, String, Hash, NilClass].any? { |c| node_condition.is_a?(c) }
+        unless [String, Hash, NilClass].any? { |c| node_condition.is_a?(c) }
           fail(ActiveGraph::InvalidParameterError, ':exists? only accepts ids or conditions')
         end
         query_start = exists_query_start(node_condition)
         start_q = query_start.respond_to?(:query_as) ? query_start.query_as(:n) : query_start
-        result = start_q.return('ID(n) AS proof_of_life LIMIT 1').first
+        result = start_q.return('elementId(n) AS proof_of_life LIMIT 1').first
         !!result
       end
 
@@ -18,7 +18,7 @@ module ActiveGraph
 
       # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def last
-        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
+        self.query_as(:n).limit(1).order(n: { primary_key => :desc }).pluck(:n).first
       end
 
       # @return [Integer] number of nodes of this class
@@ -51,16 +51,13 @@ module ActiveGraph
 
       private
 
-      def exists_query_start(node_condition)
-        case node_condition
-        when Integer
-          self.query_as(:n).where('ID(n)' => node_condition)
-        when String
-          self.query_as(:n).where(n: {primary_key => node_condition})
-        when Hash
-          self.where(node_condition.keys.first => node_condition.values.first)
+      def exists_query_start(condition)
+        return exists_query_start(primary_key => condition) if condition.is_a?(String)
+
+        if condition.key?(:neo_id)
+          query_as(:n).where('elementId(n)' => condition[:neo_id])
         else
-          self.query_as(:n)
+          where(**condition)
         end
       end
     end

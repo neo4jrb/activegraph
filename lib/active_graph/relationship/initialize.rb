@@ -19,8 +19,8 @@ module ActiveGraph::Relationship
     def init_on_reload(unwrapped_reloaded)
       @attributes = nil
       init_on_load(unwrapped_reloaded,
-                   unwrapped_reloaded.start_node_id,
-                   unwrapped_reloaded.end_node_id,
+                   unwrapped_reloaded.start_node_element_id,
+                   unwrapped_reloaded.end_node_element_id,
                    unwrapped_reloaded.type)
       self
     end

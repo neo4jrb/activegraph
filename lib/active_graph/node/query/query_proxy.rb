@@ -223,7 +223,7 @@ module ActiveGraph
 
           ActiveGraph::Base.transaction do
             other_nodes.each do |other_node|
-              if other_node.neo_id
+              if other_node.element_id
                 other_node.try(:delete_reverse_has_one_core_rel, association)
               else
                 other_node.save
@@ -351,7 +351,7 @@ module ActiveGraph
           fail 'Crazy error' if !(start_object || @query_proxy)
 
           if start_object
-            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
+            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id&.gsub(/[:\-]/, '_')}"
           else
             @query_proxy.node_var || :"node#{_chain_level}"
           end

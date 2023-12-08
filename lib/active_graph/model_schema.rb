@@ -55,7 +55,7 @@ module ActiveGraph
       # should be private
       def schema_elements_list(by_model, db_results)
         by_model.flat_map do |model, property_names|
-          label = model.mapped_label_name.to_sym
+          label = model.mapped_element_name.to_sym
           property_names.map do |property_name|
             exists = db_results[label] && db_results[label].include?([property_name])
             [model, label, property_name, exists]
@@ -94,7 +94,8 @@ module ActiveGraph
           if exists
             log_warning!(type, model, property_name) if model.id_property_name.to_sym != property_name
           else
-            messages[type] << force_add_message(type, label, property_name)
+            # TODO: schema
+            messages[type] << force_add_message(type, label, property_name) unless model < ActiveGraph::Relationship
           end
         end
 
