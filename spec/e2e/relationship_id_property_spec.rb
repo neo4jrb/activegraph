@@ -52,10 +52,10 @@ describe ActiveGraph::Node::IdProperty do
       expect(node.id).to eq('secure123')
     end
 
-    it 'can find by id uses the property_id' do
-      node = Clazz.create!(nnode, nnode)
-      node.name = 'kalle'
-      expect(Clazz.find_by_id(node.id)).to eq(node)
+    it 'can find by id uses the id_property' do
+      rel = Clazz.create!(nnode, nnode)
+      rel.name = 'kalle'
+      expect(Clazz.find_by_id(rel.neo_id)).to eq(rel)
     end
 
     it 'returns :id as primary_key' do
@@ -76,7 +76,7 @@ describe ActiveGraph::Node::IdProperty do
       end
 
       it 'will set the id_property' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         expect(node).to respond_to(:the_id)
         # TODO: RELATIONSHIP KEY
         # expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
@@ -142,7 +142,7 @@ describe ActiveGraph::Node::IdProperty do
 
         it 'removes any previously declared properties' do
           begin
-            node = Clazz.create
+            node = Clazz.create(nnode, nnode)
           rescue ActiveGraph::DeprecatedSchemaDefinitionError
             nil
           end
@@ -159,34 +159,33 @@ describe ActiveGraph::Node::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        Clazz.create(myid: 'a')
-        node_b = Clazz.create(myid: 'b')
-        Clazz.create(myid: 'c')
-        found = Clazz.find_by_id('b')
-        expect(found).to eq(node_b)
+        Clazz.create(nnode, nnode, myid: 'a')
+        rel_b = Clazz.create(nnode, nnode, myid: 'b')
+        Clazz.create(nnode, nnode, myid: 'c')
+        found = Clazz.where(myid: 'b').first
+        expect(found).to eq(rel_b)
       end
 
       it 'does not find it if it does not exist' do
-        Clazz.create(myid: 'd')
+        Clazz.create(nnode, nnode, myid: 'd')
 
-        found = Clazz.find_by_id('something else')
-        expect(found).to be_nil
+        expect {Clazz.find_by_id('something else')}.to raise_error ActiveGraph::RecordNotFound
       end
     end
 
     describe 'find_by_neo_id' do
       it 'loads by the neo id' do
-        node1 = Clazz.create
-        found = Clazz.find_by_neo_id(node1.neo_id)
-        expect(found).to eq node1
+        rel1 = Clazz.create(nnode, nnode)
+        found = Clazz.find_by_neo_id(rel1.neo_id)
+        expect(found).to eq rel1
       end
     end
 
     describe 'order' do
       it 'should order by myid' do
-        nodes = Array.new(3) { |i| Clazz.create myid: i }
+        rels = Array.new(3) { |i| Clazz.create nnode, nnode, myid: i }
 
-        expect(Clazz.order(id: :desc).to_a).to eq(nodes.reverse)
+        expect(Clazz.order(id: :desc).to_a).to eq(rels.reverse)
       end
     end
   end
@@ -218,8 +217,8 @@ describe ActiveGraph::Node::IdProperty do
       Clazz.default_property :my_id do
         'same uuid'
       end
-      Clazz.create
-      expect { Clazz.create }.to raise_constraint_error
+      Clazz.create(nnode, nnode)
+      expect { Clazz.create(nnode, nnode) }.to raise_constraint_error
     end
 
     describe 'property my_id' do
@@ -244,7 +243,7 @@ describe ActiveGraph::Node::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        node = Clazz.create!
+        node = Clazz.create!(nnode, nnode)
         expect(Clazz.find_by_id(node.my_id)).to eq(node)
       end
     end
@@ -405,7 +404,7 @@ describe ActiveGraph::Node::IdProperty do
     describe 'find_by_id' do
       it 'finds it if it exists' do
         Clazz.create
-        node = Clazz.create
+        node = Clazz.create(nnode, nnode)
         Clazz.create
 
         found = Clazz.find_by_id(node.my_uuid)
@@ -453,19 +452,19 @@ describe ActiveGraph::Node::IdProperty do
     end
 
     it 'inherits the base id_property' do
-      expect(Substitute.create.my_id).to eq 'an id'
+      expect(Substitute.create(nnode, nnode).my_id).to eq 'an id'
     end
 
     it 'works with auto uuid' do
-      expect(Car.create.my_id).not_to be_nil
+      expect(Car.create(nnode, nnode).my_id).not_to be_nil
     end
 
     it 'works without conf specified' do
-      expect(Apple.create.my_id).not_to be_nil
+      expect(Apple.create(nnode, nnode).my_id).not_to be_nil
     end
 
     it 'works with neo_id' do
-      node = Skiing.create
+      node = Skiing.create(nnode, nnode)
       expect(node.id).not_to be_nil
       expect(node.id).to eq(node.neo_id)
     end

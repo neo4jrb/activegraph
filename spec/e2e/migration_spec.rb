@@ -29,7 +29,7 @@ describe 'migration tasks' do
     stub_relationship_class('SecondRelClass') do
       from_class false
       to_class false
-      type 'singers'
+      type 'singer'
     end
 
     stub_relationship_class('ThirdRelClass') do
@@ -71,7 +71,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      ActiveGraph::Base.query('CREATE (n:`User`) return n')
+      ActiveGraph::Base.query('CREATE (n:`User`{uuid: randomUuid()}) return n')
       user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil
@@ -96,7 +96,7 @@ describe 'migration tasks' do
       create_constraint :Song, :my_id, type: :unique
 
       Song.id_property :my_id, on: :custom_id
-      ActiveGraph::Base.query('CREATE (n:`Song`) return n')
+      ActiveGraph::Base.query('CREATE (n:`Song`{uuid: randomUuid()}) return n')
       user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

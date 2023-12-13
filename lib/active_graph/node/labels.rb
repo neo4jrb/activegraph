@@ -134,6 +134,8 @@ module ActiveGraph
           ActiveGraph::Core::Label.new(mapped_label_name)
         end
 
+        alias mapped_element mapped_label
+
         def base_class
           unless self < ActiveGraph::Node
             fail "#{name} doesn't belong in a hierarchy descending from Node"

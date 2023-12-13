@@ -39,7 +39,7 @@ describe 'Node Wrapping' do
     let(:label_string) { labels.map { |label| ":`#{label}`" }.join }
 
     before do
-      ActiveGraph::Base.new_query.create("(n#{label_string})").exec
+      ActiveGraph::Base.new_query.create("(n#{label_string}{uuid: randomUuid()})").exec
     end
 
     let(:result) { ActiveGraph::Base.new_query.match("(n#{label_string})").pluck(:n).first }

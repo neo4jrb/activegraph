@@ -127,7 +127,7 @@ describe 'Relationship' do
       stub_relationship_class('RelClassWithValidations') do
         from_class :FromClass
         to_class :ToClass
-        type 'rel_class_type'
+        type 'rel_class_with_validation_type'
 
         property :score
         validates :score, presence: true

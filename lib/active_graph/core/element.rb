@@ -10,24 +10,15 @@ module ActiveGraph
 
       def create_index(*properties, **options)
         validate_index_options!(options)
-        if version?('>=4.4')
-          properties = properties.map { |p| "l.#{p}" }
-          fragment = "FOR (l:`#{@name}`) ON"
-        else
-          fragment = "ON :`#{@name}`"
-        end
-        schema_query("CREATE INDEX #{fragment} (#{properties.join('.')})")
+        properties = properties.map { |p| "l.#{p}" }
+        schema_query("CREATE INDEX FOR (l:`#{@name}`) ON (#{properties.join('.')})")
       end
 
       def drop_index(property, options = {})
         validate_index_options!(options)
-        if version?('<4.3')
-          schema_query("DROP INDEX ON :`#{@name}`(#{property})")
-        else
-          schema_query("SHOW INDEXES YIELD * WHERE labelsOrTypes = $labels AND properties = $properties",
-                       labels: [@name], properties: [property]).each do |record|
-            schema_query("DROP INDEX #{record[:name]}")
-          end
+        schema_query("SHOW INDEXES YIELD * WHERE labelsOrTypes = $labels AND properties = $properties",
+                     labels: [@name], properties: [property]).each do |record|
+          schema_query("DROP INDEX #{record[:name]}")
         end
       end
 
@@ -38,18 +29,17 @@ module ActiveGraph
       #   label.create_constraint(:name, {type: :unique})
       #
       def create_constraint(property, constraints)
-        cypher = case constraints[:type]
+        type = constraints[:type]
+        type = :unique if type == :key && !ActiveGraph::Base.enterprise?
+        cypher = case type
+                 when :key
+                   "CREATE CONSTRAINT FOR #{pattern("n:`#{name}`")} REQUIRE n.`#{property}` IS #{element_type} KEY"
                  when :unique, :uniqueness
-                   _for, _require = version?('>=4.4') ? %w[FOR REQUIRE] : %w[ON ASSERT]
-                   "CREATE CONSTRAINT #{_for} (n:`#{name}`) #{_require} n.`#{property}` IS UNIQUE"
+                   "CREATE CONSTRAINT FOR #{pattern("n:`#{name}`")} REQUIRE n.`#{property}` IS UNIQUE"
                  else
                    fail "Not supported constraint #{constraints.inspect} for property #{property} (expected :type => :unique)"
                  end
         schema_query(cypher)
-      end
-
-      def create_uniqueness_constraint(property, options = {})
-        create_constraint(property, options.merge(type: :unique))
       end
 
       # Drops a neo4j constraint on a property
@@ -60,7 +50,6 @@ module ActiveGraph
       #   label.drop_constraint(:name, {type: :unique})
       #
       def drop_constraint(property, constraint)
-        return drop_constraint42(property, constraint) if version?('<4.3')
         type = case constraint[:type]
                when :unique, :uniqueness
                  'UNIQUENESS'
@@ -123,27 +112,17 @@ module ActiveGraph
 
         def drop_indexes
           indexes.each do |definition|
-            begin
-              ActiveGraph::Base.query(
-                if definition[:name]
-                  "DROP INDEX #{definition[:name]}"
-                else
-                  "DROP INDEX ON :`#{definition[:label]}`(#{definition[:properties][0]})"
-                end)
-            rescue Neo4j::Driver::Exceptions::DatabaseException
-              # This will error on each constraint. Ignore and continue.
-              next
-            end
+            ActiveGraph::Base.query("DROP INDEX #{definition[:name]}") unless definition[:owningConstraint]
           end
         end
 
         def drop_constraints
           result = ActiveGraph::Base.read_transaction do |tx|
-            tx.run(ActiveGraph::Base.version?('<4.3') ? 'CALL db.constraints' : 'SHOW CONSTRAINTS YIELD *').to_a
+            tx.run('SHOW CONSTRAINTS YIELD *').to_a
           end
           ActiveGraph::Base.write_transaction do |tx|
             result.each do |record|
-              tx.run("DROP #{record.keys.include?(:name) ? "CONSTRAINT #{record[:name]}" : record[:description]}")
+              tx.run("DROP CONSTRAINT #{record[:name]}")
             end
           end
         end
@@ -156,18 +135,6 @@ module ActiveGraph
       def validate_index_options!(options)
         return unless options[:type] && options[:type] != :exact
         fail "Type #{options[:type]} is not supported"
-      end
-
-      def drop_constraint42(property, constraint)
-        cypher = case constraint[:type]
-                 when :unique, :uniqueness
-                   "n.`#{property}` IS UNIQUE"
-                 when :exists
-                   "exists(n.`#{property}`)"
-                 else
-                   fail "Not supported constraint #{constraint.inspect}"
-                 end
-        schema_query("DROP CONSTRAINT ON (n:`#{name}`) ASSERT #{cypher}")
       end
     end
   end

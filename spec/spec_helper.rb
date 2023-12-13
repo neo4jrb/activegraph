@@ -112,11 +112,11 @@ Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
   def stub_node_class(class_name, with_constraint = true, &block)
-    stub_const class_name, node_class(class_name, with_constraint, &block)
+    stub_const class_name, node_class(class_name, with_constraint:, &block)
   end
 
-  def stub_relationship_class(class_name, &block)
-    stub_const class_name, relationship_class(class_name, &block)
+  def stub_relationship_class(class_name, with_constraint = true, &block)
+    stub_const class_name, relationship_class(class_name, with_constraint:,  &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
@@ -124,26 +124,18 @@ module ActiveNodeRelStubHelpers
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
-  def node_class(class_name, with_constraint = true, &block)
-    named_class(class_name) do
-      include ActiveGraph::Node
-
-      module_eval(&block) if block
-    end.tap { |model| create_id_property_constraint(model, with_constraint) }
+  def node_class(class_name, with_constraint: true, &block)
+    element_class(class_name, ActiveGraph::Node, with_constraint, &block)
   end
 
   def create_id_property_constraint(model, with_constraint)
-    unless model.id_property_info[:type][:constraint] == false || !with_constraint || model.id_property_name == :neo_id
-      create_constraint(model.mapped_label_name, model.id_property_name, type: :unique)
+    if with_constraint && model.id_property_info[:type][:constraint] != false
+      create_property_constraint(model.mapped_element, model.id_property_name, type: :unique)
     end
   end
 
-  def relationship_class(class_name, &block)
-    named_class(class_name) do
-      include ActiveGraph::Relationship
-
-      module_eval(&block) if block
-    end
+  def relationship_class(class_name, with_constraint: true, &block)
+    element_class(class_name, ActiveGraph::Relationship, with_constraint, &block)
   end
 
   def named_class(class_name, superclass = nil, &block)
@@ -166,13 +158,27 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_constraint(label_name, property, options = {})
-    ActiveGraph::Base.label_object(label_name).create_constraint(property, options)
+    create_property_constraint(ActiveGraph::Base.label_object(label_name), property, **options)
+  end
+
+  def create_property_constraint(mapped_element, property, **options)
+    mapped_element.create_constraint(property, options)
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
   def create_index(label_name, property, options = {})
     ActiveGraph::Base.label_object(label_name).create_index(property, **options)
     ActiveGraph::ModelSchema.reload_models_data!
+  end
+
+  private
+
+  def element_class(class_name, klass, with_constraint, &block)
+    named_class(class_name) do
+      include klass
+
+      module_eval(&block) if block
+    end.tap { |model| create_id_property_constraint(model, with_constraint) }
   end
 end
 

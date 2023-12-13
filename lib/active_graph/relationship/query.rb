@@ -29,6 +29,10 @@ module ActiveGraph::Relationship
         where_query.where(where_string(args)).pluck(:r1)
       end
 
+      def find_by(args)
+        where(args).first
+      end
+
       # Performs a basic match on the relationship, returning all results.
       # This is not executed lazily, it will immediately return matching objects.
       def all
@@ -89,7 +93,9 @@ module ActiveGraph::Relationship
       def where_string(args)
         case args
         when Hash
-          args.map { |k, v| v.is_a?(Integer) ? "r1.#{k} = #{v}" : "r1.#{k} = '#{v}'" }.join(', ')
+          args.transform_keys { |key| key == :neo_id ? 'elementId(r1)' : "r1.#{key}" }
+              .transform_values { |v| v.is_a?(Integer) ? v : "'#{v}'" }
+              .map { |k, v| "#{k} = #{v}" }.join(', ')
         else
           args
         end

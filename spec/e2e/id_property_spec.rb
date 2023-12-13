@@ -44,7 +44,7 @@ describe ActiveGraph::Node::IdProperty do
       expect(node.id).to eq('secure123')
     end
 
-    it 'can find by id uses the neo_id' do
+    it 'can find by id uses the id_property' do
       node = Clazz.create!
       node.name = 'kalle'
       expect(Clazz.find_by_id(node.id)).to eq(node)
@@ -72,19 +72,6 @@ describe ActiveGraph::Node::IdProperty do
         expect(node).to respond_to(:the_id)
         expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
       end
-    end
-  end
-
-  describe 'when having neo_id configuration' do
-    let_config(:id_property, :neo_id)
-
-    before do
-      stub_node_class('NeoIdTest')
-    end
-
-    it 'it will find node by neo_id' do
-      node = NeoIdTest.create
-      expect(NeoIdTest.where(id: node).first).to eq(node)
     end
   end
 

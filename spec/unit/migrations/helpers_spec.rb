@@ -67,7 +67,7 @@ describe ActiveGraph::Migrations::Helpers do
 
   describe '#rename_label' do
     it 'renames a label' do
-      execute 'CREATE (n:`Item` { name: "Lorem Ipsum" })'
+      execute 'CREATE (n:`Item` {uuid:  randomUuid(), name: "Lorem Ipsum"})'
       rename_label :Item, :Book
       expect(Book.find_by(name: 'Lorem Ipsum')).not_to be_nil
     end

@@ -94,8 +94,7 @@ module ActiveGraph
           if exists
             log_warning!(type, model, property_name) if model.id_property_name.to_sym != property_name
           else
-            # TODO: schema
-            messages[type] << force_add_message(type, label, property_name) unless model < ActiveGraph::Relationship
+            messages[type] << force_add_message(type, label, property_name)
           end
         end
 
