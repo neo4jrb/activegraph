@@ -52,9 +52,9 @@ module ActiveGraph
       private
 
       def exists_query_start(condition)
-        return exists_query_start(primary_key => condition) if condition.is_a?(String)
+        return exists_query_start(primary_key => condition) if condition&.is_a?(String)
 
-        if condition.key?(:neo_id)
+        if condition&.key?(:neo_id)
           query_as(:n).where('elementId(n)' => condition[:neo_id])
         else
           where(**condition)
