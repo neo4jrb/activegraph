@@ -184,7 +184,7 @@ describe 'ActiveGraph::Node' do
     end
 
     it 'indicates whether a property is indexed' do
-      o = Clazz.new(name: 'Jim', foo: 2)
+      o = Clazz.new(name: 'Jim', foo: '2')
 
       expect(o.name).to eq('Jim')
       expect do

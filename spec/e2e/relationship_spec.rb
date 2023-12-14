@@ -112,7 +112,7 @@ describe 'Relationship' do
   describe '#concurrent_increment!' do
     it 'increments an attribute (concurrently)' do
       rel1 = MyRelClass.create(from_node: from_node, to_node: to_node)
-      rel2 = MyRelClass.find(rel1.neo_id)
+      rel2 = MyRelClass.find(rel1.id)
       rel1.concurrent_increment!(:score)
       expect(rel1.score).to eq(1)
       expect(rel1.score_was).to eq(1)
@@ -478,7 +478,7 @@ describe 'Relationship' do
     after { [rel1, rel2].each(&:destroy) }
 
     describe 'related nodes' do
-      let(:reloaded) { MyRelClass.find(rel1.neo_id) }
+      let(:reloaded) { MyRelClass.find(rel1.id) }
 
       # We only run this test in the Server environment. Embedded's loading of
       # relationships works differently, so we aren't as concerned with whether
@@ -529,7 +529,7 @@ describe 'Relationship' do
 
     describe 'find' do
       it 'returns the rel' do
-        expect(MyRelClass.find(rel1.neo_id)).to eq rel1
+        expect(MyRelClass.find(rel1.id)).to eq rel1
       end
 
       it 'with no results' do
