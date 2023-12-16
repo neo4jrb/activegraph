@@ -25,6 +25,8 @@ module ActiveGraph
     class FrozenRelError < ActiveGraph::Error; end
 
     def initialize(from_node = nil, to_node = nil, args = nil)
+      self.class.ensure_id_property_info! # So that we make sure all objects have an id_property
+
       load_nodes(node_or_nil(from_node), node_or_nil(to_node))
       resolved_args = hash_or_nil(from_node, args)
       symbol_args = sanitize_input_parameters(resolved_args)

@@ -163,7 +163,7 @@ describe ActiveGraph::Migrations::Helpers do
         execute 'CREATE (d:`Dog`)'
       end
 
-      stub_node_class('Cat') {}
+      stub_node_class('Cat', constraint: :unique) {}
       stub_node_class('Dog') do
         id_property :my_id, on: :generate_id
 

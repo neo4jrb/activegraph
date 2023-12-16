@@ -111,12 +111,12 @@ end
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 module ActiveNodeRelStubHelpers
-  def stub_node_class(class_name, with_constraint = true, &block)
-    stub_const class_name, node_class(class_name, with_constraint:, &block)
+  def stub_node_class(class_name, constraint: :key, &block)
+    stub_const class_name, node_class(class_name, constraint:, &block)
   end
 
-  def stub_relationship_class(class_name, with_constraint = true, &block)
-    stub_const class_name, relationship_class(class_name, with_constraint:,  &block)
+  def stub_relationship_class(class_name, constraint: :key, &block)
+    stub_const class_name, relationship_class(class_name, constraint:,  &block)
   end
 
   def stub_named_class(class_name, superclass = nil, &block)
@@ -124,18 +124,18 @@ module ActiveNodeRelStubHelpers
     ActiveGraph::ModelSchema.reload_models_data!
   end
 
-  def node_class(class_name, with_constraint: true, &block)
-    element_class(class_name, ActiveGraph::Node, with_constraint, &block)
+  def node_class(class_name, constraint: :key, &block)
+    element_class(class_name, ActiveGraph::Node, constraint:, &block)
   end
 
-  def create_id_property_constraint(model, with_constraint)
-    if with_constraint && model.id_property_info[:type][:constraint] != false
-      create_property_constraint(model.mapped_element, model.id_property_name, type: :unique)
+  def create_id_property_constraint(model, constraint:)
+    if constraint && model.id_property_info[:type][:constraint] != false
+      create_property_constraint(model.mapped_element, model.id_property_name, type: model.id_property_info[:type][:auto] ? constraint : :unique)
     end
   end
 
-  def relationship_class(class_name, with_constraint: true, &block)
-    element_class(class_name, ActiveGraph::Relationship, with_constraint, &block)
+  def relationship_class(class_name, constraint: :key, &block)
+    element_class(class_name, ActiveGraph::Relationship, constraint:, &block)
   end
 
   def named_class(class_name, superclass = nil, &block)
@@ -173,12 +173,12 @@ module ActiveNodeRelStubHelpers
 
   private
 
-  def element_class(class_name, klass, with_constraint, &block)
+  def element_class(class_name, klass, constraint:, &block)
     named_class(class_name) do
       include klass
 
       module_eval(&block) if block
-    end.tap { |model| create_id_property_constraint(model, with_constraint) }
+    end.tap { |model| create_id_property_constraint(model, constraint:) }
   end
 end
 

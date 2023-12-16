@@ -57,7 +57,7 @@ describe 'Query API' do
       property :grade, type: Integer
     end
 
-    stub_node_class('Teacher') do
+    stub_node_class('Teacher', constraint: :unique) do
       property :name
       property :age, type: Integer
       property :status, default: 'active'

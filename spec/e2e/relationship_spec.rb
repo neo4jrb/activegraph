@@ -45,7 +45,7 @@ describe 'Relationship' do
     stub_relationship_class('MyRelClass') do
       from_class :FromClass
       to_class :ToClass
-      type 'rel_class_type'
+      type 'LegacyClass#legacy_type'
 
       property :score, type: Integer
       property :links
@@ -358,10 +358,6 @@ describe 'Relationship' do
     end
 
     context 'with a rel type requiring backticks' do
-      before do
-        MyRelClass.type 'LegacyClass#legacy_type'
-      end
-
       it 'creates correctly' do
         expect { f1.others << t1 }.to change { f1.reload.others.count }.by(1)
       end

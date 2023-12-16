@@ -76,14 +76,14 @@ describe 'ActiveGraph::Node' do
     let(:properties) { [] }
     let(:constraints) { [] }
     let(:indexes) { [] }
-    let(:with_constraint) { true }
+    let(:with_constraint) { :key }
     let(:subclass_properties) { [] }
     let(:subclass_constraints) { [] }
     let(:subclass_indexes) { [] }
-    let(:subclass_with_constraint) { true }
+    let(:subclass_with_constraint) { :key }
 
-    def define_node_class(name, model_properties, model_constraints, model_indexes, with_constraint = true)
-      stub_node_class(name.to_s, with_constraint) do
+    def define_node_class(name, model_properties, model_constraints, model_indexes, constraint: :key )
+      stub_node_class(name.to_s, constraint:) do
         model_properties.each { |args| property(*Array(args)) }
         model_constraints.each { |args| constraint(*Array(args)) }
         model_indexes.each { |args| index(*Array(args)) }
@@ -91,11 +91,11 @@ describe 'ActiveGraph::Node' do
     end
 
     let!(:clazz) do
-      define_node_class(:Clazz, properties, constraints, indexes, with_constraint)
+      define_node_class(:Clazz, properties, constraints, indexes, constraint: with_constraint)
     end
 
     let!(:other_class) do
-      define_node_class(:SubClazz, subclass_properties, subclass_constraints, subclass_indexes, subclass_with_constraint)
+      define_node_class(:SubClazz, subclass_properties, subclass_constraints, subclass_indexes, constraint: subclass_with_constraint)
     end
 
     it_behaves_like 'does not raise schema error', :Clazz

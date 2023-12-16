@@ -251,7 +251,7 @@ describe ActiveGraph::Node::IdProperty do
 
       property_name = id_property_name
       property_options = id_property_options
-      stub_node_class('Clazz', false) do
+      stub_node_class('Clazz', constraint: false) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
       property_name = subclass_id_property_name
