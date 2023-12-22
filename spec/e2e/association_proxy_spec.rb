@@ -12,14 +12,21 @@ describe 'Association Proxy' do
         has_one :out, :favorite_lesson, type: nil, model_class: :Lesson
         has_many :out, :homework, type: :HOMEWORK, model_class: %w[Lesson Exam]
         has_many :out, :friends, type: :friend, model_class: :Student
+        has_one :out, :school, rel_class: :SchoolRel
       end
 
       stub_relationship_class('LessonEnrollment') do
         from_class :Student
         to_class :Lesson
-        type :has_studet
+        type :has_student
 
         property :grade
+      end
+
+      stub_relationship_class('SchoolRel') do
+        from_class :Student
+        to_class :School
+        type :has_student
       end
 
       stub_node_class('Lesson') do
@@ -34,6 +41,11 @@ describe 'Association Proxy' do
         has_many :in, :lessons, model_class: :Lesson, origin: :exams_given
         has_many :out, :students, type: :has_student, model_class: :Student
       end
+
+      stub_node_class('School') do
+        property :name
+        has_many :out, :students, type: :has_student, model_class: :Student
+      end
     end
 
     let(:billy) { Student.create(name: 'Billy') }
@@ -44,6 +56,7 @@ describe 'Association Proxy' do
     let(:science_exam2) { Exam.create(name: 'Science Exam 2') }
     let(:leszek) { Student.create(name: 'Leszek', friends: [zinto]) }
     let(:zinto) { Student.create(name: 'Zinto') }
+    let(:code_academy) { School.create(name: 'Code Academy') }
 
     before do
       [math, science].each { |lesson| billy.lessons << lesson }
@@ -52,6 +65,7 @@ describe 'Association Proxy' do
       science.exams_given << science_exam
       science.exams_given << science_exam2
       billy.favorite_lesson = math
+      billy.school = code_academy
     end
 
     context 'self referencing relationships' do
@@ -314,9 +328,15 @@ describe 'Association Proxy' do
     end
 
     describe '#rels' do
-      it 'caches results for consecutive calls' do
+      it 'caches multi rels for consecutive calls' do
         expect_queries(1) do
           2.times { billy.lessons.rels }
+        end
+      end
+
+      it 'caches single rel for consecutive calls' do
+        expect_queries(1) do
+          2.times { billy.school.rel }
         end
       end
     end
