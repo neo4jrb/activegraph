@@ -6,18 +6,16 @@ module ActiveGraph
         MISSING_CONSTRAINT_OR_INDEX = 'No such %{type} for %{label}#%{property}'.freeze
         DUPLICATE_CONSTRAINT_OR_INDEX = 'Duplicate %{type} for %{label}#%{property}'.freeze
 
-        def add_constraint(label, property, options = {})
-          force = options[:force] || false
-          type = options[:type] || :uniqueness
-          label_object = ActiveGraph::Base.label_object(label)
-          if label_object.constraint?(property)
+        def add_constraint(name, property, relationship: false, type: :key, force: false)
+          element = ActiveGraph::Base.element(name, relationship:)
+          if element.constraint?(property)
             if force
-              label_object.drop_constraint(property, type: type)
+              element.drop_constraint(property, type:)
             else
-              fail_duplicate_constraint_or_index!(:constraint, label, property)
+              fail_duplicate_constraint_or_index!(:constraint, name, property)
             end
           end
-          label_object.create_constraint(property, type: type)
+          element.create_constraint(property, type:)
         end
 
         def add_index(label, property, options = {})
@@ -33,11 +31,10 @@ module ActiveGraph
           label_object.create_index(property)
         end
 
-        def drop_constraint(label, property, options = {})
-          type = options[:type] || :uniqueness
-          label_object = ActiveGraph::Base.label_object(label)
-          fail_missing_constraint_or_index!(:constraint, label, property) if !options[:force] && !label_object.constraint?(property)
-          label_object.drop_constraint(property, type: type)
+        def drop_constraint(name, property, type: :key, relationship: false, force: false)
+          element = ActiveGraph::Base.element(name, relationship:)
+          fail_missing_constraint_or_index!(:constraint, name, property) unless force || element.constraint?(property)
+          element.drop_constraint(property, type:)
         end
 
         def drop_index(label, property, options = {})

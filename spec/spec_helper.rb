@@ -162,7 +162,7 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_property_constraint(mapped_element, property, **options)
-    mapped_element.create_constraint(property, options)
+    mapped_element.create_constraint(property, **options)
     ActiveGraph::ModelSchema.reload_models_data!
   end
 

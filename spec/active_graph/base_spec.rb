@@ -313,9 +313,9 @@ describe ActiveGraph::Base do
     end
   end
 
-  def create_constraint(label_name, property, options = {})
+  def create_constraint(label_name, property, type: :key)
     label_object = ActiveGraph::Core::Label.new(label_name)
-    label_object.create_constraint(property, options)
+    label_object.create_constraint(property, type:)
   end
 
   def create_index(label_name, property, options = {})

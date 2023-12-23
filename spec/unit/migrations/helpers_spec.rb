@@ -116,20 +116,20 @@ describe ActiveGraph::Migrations::Helpers do
 
     it 'adds a constraint to a property' do
       expect do
-        add_constraint :Book, :code
+        add_constraint :Book, :code, type: :unique
       end.to change { label_object.constraint?(:code) }.from(false).to(true)
     end
 
     it 'fails when constraint is already defined' do
       expect do
-        expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+        expect { add_constraint :Book, :name, type: :unique }.to raise_error('Duplicate constraint for Book#name')
       end.not_to change { label_object.constraint?(:name) }
     end
 
     it 'does not fail when constraint is already defined when forced' do
-      add_constraint :Book, :genre
+      add_constraint :Book, :genre, type: :unique
       expect do
-        expect { add_constraint :Book, :genre, force: true }.not_to raise_error
+        expect { add_constraint :Book, :genre, type: :unique, force: true }.not_to raise_error
       end.not_to change { label_object.constraint?(:genre) }
     end
   end
@@ -264,7 +264,7 @@ describe ActiveGraph::Migrations::Helpers do
   describe '#drop_constraint' do
     it 'removes a constraint from a property' do
       expect do
-        drop_constraint :Book, :name
+        drop_constraint :Book, :name, type: :unique
       end.to change { label_object.constraint?(:name) }.from(true).to(false)
       expect { Book.create! name: Book.first.name }.not_to raise_error
     end

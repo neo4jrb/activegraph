@@ -60,6 +60,10 @@ module ActiveGraph
         ActiveGraph::Core::Label.new(label_name)
       end
 
+      def element(name, relationship: false)
+        (relationship ? Core::Type : Core::Label).new(name)
+      end
+
       def logger
         @logger ||= (ActiveGraph::Config[:logger] || ActiveSupport::Logger.new(STDOUT))
       end
