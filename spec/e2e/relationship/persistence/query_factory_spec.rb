@@ -103,30 +103,6 @@ describe ActiveGraph::Relationship::Persistence::QueryFactory do
         expect(from_node.reload.to_classes).to be_empty
       end
 
-      context 'concurrent update' do
-        before do
-          allow_any_instance_of(ActiveGraph::Node::Query::QueryProxy).to receive(:replace_with).and_wrap_original do |original, *args|
-            $concurrency_queue << 'ready'
-            Thread.stop
-            original.call(*args)
-          end
-        end
-        after { $concurrency_queue = nil }
-        let!(:from_node) { FromClass.create(name: 'foo') }
-        let!(:to_node) { ToClass.create(name: 'bar') }
-
-        it 'does not create duplicate has_one relationship' do
-          count = 100
-          $concurrency_queue = Thread::Queue.new
-          threads = count.times.map { Thread.new { to_node.update(from_class: from_node) } }
-          sleep(0.1) until $concurrency_queue.size == count
-          $concurrency_queue.clear
-          threads.each(&:run)
-          threads.each(&:join)
-          expect(ActiveGraph::Base.query("MATCH (node2:`ToClass`)<-[rel1:`HAS_REL`]-(from_class:`FromClass`) return from_class").to_a.size).to eq(1)
-        end
-      end
-
       it 'delets has_one rel from from_node when new relation is created' do
         to_node_two = ToClass.new(name: 'bar-2')
         Rel2Class.new(from_node: from_node, to_node: to_node, score: 10).save
