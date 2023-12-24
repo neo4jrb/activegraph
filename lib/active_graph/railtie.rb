@@ -1,3 +1,5 @@
+require 'active_graph'
+
 module ActiveGraph
   class Railtie < ::Rails::Railtie
     def empty_config
