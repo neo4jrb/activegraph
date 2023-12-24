@@ -1,6 +1,6 @@
 # Usage: rails new myapp -m activegraph.rb
 
-gem 'activegraph', '=> 11.1'
+gem 'activegraph', '>= 11.1'
 
 gem_group :development do
   gem 'neo4j-rake_tasks'
