@@ -44,7 +44,7 @@ describe 'Association Proxy' do
 
       stub_node_class('School') do
         property :name
-        has_many :out, :students, type: :has_student, model_class: :Student
+        has_many :out, :students, type: :has_student, model_class: :School
       end
     end
 
