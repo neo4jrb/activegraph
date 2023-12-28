@@ -111,11 +111,15 @@ module ActiveGraph::Node
 
       def add_to_cache(object, rel = nil)
         (@cached_rels ||= []) << rel if rel
-        (@cached_result ||= []).tap { |results| results << object if object && !results.include?(object) }
+        (@cached_result ||= []).tap { |results| results << object if !results.include?(object) } if object
       end
 
       def rels
         @cached_rels || super.tap { |rels| rels.each { |rel| add_to_cache(nil, rel)  } }
+      end
+
+      def rel
+        rels.first
       end
 
       def cache_query_proxy_result
