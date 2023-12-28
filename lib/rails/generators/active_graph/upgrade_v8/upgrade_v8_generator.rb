@@ -1,3 +1,6 @@
+require_relative '../../source_path_helper'
+require_relative '../../migration_helper'
+
 module ActiveGraph
   module Generators
     class UpgradeV8Generator < ::Rails::Generators::Base
