@@ -4,8 +4,8 @@ require_relative '../../migration_helper'
 module ActiveGraph
   module Generators
     class UpgradeV8Generator < ::Rails::Generators::Base
-      include ::ActiveGraph::Generators::SourcePathHelper
-      include ::ActiveGraph::Generators::MigrationHelper
+      include ActiveGraph::Generators::SourcePathHelper
+      include ActiveGraph::Generators::MigrationHelper
 
       def create_upgrade_v8_file
         @schema = load_all_models_schema!
