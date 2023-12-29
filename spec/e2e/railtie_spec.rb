@@ -1,3 +1,5 @@
+require 'active_graph/railtie'
+
 module Rails
   describe 'railtie' do
     after(:context) { set_default_driver }
