@@ -29,13 +29,12 @@ if defined?(Rails)
   require 'rails/generators/active_model'
   require 'rails/generators/named_base'
   require 'rails/railtie'
+  require File.expand_path('rails/generators/migration_helper.rb', __dir__)
 end
 
 loader = Zeitwerk::Loader.for_gem
-unless defined?(Rails)
-  loader.ignore(File.expand_path('active_graph/generators', __dir__))
-  loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
-end
+loader.ignore(File.expand_path('rails', __dir__))
+loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
 loader.inflector.inflect("ansi" => "ANSI")
 loader.setup
 # loader.eager_load
