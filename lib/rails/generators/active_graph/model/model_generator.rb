@@ -1,5 +1,5 @@
-require_relative '../../source_path_helper'
 require_relative '../../migration_helper'
+require_relative '../../source_path_helper'
 
 class ActiveGraph::Generators::ModelGenerator < Rails::Generators::NamedBase #:nodoc:
   include ActiveGraph::Generators::SourcePathHelper

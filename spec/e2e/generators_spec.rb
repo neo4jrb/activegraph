@@ -1,3 +1,4 @@
+require 'rails/generators'
 require 'rails/generators/active_graph/model/model_generator'
 require 'rails/generators/active_graph/migration/migration_generator'
 require 'rails/generators/active_graph/upgrade_v8/upgrade_v8_generator'
