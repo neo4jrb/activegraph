@@ -8,8 +8,8 @@ if defined?(Rails)
   require 'rails/generators/named_base'
   require 'rails/railtie'
   require File.expand_path('../rails/generators/migration_helper.rb', __dir__)
+  Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute
 end
-Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute if defined?(Rails)
 
 module ActiveGraph
   class Railtie < ::Rails::Railtie
