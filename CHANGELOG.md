@@ -3,9 +3,20 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [11.4.0] 2023-02-12
+## [11.5.0.beta.1] 2023-12-29
+
+## Added
+
+- migrated to zeitwerk
+- rails 7.1 support
 
 ## Fixed
+
+- caching of has one relationships
+
+## [11.4.0] 2023-12-02
+
+## Added
 
 - Added support for cypher UNION
 

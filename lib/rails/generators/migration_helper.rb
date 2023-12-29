@@ -1,3 +1,8 @@
+module ActiveGraph
+  module Generators #:nodoc:
+  end
+end
+
 module ActiveGraph::Generators::MigrationHelper
   extend ActiveSupport::Concern
 
@@ -42,5 +47,57 @@ module ActiveGraph::Generators::MigrationHelper
 
     # On revoke, we need to manually remove the file
     FileUtils.rm(real_file_name) if @behavior == :revoke
+  end
+end
+
+class ActiveGraph::Generators::ActiveModel < Rails::Generators::ActiveModel #:nodoc:
+  def self.all(klass)
+    "#{klass}.all"
+  end
+
+  def self.find(klass, params = nil)
+    "#{klass}.find(#{params})"
+  end
+
+  def self.build(klass, params = nil)
+    if params
+      "#{klass}.new(#{params})"
+    else
+      "#{klass}.new"
+    end
+  end
+
+  def save
+    "#{name}.save"
+  end
+
+  def update_attributes(params = nil)
+    "#{name}.update_attributes(#{params})"
+  end
+
+  def errors
+    "#{name}.errors"
+  end
+
+  def destroy
+    "#{name}.destroy"
+  end
+end
+
+module ActiveGraph
+  module Generators
+    module GeneratedAttribute #:nodoc:
+      def type_class
+        case type.to_s.downcase
+        when 'any' then 'any'
+        when 'datetime' then 'DateTime'
+        when 'date' then 'Date'
+        when 'integer', 'number', 'fixnum' then 'Integer'
+        when 'float' then 'Float'
+        else
+          'String'
+        end
+      end
+    end
   end
 end

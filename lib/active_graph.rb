@@ -22,20 +22,9 @@ require 'set'
 require 'sorted_set'
 require 'yaml'
 
-if defined?(Rails)
-  # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
-  require 'action_dispatch/railtie'
-  require 'rails/generators'
-  require 'rails/generators/active_model'
-  require 'rails/generators/named_base'
-  require 'rails/railtie'
-end
-
 loader = Zeitwerk::Loader.for_gem
-unless defined?(Rails)
-  loader.ignore(File.expand_path('active_graph/generators', __dir__))
-  loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
-end
+loader.ignore(File.expand_path('rails', __dir__))
+loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
 loader.inflector.inflect("ansi" => "ANSI")
 loader.setup
 # loader.eager_load
@@ -49,6 +38,5 @@ Neo4j::Driver::Types::Node.prepend ActiveGraph::Core::Node
 Neo4j::Driver::Types::Node.wrapper_callback(&ActiveGraph::Node::Wrapping.method(:wrapper))
 Neo4j::Driver::Types::Relationship.wrapper_callback(&ActiveGraph::Relationship::Wrapping.method(:wrapper))
 SecureRandom.singleton_class.prepend ActiveGraph::SecureRandomExt
-Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute if defined?(Rails)
 
 load 'active_graph/tasks/migration.rake'

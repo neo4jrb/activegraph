@@ -12,7 +12,7 @@ require 'active_graph/railtie'
 END
 end
 
-gsub_file 'config/application.rb', "require 'rails'", ''
+gsub_file 'config/application.rb', 'require "rails"', ''
 
 generator = %q[
     # Enable ActiveGraph generators, e.g:  rails generate model Admin --parent User
