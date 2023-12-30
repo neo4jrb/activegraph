@@ -15,7 +15,7 @@ describe 'Association Proxy' do
         has_one :out, :school, rel_class: :SchoolRel
       end
 
-      stub_relationship_class('LessonEnrollment') do
+      stub_relationship_class('LessonEnrollment', constraint: :unique) do
         from_class :Student
         to_class :Lesson
         type :has_student
