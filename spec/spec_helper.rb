@@ -129,7 +129,7 @@ module ActiveNodeRelStubHelpers
   end
 
   def create_id_property_constraint(model, constraint:)
-    if constraint && model.id_property_info[:type][:constraint] != false
+    if model.id_property_info[:type][:constraint] != false && constraint
       create_property_constraint(model.mapped_element, model.id_property_name, type: model.id_property_info[:type][:auto] ? constraint : :unique)
     end
   end
