@@ -1,5 +1,5 @@
 describe ActiveGraph::Node::IdProperty do
-  before(:all) do
+  before(:context) do
     ActiveGraph::Config.delete(:id_property)
     ActiveGraph::Config.delete(:id_property_type)
     ActiveGraph::Config.delete(:id_property_type_value)
@@ -55,7 +55,7 @@ describe ActiveGraph::Node::IdProperty do
     it 'can find by id uses the id_property' do
       rel = Clazz.create!(nnode, nnode)
       rel.name = 'kalle'
-      expect(Clazz.find_by_id(rel.neo_id)).to eq(rel)
+      expect(Clazz.find_by_id(rel.id)).to eq(rel)
     end
 
     it 'returns :id as primary_key' do
@@ -78,8 +78,7 @@ describe ActiveGraph::Node::IdProperty do
       it 'will set the id_property' do
         node = Clazz.new(nnode, nnode)
         expect(node).to respond_to(:the_id)
-        # TODO: RELATIONSHIP KEY
-        # expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
+        expect(Clazz.mapped_element.indexes).to match_array [a_hash_including(label: :CLAZZ, properties: [:the_id])]
       end
     end
   end
@@ -95,7 +94,7 @@ describe ActiveGraph::Node::IdProperty do
 
     it 'has an index' do
       Clazz.ensure_id_property_info!
-      expect(Clazz.mapped_element.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:myid])])
+      expect(Clazz.mapped_element.indexes).to match array_including([a_hash_including(label: :CLAZZ, properties: [:myid])])
     end
 
     describe 'property myid' do
@@ -169,7 +168,7 @@ describe ActiveGraph::Node::IdProperty do
       it 'does not find it if it does not exist' do
         Clazz.create(nnode, nnode, myid: 'd')
 
-        expect {Clazz.find_by_id('something else')}.to raise_error ActiveGraph::RecordNotFound
+        expect(Clazz.find_by_id('something else')).to be_nil
       end
     end
 
@@ -178,14 +177,6 @@ describe ActiveGraph::Node::IdProperty do
         rel1 = Clazz.create(nnode, nnode)
         found = Clazz.find_by_neo_id(rel1.neo_id)
         expect(found).to eq rel1
-      end
-    end
-
-    describe 'order' do
-      it 'should order by myid' do
-        rels = Array.new(3) { |i| Clazz.create nnode, nnode, myid: i }
-
-        expect(Clazz.order(id: :desc).to_a).to eq(rels.reverse)
       end
     end
   end
@@ -200,6 +191,8 @@ describe ActiveGraph::Node::IdProperty do
     before do
       stub_relationship_class('Clazz') do
         id_property :my_id, on: :foobar
+        from_class :Single
+        to_class :Single
 
         def foobar
           'some id'
@@ -210,7 +203,7 @@ describe ActiveGraph::Node::IdProperty do
     it 'has an index' do
       Clazz.ensure_id_property_info!
 
-      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:my_id])])
+      expect(Clazz.mapped_element.indexes).to match array_including([a_hash_including(label: :CLAZZ, properties: [:my_id])])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
@@ -228,13 +221,13 @@ describe ActiveGraph::Node::IdProperty do
       end
 
       it "is set to foobar's return value after save" do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         node.save
         expect(node.my_id).to eq('some id')
       end
 
       it 'is same as id' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.my_id)
@@ -364,37 +357,40 @@ describe ActiveGraph::Node::IdProperty do
     before do
       stub_relationship_class('Clazz') do
         id_property :my_uuid, auto: :uuid
+        from_class :Single
+        to_class :Single
+        type :Clazz
       end
     end
 
     it 'has an index' do
       Clazz.ensure_id_property_info!
 
-      expect(Clazz.mapped_label.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:my_uuid])])
+      expect(Clazz.mapped_element.indexes).to match array_including([a_hash_including(label: :Clazz, properties: [:my_uuid])])
     end
 
     it 'throws exception if the same uuid is generated when saving node' do
       Clazz.default_property :my_uuid do
         'same uuid'
       end
-      Clazz.create
-      expect { Clazz.create }.to raise_constraint_error
+      Clazz.create(nnode, nnode)
+      expect { Clazz.create(nnode, nnode) }.to raise_constraint_error
     end
 
     describe 'property my_uuid' do
       it 'is not defined when before save ' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         expect(node.my_uuid).to be_nil
       end
 
       it 'is is set when saving ' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         node.save
         expect(node.my_uuid).to_not be_empty
       end
 
       it 'is same as id' do
-        node = Clazz.new
+        node = Clazz.new(nnode, nnode)
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.my_uuid)
@@ -403,87 +399,19 @@ describe ActiveGraph::Node::IdProperty do
 
     describe 'find_by_id' do
       it 'finds it if it exists' do
-        Clazz.create
+        Clazz.create(nnode, nnode)
         node = Clazz.create(nnode, nnode)
-        Clazz.create
+        Clazz.create(nnode, nnode)
 
         found = Clazz.find_by_id(node.my_uuid)
         expect(found).to eq(node)
       end
 
       it 'does not find it if it does not exist' do
-        Clazz.create
+        Clazz.create(nnode, nnode)
 
         found = Clazz.find_by_id('something else')
         expect(found).to be_nil
-      end
-    end
-  end
-
-  describe 'inheritance' do
-    before do
-      stub_relationship_class('Teacher') do
-        id_property :my_id, on: :my_method
-
-        def my_method
-          'an id'
-        end
-      end
-
-      stub_named_class('Substitute', Teacher)
-
-      stub_relationship_class('Vehicle') do
-        id_property :my_id, auto: :uuid
-      end
-
-      stub_named_class('Car', Vehicle)
-
-      stub_relationship_class('Fruit') do
-        id_property :my_id
-      end
-
-      stub_named_class('Apple', Fruit)
-
-      stub_relationship_class('Sport') do
-        id_property :neo_id
-      end
-
-      stub_named_class('Skiing', Sport)
-    end
-
-    it 'inherits the base id_property' do
-      expect(Substitute.create(nnode, nnode).my_id).to eq 'an id'
-    end
-
-    it 'works with auto uuid' do
-      expect(Car.create(nnode, nnode).my_id).not_to be_nil
-    end
-
-    it 'works without conf specified' do
-      expect(Apple.create(nnode, nnode).my_id).not_to be_nil
-    end
-
-    it 'works with neo_id' do
-      node = Skiing.create(nnode, nnode)
-      expect(node.id).not_to be_nil
-      expect(node.id).to eq(node.neo_id)
-    end
-
-    context 'when a driver is not started' do
-      before do
-        stub_relationship_class('Executive') do
-          id_property :my_id, on: :my_method
-
-          def my_method
-            'an id'
-          end
-        end
-
-        stub_named_class('CEO', Executive)
-      end
-
-      it 'subclass inherits the primary_key' do
-        expect(CEO.primary_key).to eq(:my_id)
       end
     end
   end

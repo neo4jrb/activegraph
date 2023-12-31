@@ -8,16 +8,15 @@ module ActiveGraph::Relationship
       # Returns the object with the specified neo4j id.
       # @param [String] id of node to find
       def find(id)
-        fail "Unknown argument #{id.class} in find method (expected String)" unless id.is_a?(String)
-        find_by_id(id)
+        fail "Unknown argument #{id.class} in find method (expected String)" unless [Integer, String].any?(&id.method(:is_a?))
+        find_by_id(id) || fail(RecordNotFound.new("Couldn't find #{name} with 'id'=#{id.inspect}", name, id))
       end
 
       # Loads the relationship using its neo_id.
       def find_by_id(key)
         query = ActiveGraph::Base.new_query
         result = query.match('()-[r]-()').where("r.#{id_property_name}" => key).limit(1).return(:r).first
-        fail RecordNotFound.new("Couldn't find #{name} with 'id'=#{key.inspect}", name, key) if result.blank?
-        result[:r]
+        result&.send(:[], :r)
       end
 
       # Performs a very basic match on the relationship.

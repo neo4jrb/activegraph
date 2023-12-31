@@ -4,7 +4,7 @@ describe 'migration tasks' do
   before do
     clear_model_memory_caches
 
-    stub_node_class('User') do
+    stub_node_class('User', constraint: :unique) do
       property :name
       has_many :out, :songs, model_class: :Song, type: 'songs'
     end
@@ -71,7 +71,7 @@ describe 'migration tasks' do
     end
 
     it 'adds ids when missing based on label' do
-      ActiveGraph::Base.query('CREATE (n:`User`{uuid: randomUuid()}) return n')
+      ActiveGraph::Base.query('CREATE (n:`User`) return n')
       user = User.first
       neo_id = user.neo_id
       expect(user.uuid).to be_nil

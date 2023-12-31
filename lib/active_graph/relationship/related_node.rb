@@ -62,11 +62,7 @@ module ActiveGraph::Relationship
     end
 
     def method_missing(*args, **kwargs, &block)
-      if RUBY_VERSION < '3' && kwargs.empty?
-        loaded.send(*args, &block)
-      else
-        loaded.send(*args, **kwargs, &block)
-      end
+      loaded.send(*args, **kwargs, &block)
     end
 
     def respond_to_missing?(method_name, include_private = false)
