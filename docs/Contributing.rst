@@ -49,7 +49,7 @@ We use:
 
 Please try to check at least the RSpec tests and Rubocop before making your pull request.  ``Guardfile`` and ``.overcommit.yml`` files are available if you would like to use ``guard`` (for RSpec and rubocop) and/or overcommit.
 
-We also use Travis CI to make sure all of these pass for each pull request.  Travis runs the specs across multiple versions of Ruby and multiple Neo4j databases, so be aware of that for potential build failures.
+We also use GitHub actions to make sure all of these pass for each pull request.  GitHub actions runs the specs across multiple versions of Ruby and multiple Neo4j databases, so be aware of that for potential build failures.
 
 Documentation
 ~~~~~~~~~~~~~
