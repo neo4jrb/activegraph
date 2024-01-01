@@ -147,13 +147,24 @@ module ActiveGraph
 
               val = if !model
                       value
-                    elsif key == model.id_property_name && value.is_a?(ActiveGraph::Node)
-                      value.id
+                    elsif key == model.id_property_name
+                      try_id(value)
                     else
                       converted_value(model, key, value)
                     end
 
               new(:where, ->(v, _) { {v => {key => val}} })
+            end
+
+            private def try_id(value)
+              case value
+              when Shared::Identity
+                value.id
+              when Enumerable
+                value.map(&method(:try_id))
+              else
+                value
+              end
             end
 
             def for_association(name, value, n_string, model)

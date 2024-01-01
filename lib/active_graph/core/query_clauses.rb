@@ -200,7 +200,7 @@ module ActiveGraph
         end
 
         def array_value?(value, is_set)
-          value.is_a?(Array) && !is_set
+          value.is_a?(Enumerable) && !is_set
         end
 
         def format_label(label_arg)

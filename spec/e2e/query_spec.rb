@@ -198,6 +198,10 @@ describe 'Query API' do
       it 'allows filtering and parametarizing by String and Hash in where' do
         expect(Teacher.as(:teach).where('teach.name =~ $name', name: '.*Othmar.*').to_a).to eq([othmar])
       end
+
+      it 'allows filtering by set' do
+        expect(Teacher.where(id: Set[samuels.id, othmar]).to_a).to include(samuels, othmar)
+      end
     end
 
     describe 'merge methods' do
