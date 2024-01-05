@@ -1,11 +1,6 @@
 # Need the action_dispatch railtie to have action_dispatch.rescue_responses initialized correctly
 require 'action_dispatch/railtie'
-require 'rails/generators'
-require 'rails/generators/active_model'
-require 'rails/generators/named_base'
 require 'rails/railtie'
-require File.expand_path('../rails/generators/migration_helper.rb', __dir__)
-Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute
 require 'active_graph'
 
 module ActiveGraph
@@ -42,6 +37,10 @@ module ActiveGraph
     console do
       ActiveGraph::Config[:logger] = ActiveSupport::Logger.new(STDOUT)
       ActiveGraph::Config[:verbose_query_logs] = false
+    end
+
+    generators do
+      require File.expand_path('../rails/generators/migration_helper.rb', __dir__)
     end
 
     # Starting Neo after :load_config_initializers allows apps to
