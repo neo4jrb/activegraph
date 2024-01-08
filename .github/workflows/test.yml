@@ -4,7 +4,7 @@ on:
   push:
     branches: [ '12' ]
   pull_request:
-    branches: [ `12' ]
+    branches: [ '12' ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
