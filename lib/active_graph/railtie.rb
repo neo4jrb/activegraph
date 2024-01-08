@@ -39,6 +39,9 @@ module ActiveGraph
       ActiveGraph::Config[:verbose_query_logs] = false
     end
 
+    # By default, Rails loads generators from load path.
+    # However, if we want to place generators at a different location we have to use "generators" hook
+    # https://api.rubyonrails.org/classes/Rails/Railtie.html
     generators do
       require File.expand_path('../rails/generators/migration_helper.rb', __dir__)
     end
