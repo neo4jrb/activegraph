@@ -40,9 +40,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Setup test rails app
-        shell: bash-wrapper {0}
-        run: |
-          bash ./e2e_tests/setup.sh
+        run: ./e2e_tests/setup.sh
 
       - name: Wait for neo4j
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
