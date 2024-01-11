@@ -40,7 +40,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Setup test rails app
-        id: setup-rails-app
         run: ./e2e_tests/setup.sh
 
       - name: Wait for neo4j
