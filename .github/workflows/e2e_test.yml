@@ -42,12 +42,6 @@ jobs:
       - name: Setup test rails app
         run: ./e2e_tests/setup.sh
 
-      - name: log
-        run: printf "$SHA"
-
-      - name: log-two
-        run: echo "${{ env.SHA }}"
-
       - name: Wait for neo4j
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 

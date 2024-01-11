@@ -1,8 +1,6 @@
 #!/bin/sh
 
-git_hash=$(git rev-parse --short "$GITHUB_SHA")
-# git_branch=${GITHUB_REF#refs/heads/}
-echo "SHA=$(git_hash)" >> $GITHUB_ENV
+echo "SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 gem install rails -v 7.1.2 --no-document
 # /Users/hardik_joshi/work/open_source/activegraph/docs/activegraph.rb
 sed 's/.*activegraph.*/gem '"'"'activegraph'"'"', github: "neo4jrb\/activegraph", ref: "95600cacb82e1239ca1d105886630603b67a3280"/' docs/activegraph.rb > template.tmp
