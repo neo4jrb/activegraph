@@ -43,9 +43,6 @@ jobs:
         id: setup-rails-app
         run: ./e2e_tests/setup.sh
 
-      - name: Output
-        run: echo ${{ steps.setup-rails-app.outputs.version }}
-
       - name: Wait for neo4j
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 
