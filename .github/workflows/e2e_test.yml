@@ -41,5 +41,5 @@ jobs:
       - name: Setup test rails app
         run: ./e2e_tests/setup.sh
 
-      # - name: Run tests
-      #   run: bundle exec rspec e2e_tests/
+      - name: Run tests
+        run: bundle exec rspec -Oe2e_tests/.e2e_rspec e2e_tests/

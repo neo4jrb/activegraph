@@ -39,6 +39,6 @@ bundle exec rails s -d
 # while [ $((curl localhost:3000/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 until $(curl --output /dev/null --silent --head --fail localhost:3000); do
   printf '.'
-  sleep 5
+  sleep 2
 done
 kill `cat tmp/pids/server.pid`
