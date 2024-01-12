@@ -19,6 +19,7 @@ describe 'Model Generator' do
 
     it 'can be run/rollback without issue' do
       migration = CreateUser.new(nil)
+      migration.down rescue nil # we make sure migration is not run before
       expect do
         migration.up
         migration.down
