@@ -17,9 +17,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ jruby-9.4.5.0, ruby-3.1.4 ]
-        neo4j: [ 3.5.35, 4.0.12, 4.1.13, 4.2.19, 4.3.24, 4.4.29, 5.15.0 ]
-        active_model: [ 7.0.8, 7.1.2 ]
         include:
           - ruby: ruby-3.2.2
             neo4j: 5.15.0

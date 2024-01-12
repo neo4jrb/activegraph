@@ -6,7 +6,7 @@ sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', github: "neo4jrb
 rails _7.1.2_ new myapp -O -m ./template.tmp
 cd myapp
 bundle exec rails generate model User name:string
-# RAILS_ENV=test bundle exec rake neo4j:migrate
+RAILS_ENV=test bundle exec rake neo4j:migrate
 # bundle exec rails c
 # bundle exec rails s
 
