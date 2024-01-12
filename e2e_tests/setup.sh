@@ -42,4 +42,3 @@ until $(curl --output /dev/null --silent --head --fail localhost:3000); do
   sleep 2
 done
 kill `cat tmp/pids/server.pid`
-cd ..
