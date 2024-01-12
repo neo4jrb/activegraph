@@ -17,16 +17,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ jruby-9.4.5.0, ruby-3.1.4 ]
+        ruby: [ jruby-9.4.5.0, ruby-3.2.2 ]
         neo4j: [ 5.15.0 ]
-        # active_model: [ 7.0.8, 7.1.2 ]
+        active_model: [ 7.1.2 ]
         include:
           - ruby: ruby-3.2.2
             neo4j: 5.15.0
             active_model: 7.1.2
     env:
       # NEO4J_VERSION: ${{ matrix.neo4j }}
-      # ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
+      ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
       - name: Start neo4j
@@ -39,11 +39,11 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
 
-      - name: Setup test rails app
-        run: ./e2e_tests/setup.sh
-
       - name: Wait for neo4j
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
+
+      - name: Setup test rails app
+        run: ./e2e_tests/setup.sh
 
       # - name: Run tests
       #   run: bundle exec rspec e2e_tests/
