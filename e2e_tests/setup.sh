@@ -1,6 +1,12 @@
 #!/bin/sh
 
-gem install rails -v 7.1.2 --no-document
+if [[ -n "$ACTIVE_MODEL_VERSION" ]]
+then
+  gem install rails -v $ACTIVE_MODEL_VERSION --no-document
+else
+  gem install rails -v 7.1.2 --no-document
+fi
+
 if [[ -n "$SHA" ]]
 then
   sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', github: "neo4jrb\/activegraph", ref: "'"$SHA"'"/' docs/activegraph.rb > template.tmp
