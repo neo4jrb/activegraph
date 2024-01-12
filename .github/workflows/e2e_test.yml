@@ -36,7 +36,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Wait for neo4j
-        run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
+        run: while [ $((curl localhost:7472/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 
       - name: Setup test rails app
         run: ./e2e_tests/setup.sh
