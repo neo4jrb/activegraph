@@ -12,7 +12,14 @@ rails _7.1.2_ new myapp -O -m ./template.tmp
 cd myapp
 bundle exec rails generate model User name:string
 bundle exec rake neo4j:migrate
-# bundle exec rails c
-# bundle exec rails s
+if echo 'puts "hi"' | bundle exec rails c
+then
+  echo "rails console works correctly"
+else
+  exit 1
+fi
+bundle exec rails s -d
+while [ $((curl localhost:3000/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
+kill `cat tmp/pids/server.pid`
 
 
