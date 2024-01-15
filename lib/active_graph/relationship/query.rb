@@ -15,7 +15,7 @@ module ActiveGraph::Relationship
       # Loads the relationship using its neo_id.
       def find_by_id(key)
         query = ActiveGraph::Base.new_query
-        result = query.match('()-[r]-()').where("r.#{id_property_name}" => key).limit(1).return(:r).first
+        result = query.match("()-[r:`#{mapped_element_name}`]-()").where("r.#{id_property_name}" => key).limit(1).return(:r).first
         result&.send(:[], :r)
       end
 
