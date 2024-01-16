@@ -20,7 +20,7 @@ jobs:
         ruby: [ jruby-9.4.5.0, ruby-3.2.2 ]
         neo4j: [ 5.15.0 ]
         active_model: [ 7.1.2 ]
-        # exclude jruby till bug is fixed
+        # exclude jruby till bug is fixed https://github.com/jruby/jruby-openssl/issues/290
         exclude:
           - ruby: jruby-9.4.5.0
             active_model: 7.1.2
