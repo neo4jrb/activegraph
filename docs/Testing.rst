@@ -17,6 +17,15 @@ You can configure it to respond on a different port like so:
 
 If you are using Rails, you can edit the test configuration ``config/environments/test.rb`` or the ``config/neo4j.yml`` file (see :doc:`Setup <Setup>`)
 
+To run the e2e tests we first have to run setup script ``sh e2e_tests/setup.sh``. After that we can run e2e tests by ``rspec -Oe2e_tests/.e2e_rspec e2e_tests/`` command
+To run the setup script with custom options we can leverage following environment variables
+``
+ACTIVEGRAPH_PATH=local path of activegraph code (root directory)
+ACTIVE_MODEL_VERSION=version of activemodel
+E2E_PORT=neo4j server port
+E2E_NO_CRED=set this to true when neo4j server has auth disabled
+``
+
 How to clear the database
 -------------------------
 
