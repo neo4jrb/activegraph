@@ -20,9 +20,10 @@ jobs:
         ruby: [ jruby-9.4.5.0, ruby-3.2.2 ]
         neo4j: [ 5.15.0 ]
         active_model: [ 7.1.2 ]
-        # exclude:
-        #   - ruby: jruby-9.4.5.0
-        #     active_model: 7.1.2
+        # exclude jruby till bug is fixed
+        exclude:
+          - ruby: jruby-9.4.5.0
+            active_model: 7.1.2
     env:
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
