@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  e2e_test:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.ruby == 'ruby' }}
     timeout-minutes: 30
