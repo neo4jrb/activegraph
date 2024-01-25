@@ -1,0 +1,3 @@
+--color
+--tty
+--require ./e2e_tests/spec_helper.rb

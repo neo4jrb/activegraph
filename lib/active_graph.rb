@@ -26,6 +26,8 @@ loader = Zeitwerk::Loader.for_gem
 loader.ignore(File.expand_path('rails', __dir__))
 loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
 loader.inflector.inflect("ansi" => "ANSI")
+module ActiveGraph
+end
 loader.setup
 # loader.eager_load
 

@@ -101,3 +101,6 @@ module ActiveGraph
     end
   end
 end
+
+require 'rails/generators/named_base'
+Rails::Generators::GeneratedAttribute.include ActiveGraph::Generators::GeneratedAttribute
