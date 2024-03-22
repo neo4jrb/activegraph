@@ -18,7 +18,7 @@ module ActiveGraph
 
       # Returns the last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def last
-        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
+        find_nth_from_last(0)
       end
 
       # Returns the second node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
@@ -43,12 +43,12 @@ module ActiveGraph
 
       # Returns the third to last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def third_to_last
-        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).skip(2).pluck(:n).first
+        find_nth_from_last(2)
       end
 
       # Returns the second to last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
       def second_to_last
-        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).skip(1).pluck(:n).first
+        find_nth_from_last(1)
       end
 
       # @return [Integer] number of nodes of this class
@@ -96,6 +96,10 @@ module ActiveGraph
 
       def find_nth(index)
         self.query_as(:n).order(n: primary_key).limit(1).skip(index).pluck(:n).first
+      end
+
+      def find_nth_from_last(index)
+        self.query_as(:n).order(n: {primary_key => :desc}).limit(1).skip(index).pluck(:n).first
       end
     end
   end
