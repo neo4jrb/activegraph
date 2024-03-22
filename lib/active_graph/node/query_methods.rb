@@ -96,20 +96,16 @@ module ActiveGraph
         end
       end
 
-      def find_nth(index, limit = 1)
+      def find_nth(index, limit = 1, order = primary_key)
         if limit == 1
-          self.query_as(:n).order(n: primary_key).limit(limit).skip(index).pluck(:n).first
+          self.query_as(:n).order(n: order).limit(limit).skip(index).pluck(:n).first
         else
-          self.query_as(:n).order(n: primary_key).limit(limit).skip(index).pluck(:n).first(limit)
+          self.query_as(:n).order(n: order).limit(limit).skip(index).pluck(:n).first(limit)
         end
       end
 
       def find_nth_from_last(index, limit = 1)
-        if limit == 1
-          self.query_as(:n).order(n: {primary_key => :desc}).limit(limit).skip(index).pluck(:n).first
-        else
-          self.query_as(:n).order(n: {primary_key => :desc}).limit(limit).skip(index).pluck(:n).first(limit)
-        end
+        find_nth(index, limit, {primary_key => :desc})
       end
     end
   end
