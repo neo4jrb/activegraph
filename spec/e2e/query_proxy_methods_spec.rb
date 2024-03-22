@@ -177,11 +177,14 @@ describe 'query_proxy_methods' do
     end
   end
 
-  describe 'first and last' do
+  describe 'numeral finder methods (first, last, etc.)' do
     it 'returns different objects' do
-      Student.create
+      5.times { Student.create }
       expect(Student.all.count).to be > 1
       expect(Student.all.first).to_not eq(Student.all.last)
+      expect(Student.all.second).to_not eq(Student.all.second_to_last)
+      expect(Student.all.third).to_not eq(Student.all.third_to_last)
+      expect(Student.all.fourth).to_not eq(Student.all.fifth)
     end
 
     it 'returns objects across multiple associations' do

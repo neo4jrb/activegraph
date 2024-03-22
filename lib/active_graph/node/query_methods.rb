@@ -21,6 +21,36 @@ module ActiveGraph
         self.query_as(:n).limit(1).order(n: {primary_key => :desc}).pluck(:n).first
       end
 
+      # Returns the second node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def second
+        self.query_as(:n).order(n: primary_key).limit(1).skip(1).pluck(:n).first
+      end
+
+      # Returns the third node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def third
+        self.query_as(:n).order(n: primary_key).limit(1).skip(2).pluck(:n).first
+      end
+
+      # Returns the fourth node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def fourth
+        self.query_as(:n).order(n: primary_key).limit(1).skip(3).pluck(:n).first
+      end
+
+      # Returns the fifth node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def fifth
+        self.query_as(:n).order(n: primary_key).limit(1).skip(4).pluck(:n).first
+      end
+
+      # Returns the third to last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def third_to_last
+        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).skip(2).pluck(:n).first
+      end
+
+      # Returns the second to last node of this class, sorted by ID. Note that this may not be the first node created since Neo4j recycles IDs.
+      def second_to_last
+        self.query_as(:n).limit(1).order(n: {primary_key => :desc}).skip(1).pluck(:n).first
+      end
+
       # @return [Integer] number of nodes of this class
       def count(distinct = nil)
         fail(ActiveGraph::InvalidParameterError, ':count accepts the `:distinct` symbol or nil as a parameter') unless distinct.nil? || distinct == :distinct
