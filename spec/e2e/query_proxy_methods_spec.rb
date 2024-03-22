@@ -187,6 +187,13 @@ describe 'query_proxy_methods' do
       expect(Student.all.fourth).to_not eq(Student.all.fifth)
     end
 
+    it 'allows to specify limit for first and last methods' do
+      Student.create
+      expect(Student.all.count).to be > 1
+      expect(Student.first(2)).to eq([Student.all.first, Student.all.second])
+      expect(Student.last(2)).to eq([Student.all.last, Student.all.second_to_last])
+    end
+
     it 'returns objects across multiple associations' do
       jimmy.lessons << science
       science.teachers << mr_adams
