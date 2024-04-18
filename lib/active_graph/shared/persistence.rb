@@ -144,7 +144,7 @@ module ActiveGraph::Shared
 
     # @return [Hash] all defined and none nil properties
     def props
-      attributes.reject { |_, v| v.nil? }.symbolize_keys
+      attributes.compact.transform_keys(&:to_sym)
     end
 
     # @return true if the attributes hash has been frozen
