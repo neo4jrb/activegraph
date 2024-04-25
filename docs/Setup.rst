@@ -101,7 +101,7 @@ Configuring Faraday
 
 .. code-block:: ruby
 
-  config.neo4j.session_options = {initialize: { ssl: { verify: true }}
+  config.neo4j.session_options = { initialize: { ssl: { verify: true } } }
 
 Any Ruby Project
 ~~~~~~~~~~~~~~~~
