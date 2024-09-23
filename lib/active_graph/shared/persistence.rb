@@ -276,7 +276,7 @@ module ActiveGraph::Shared
 
     def set_timestamps
       warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
-      ActiveSupport::Deprecation.warn warning, caller
+      ActiveGraph.deprecator.warn warning, caller
       inject_timestamps!
     end
   end

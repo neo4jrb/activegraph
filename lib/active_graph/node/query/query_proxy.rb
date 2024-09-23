@@ -72,7 +72,7 @@ module ActiveGraph
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
         def rel_identity
-          ActiveSupport::Deprecation.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
+          ActiveGraph.deprecator.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
 
           @rel_var
         end

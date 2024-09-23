@@ -463,9 +463,9 @@ describe 'Relationship' do
 
   describe 'objects and queries' do
     around do |ex|
-      ActiveSupport::Deprecation.silenced = true
+      ActiveGraph.deprecator.silenced = true
       ex.run
-      ActiveSupport::Deprecation.silenced = false
+      ActiveGraph.deprecator.silenced = false
     end
 
     let!(:rel1) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 99) }

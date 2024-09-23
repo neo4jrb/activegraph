@@ -27,6 +27,9 @@ loader.ignore(File.expand_path('rails', __dir__))
 loader.ignore(File.expand_path('active_graph/railtie.rb', __dir__))
 loader.inflector.inflect("ansi" => "ANSI")
 module ActiveGraph
+  def self.deprecator
+    @deprecator ||= ActiveSupport::Deprecation.new("12", "ActiveGraph")
+  end
 end
 loader.setup
 # loader.eager_load

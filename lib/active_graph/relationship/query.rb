@@ -49,7 +49,7 @@ module ActiveGraph::Relationship
       private
 
       def deprecation_warning!
-        ActiveSupport::Deprecation.warn 'The ActiveGraph::Relationship::Query module has been deprecated and will be removed in a future version of the gem.', caller
+        ActiveGraph.deprecator.warn 'The ActiveGraph::Relationship::Query module has been deprecated and will be removed in a future version of the gem.', caller
       end
 
       def where_query

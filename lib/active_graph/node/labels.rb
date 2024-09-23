@@ -160,7 +160,7 @@ module ActiveGraph
 
         # rubocop:disable Naming/AccessorMethodName
         def set_mapped_label_name(name)
-          ActiveSupport::Deprecation.warn 'set_mapped_label_name is deprecated, use self.mapped_label_name= instead.', caller
+          ActiveGraph.deprecator.warn 'set_mapped_label_name is deprecated, use self.mapped_label_name= instead.', caller
 
           self.mapped_label_name = name
         end

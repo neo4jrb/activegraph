@@ -299,7 +299,7 @@ module ActiveGraph::Node
 
       # :nocov:
       def has_association?(name)
-        ActiveSupport::Deprecation.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
+        ActiveGraph.deprecator.warn 'has_association? is deprecated and may be removed from future releases, use association? instead.', caller
 
         association?(name)
       end

@@ -147,7 +147,7 @@ module ActiveGraph::Node
 
       # rubocop:disable Naming/PredicateName
       def has_id_property?
-        ActiveSupport::Deprecation.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
+        ActiveGraph.deprecator.warn 'has_id_property? is deprecated and may be removed from future releases, use id_property? instead.', caller
 
         id_property?
       end
