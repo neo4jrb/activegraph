@@ -19,7 +19,6 @@ jobs:
         ruby: [ jruby, ruby-3.2.5 ]
         neo4j: [ 5.22.0 ]
         active_model: [ 7.1.3 ]
-        # jruby will fail till bug https://github.com/jruby/jruby-openssl/issues/290 is fixed
         include:
           - ruby: jruby
             java-version: 17
