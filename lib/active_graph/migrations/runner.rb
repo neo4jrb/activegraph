@@ -86,7 +86,6 @@ module ActiveGraph
       end
 
       private
-
       def migration_status(version)
         return DOWN_MESSAGE unless up?(version)
         incomplete_states.find { |v| v.migration_id == version } ? INCOMPLETE_MESSAGE : UP_MESSAGE
