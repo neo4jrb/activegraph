@@ -48,7 +48,7 @@ jobs:
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 
       - name: Setup test rails app
-        run: ./e2e_tests/setup.sh
+        run: ./e2e_tests/setup.sh ${{ github.sha }}
 
       - name: Install dependencies
         run: bundle update

@@ -7,8 +7,8 @@ if [[ -n "$ACTIVEGRAPH_PATH" ]]
 then
   sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: "'"$ACTIVEGRAPH_PATH"'"|' docs/activegraph.rb > template.tmp
 else
-  echo "SHA=$(git rev-parse "$GITHUB_SHA")" >> $GITHUB_ENV
-  sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', github: "neo4jrb\/activegraph", ref: "'"$(git rev-parse "$GITHUB_SHA")"'"/' docs/activegraph.rb > template.tmp
+  # echo "SHA=$(git rev-parse "$GITHUB_SHA")" >> $GITHUB_OUTPUT
+  sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', github: "neo4jrb\/activegraph", ref: "'"$1"'"/' docs/activegraph.rb > template.tmp
 fi
 
 rails \_$ACTIVE_MODEL_VERSION\_ new myapp -O -m ./template.tmp
