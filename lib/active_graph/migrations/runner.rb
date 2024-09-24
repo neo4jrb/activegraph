@@ -96,7 +96,7 @@ module ActiveGraph
         return unless incomplete_states.any?
         incomplete_versions = incomplete_states.map(&:migration_id)
         fail MigrationError, <<-MSG
-There are migrations struck in an incomplete states, that could not be fixed automatically:
+There are migrations stuck in an incomplete states, that could not be fixed automatically:
 #{incomplete_versions.join('\n')}
 This can happen when there's a critical error inside a migration.
 
