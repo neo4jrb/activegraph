@@ -47,15 +47,7 @@ jobs:
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
 
       - name: Setup test rails app
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            # For pull requests, get the SHA of the last commit in the PR
-            COMMIT_SHA=$(jq -r '.pull_request.head.sha' < "${{ github.event_path }}")
-          else
-            # For push events (like master branch), use the commit SHA
-            COMMIT_SHA="${{ github.sha }}"
-          fi
-          ./e2e_tests/setup.sh $COMMIT_SHA
+        run: e2e_tests/setup.sh
 
       - name: Install dependencies
         run: bundle update
