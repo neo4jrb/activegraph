@@ -24,7 +24,6 @@ jobs:
             java-version: 17
     env:
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
-      ACTIVEGRAPH_PATH: ../
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
       - name: Start neo4j
