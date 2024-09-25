@@ -2,14 +2,10 @@
 
 # Example values of environment variables ACTIVE_MODEL_VERSION=7.1.3 ACTIVEGRAPH_PATH=../ E2E_PORT=7687 E2E_NO_CRED=true
 
+# rm -r myapp
 gem install rails -v $ACTIVE_MODEL_VERSION --no-document
 
-if [[ -n "$ACTIVEGRAPH_PATH" ]]
-then
-  sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: "'"$ACTIVEGRAPH_PATH"'"|' docs/activegraph.rb > template.tmp
-else
-  sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', github: "neo4jrb\/activegraph", ref: "'"$1"'"/' docs/activegraph.rb > template.tmp
-fi
+sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: "'"$ACTIVEGRAPH_PATH"'"|' docs/activegraph.rb > template.tmp
 
 rails \_$ACTIVE_MODEL_VERSION\_ new myapp -O -m ./template.tmp
 rm -f ./template.tmp
