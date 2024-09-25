@@ -2,7 +2,7 @@
 
 # Example values of environment variables ACTIVE_MODEL_VERSION=7.1.3 ACTIVEGRAPH_PATH=../ E2E_PORT=7687 E2E_NO_CRED=true
 
-# rm -r myapp
+rm -r ./myapp
 gem install rails -v $ACTIVE_MODEL_VERSION --no-document
 
 sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: "'"$ACTIVEGRAPH_PATH"'"|' docs/activegraph.rb > template.tmp
