@@ -5,10 +5,7 @@
 rm -r ./myapp
 gem install rails -v $ACTIVE_MODEL_VERSION --no-document
 
-sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: '"'"'../'"'"'|' docs/activegraph.rb > template.tmp
-
-rails \_$ACTIVE_MODEL_VERSION\_ new myapp -O -m ./template.tmp
-rm -f ./template.tmp
+env ACTIVEGRAPH_PATH=.. rails _${ACTIVE_MODEL_VERSION}_ new myapp -O -m docs/activegraph.rb
 cd myapp
 
 if [[ -n "$E2E_PORT" ]]
