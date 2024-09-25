@@ -9,7 +9,7 @@ if [[ -n "$ACTIVEGRAPH_PATH" ]]
 then
   sed 's|.*gem '"'"'activegraph'"'"'.*|gem '"'"'activegraph'"'"', path: "'"$ACTIVEGRAPH_PATH"'"|' docs/activegraph.rb > template.tmp
 else
-  sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', path: "."/' docs/activegraph.rb > template.tmp
+  sed 's/.*gem '"'"'activegraph'"'"'.*/gem '"'"'activegraph'"'"', path: ".."/' docs/activegraph.rb > template.tmp
 fi
 
 rails \_$ACTIVE_MODEL_VERSION\_ new myapp -O -m ./template.tmp
