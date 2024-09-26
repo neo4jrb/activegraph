@@ -26,6 +26,8 @@ jobs:
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
+      - uses: actions/checkout@v3
+
       - name: Set up Java
         uses: actions/setup-java@v4
         if: matrix.java-version
@@ -36,8 +38,6 @@ jobs:
 
       - name: Start neo4j
         run: docker run --name neo4j --env NEO4J_AUTH=neo4j/password --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes --env NEO4J_dbms_directories_import= -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
-
-      - uses: actions/checkout@v3
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
