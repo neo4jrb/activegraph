@@ -26,6 +26,14 @@ jobs:
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF
     steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        if: matrix.java-version
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+          cache: maven
+
       - name: Start neo4j
         run: docker run --name neo4j --env NEO4J_AUTH=neo4j/password --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes --env NEO4J_dbms_directories_import= -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
 
@@ -35,13 +43,6 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        if: matrix.java-version
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java-version }}
 
       - name: Wait for neo4j
         run: while [ $((curl localhost:7474/ > /dev/null 2>&1); echo $?) -ne 0 ]; do sleep 1; done
