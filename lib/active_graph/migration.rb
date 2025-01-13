@@ -39,7 +39,7 @@ module ActiveGraph
 
       def migrate
         ActiveGraph.deprecator.warn '`AddIdProperty` task is deprecated and may be removed from future releases. ' \
-                                      'Create a new migration and use the `populate_id_property` helper.', caller
+                                      'Create a new migration and use the `populate_id_property` helper.', caller_locations
         models = ActiveSupport::HashWithIndifferentAccess.new(YAML.load_file(models_filename))[:models]
         output 'This task will add an ID Property every node in the given file.'
         output 'It may take a significant amount of time, please be patient.'
