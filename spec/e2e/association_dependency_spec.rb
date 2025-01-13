@@ -104,7 +104,6 @@ describe 'association dependent delete/destroy' do
     @route2 = Route.create(name: 'Secondary Route')
     @tour.routes << [@route1, @route2]
 
-
     # Pro Tip from Chris: No good metal shows happen in Manhattan.
     # Boston is iffy, too.
     city_names = %w(Philadelphia Brooklyn Manhattan Providence Boston)
@@ -217,7 +216,7 @@ describe 'association dependent delete/destroy' do
         it 'deletes only orphans' do
           rel_1.destroy
           expect { BadModel.find(bad_model_1.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
-           expect { BadModel.find(bad_model_2.id) }.not_to raise_error
+          expect { BadModel.find(bad_model_2.id) }.not_to raise_error
         end
       end
 
@@ -365,7 +364,7 @@ describe 'association dependent delete/destroy' do
 
   describe 'invalid options' do
     it 'raises an error when an invalid option is passed' do
-      expect { Stop.has_many(:out, :fooz, dependent: :foo).to raise_error }
+      expect { Stop.has_many(:out, :fooz, dependent: :foo) }.to raise_error
     end
   end
 end
