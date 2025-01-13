@@ -30,7 +30,7 @@ DESCRIPTION
     'bug_tracker_uri' => 'https://github.com/neo4jrb/activegraph/issues'
   }
 
-  s.add_dependency('activemodel', '>= 7')
+  s.add_dependency('activemodel')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
   s.add_dependency('neo4j-ruby-driver', '>= 5.7.0.alpha.3')
   s.add_dependency('orm_adapter', '>= 0.5.0')
