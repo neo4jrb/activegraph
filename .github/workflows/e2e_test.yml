@@ -18,8 +18,11 @@ jobs:
       matrix:
         ruby: [ jruby, ruby ]
         neo4j: [ 5.26.0 ]
-        active_model: [ 7.1.5.1, 7.2.2.1, 8.0.1 ]
+        active_model: [ 7.1.5.1, 7.2.2.1 ]
         include:
+          - ruby: ruby
+            neo4j: 5.26.0
+            active_model: 8.0.1
           - ruby: jruby
             java-version: 17
     env:
