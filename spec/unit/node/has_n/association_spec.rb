@@ -2,7 +2,7 @@ class Default
 end
 
 describe ActiveGraph::Node::HasN::Association do
-  let(:options) { {type: nil} }
+  let(:options) { { type: nil } }
   let(:name) { :default }
   let(:direction) { :out }
 
@@ -34,13 +34,13 @@ describe ActiveGraph::Node::HasN::Association do
     end
 
     context 'origin and type specified' do
-      let(:options) { {type: :bar, origin: :foo} }
+      let(:options) { { type: :bar, origin: :foo } }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
     context 'type and rel_class specified' do
-      let(:options) { {type: :foo, origin: :bar} }
+      let(:options) { { type: :foo, origin: :bar } }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
@@ -50,13 +50,13 @@ describe ActiveGraph::Node::HasN::Association do
         before do
           stub_const('FooClass', Class.new)
         end
-        let(:options) { {type: false, model_class: :FooClass} }
+        let(:options) { { type: false, model_class: :FooClass } }
         it { expect(subject.relationship_type).to be_falsey }
       end
     end
 
     context 'origin and rel_class specified' do
-      let(:options) { {origin: :foo, rel_class: :bar} }
+      let(:options) { { origin: :foo, rel_class: :bar } }
 
       it { expect { subject }.to raise_error(ArgumentError) }
     end
@@ -76,7 +76,6 @@ describe ActiveGraph::Node::HasN::Association do
           end
         end
       end
-
 
       it { is_expected.to eq('-[]->') }
 
@@ -98,7 +97,7 @@ describe ActiveGraph::Node::HasN::Association do
         it { is_expected.to eq('-[:`DEFAULT`]->') }
 
         context 'properties given' do
-          let(:properties) { {foo: 1, bar: 'test'} }
+          let(:properties) { { foo: 1, bar: 'test' } }
 
           it { is_expected.to eq('-[:`DEFAULT` {foo: 1, bar: "test"}]->') }
         end
@@ -110,19 +109,19 @@ describe ActiveGraph::Node::HasN::Association do
         it { is_expected.to eq('-[fooy]->') }
 
         context 'properties given' do
-          let(:properties) { {foo: 1, bar: 'test'} }
+          let(:properties) { { foo: 1, bar: 'test' } }
 
           it { is_expected.to eq('-[fooy {foo: 1, bar: "test"}]->') }
         end
 
         context 'relationship type given' do
-          let(:options) { {type: :new_type} }
+          let(:options) { { type: :new_type } }
 
           it { is_expected.to eq('-[fooy:`new_type`]->') }
         end
 
         context 'rel_class given' do
-          let(:options) { {rel_class: :MyRel} }
+          let(:options) { { rel_class: :MyRel } }
 
           it { is_expected.to eq('-[fooy:`ar_type`]->') }
         end
@@ -133,7 +132,7 @@ describe ActiveGraph::Node::HasN::Association do
           it { is_expected.to eq('-[fooy:`DEFAULT`]->') }
 
           context 'properties given' do
-            let(:properties) { {foo: 1, bar: 'test'} }
+            let(:properties) { { foo: 1, bar: 'test' } }
 
             it { is_expected.to eq('-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->') }
           end
@@ -205,28 +204,28 @@ describe ActiveGraph::Node::HasN::Association do
 
         context 'as a Hash' do
           context 'with :min and :max specified' do
-            let(:length) { {min: 2, max: 6} }
+            let(:length) { { min: 2, max: 6 } }
 
             it { is_expected.to eq('-[*2..6]->') }
           end
 
           context 'with only :min specified' do
-            let(:length) { {min: 2} }
+            let(:length) { { min: 2 } }
 
             it { is_expected.to eq('-[*2..]->') }
           end
 
           context 'with only :max specified' do
-            let(:length) { {max: 2} }
+            let(:length) { { max: 2 } }
 
             it { is_expected.to eq('-[*..2]->') }
           end
 
           context 'with both :min and :max missing' do
-            let(:length) { {foo: 2, bar: 3} }
+            let(:length) { { foo: 2, bar: 3 } }
 
             it 'raises an error' do
-              expect { subject }.to raise_error ArgumentError, 'Invalid value for rel_length ({:foo=>2, :bar=>3}): Hash keys should be a subset of [:min, :max]'
+              expect { subject }.to raise_error ArgumentError, "Invalid value for rel_length (#{{ foo: 2, bar: 3 }.to_s}): Hash keys should be a subset of [:min, :max]"
             end
           end
         end
@@ -249,18 +248,18 @@ describe ActiveGraph::Node::HasN::Association do
         end
 
         context 'with relationship variable given' do
-          let(:length) { {min: 0} }
+          let(:length) { { min: 0 } }
           let(:var) { :r }
 
           it { is_expected.to eq('-[r*0..]->') }
 
           context 'with relationship type given' do
-            let(:options) { {type: :TYPE} }
+            let(:options) { { type: :TYPE } }
 
             it { is_expected.to eq('-[r:`TYPE`*0..]->') }
 
             context 'with properties given' do
-              let(:properties) { {foo: 1, bar: 'test'} }
+              let(:properties) { { foo: 1, bar: 'test' } }
 
               it { is_expected.to eq('-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->') }
             end
@@ -278,10 +277,9 @@ describe ActiveGraph::Node::HasN::Association do
         it { is_expected.to eq(['::Burz']) }
       end
 
-
       context 'specified model class' do
         context 'specified as string' do
-          let(:options) { {type: :foo, model_class: 'Bizzl'} }
+          let(:options) { { type: :foo, model_class: 'Bizzl' } }
 
           it { is_expected.to eq(['::Bizzl']) }
         end
@@ -291,7 +289,7 @@ describe ActiveGraph::Node::HasN::Association do
             stub_const 'Fizzl', Class.new { include ActiveGraph::Node }
           end
 
-          let(:options) { {type: :foo, model_class: 'Fizzl'} }
+          let(:options) { { type: :foo, model_class: 'Fizzl' } }
 
           it { is_expected.to eq(['::Fizzl']) }
         end
@@ -304,12 +302,13 @@ describe ActiveGraph::Node::HasN::Association do
                        def self.name
                          'TheRel'
                        end
+
                        include ActiveGraph::Relationship
                        from_class :any
                      end)
         end
 
-        let(:options) { {rel_class: 'TheRel'} }
+        let(:options) { { rel_class: 'TheRel' } }
 
         context 'targeting any class' do
           before(:each) do
@@ -346,14 +345,14 @@ describe ActiveGraph::Node::HasN::Association do
     describe 'target_class' do
       subject { association.target_classes }
 
-      let(:options) { {type: nil, model_class: 'BadClass'} }
+      let(:options) { { type: nil, model_class: 'BadClass' } }
 
       context 'with invalid target class name' do
         it { expect { subject }.to raise_error ArgumentError, /Could not find class.*BadClass/ }
       end
 
       context 'target_class_names defines class which exists, but is not Node' do
-        let(:options) { {type: nil, model_class: 'Integer'} }
+        let(:options) { { type: nil, model_class: 'Integer' } }
 
         context 'with invalid target class name' do
           it { expect { subject }.to raise_error ArgumentError, /Integer.* is not an Node model/ }
@@ -392,7 +391,7 @@ describe ActiveGraph::Node::HasN::Association do
 
     describe 'unique' do
       context 'true' do
-        let(:options) { {type: :foo, unique: true} }
+        let(:options) { { type: :foo, unique: true } }
 
         it do
           expect(subject).to be_unique
@@ -401,7 +400,7 @@ describe ActiveGraph::Node::HasN::Association do
 
       context 'false' do
         let(:type) { :has_many }
-        let(:options) { {type: :foo, unique: false} }
+        let(:options) { { type: :foo, unique: false } }
 
         it { expect(subject).not_to be_unique }
       end

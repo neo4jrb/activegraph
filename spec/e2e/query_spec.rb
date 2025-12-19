@@ -3,7 +3,6 @@ describe 'Query API' do
     clear_model_memory_caches
   end
 
-
   let(:student_interests_association_options) { {} }
 
   before(:each) do
@@ -42,11 +41,11 @@ describe 'Query API' do
 
       has_many :out, :lessons, rel_class: 'IsEnrolledFor'
 
-      has_many :out, :interests, {type: nil}.merge(scoped_interests_options)
+      has_many :out, :interests, { type: nil }.merge(scoped_interests_options)
 
       has_many :both, :favorite_teachers, type: nil, model_class: 'Teacher'
       has_many :both, :hated_teachers, type: nil, model_class: 'Teacher'
-      has_many :in,   :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
+      has_many :in, :winning_lessons, model_class: 'Lesson', origin: :teachers_pet
     end
 
     stub_relationship_class('IsEnrolledFor') do
@@ -167,7 +166,6 @@ describe 'Query API' do
     let!(:math) { Interest.create(name: 'Math') }
     let!(:monster_trucks) { Interest.create(name: 'Monster Trucks') }
 
-
     it 'evaluates `all` lazily' do
       result = Teacher.all
       expect(result).to be_a(ActiveGraph::Node::Query::QueryProxy)
@@ -209,10 +207,10 @@ describe 'Query API' do
 
       describe '.merge' do
         let(:timestamps) { [1, 1, 2, 3].map(&DateTime.method(:new)) }
-        let(:merge_attrs) { {name: 'Dr. Dre'} }
+        let(:merge_attrs) { { name: 'Dr. Dre' } }
         let(:on_match_clause) { {} }
         let(:on_create_clause) { {} }
-        let(:set_attrs) { {status: 'on create status'} }
+        let(:set_attrs) { { status: 'on create status' } }
 
         before { allow(DateTime).to receive(:now).and_return(*timestamps) }
         after { expect(Teacher.count).to eq 1 }
@@ -235,7 +233,7 @@ describe 'Query API' do
           its(:labels) { is_expected.to match_array [:TeacherFoo, :Substitute] }
         end
 
-        let_context 'on_create', on_create_clause: {age: 49} do
+        let_context 'on_create', on_create_clause: { age: 49 } do
           its(:age) { is_expected.to eq 49 }
           its(:status) { is_expected.to eq 'on create status' }
 
@@ -244,8 +242,7 @@ describe 'Query API' do
           end
         end
 
-
-        let_context 'on_merge', on_match_clause: {age: 50}, on_create_clause: {age: 49}, set_attrs: {status: 'on match status'} do
+        let_context 'on_merge', on_match_clause: { age: 50 }, on_create_clause: { age: 49 }, set_attrs: { status: 'on match status' } do
           before { Teacher.merge(on_create_clause.merge(merge_attrs)) }
 
           its(:age) { is_expected.to eq 50 }
@@ -286,7 +283,7 @@ describe 'Query API' do
         end
 
         it 'also sets properties on create' do
-          Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34)
+          Teacher.find_or_create({ name: 'Dr. Harold Samuels' }, age: 34)
 
           expect(Teacher.count).to eq(1)
 
@@ -298,7 +295,7 @@ describe 'Query API' do
         end
 
         it 'overrides default properties on create' do
-          Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34, status: 'inactive')
+          Teacher.find_or_create({ name: 'Dr. Harold Samuels' }, age: 34, status: 'inactive')
 
           expect(Teacher.count).to eq(1)
 
@@ -343,7 +340,7 @@ describe 'Query API' do
         end
 
         context 'on match' do
-          let(:original) { Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 34) }
+          let(:original) { Teacher.find_or_create({ name: 'Dr. Harold Samuels' }, age: 34) }
 
           before(:each) { original }
 
@@ -355,7 +352,7 @@ describe 'Query API' do
           end
 
           it 'updates nothing' do
-            teacher = Teacher.find_or_create({name: 'Dr. Harold Samuels'}, age: 0)
+            teacher = Teacher.find_or_create({ name: 'Dr. Harold Samuels' }, age: 0)
 
             expect(teacher.id).to eq(original.id)
             expect(teacher.name).to eq('Dr. Harold Samuels')
@@ -550,13 +547,13 @@ describe 'Query API' do
         describe 'on classes' do
           before(:each) do
             danny.lessons << math101
-            danny.lessons(:l, :r).query.set(r: {grade: 65}).exec
+            danny.lessons(:l, :r).query.set(r: { grade: 65 }).exec
 
             bobby.lessons << math101
-            bobby.lessons(:l, :r).query.set(r: {grade: 71})
+            bobby.lessons(:l, :r).query.set(r: { grade: 71 })
 
             math101.teachers << othmar
-            math101.teachers(:t, :r).query.set(r: {since: 2001}).exec
+            math101.teachers(:t, :r).query.set(r: { since: 2001 }).exec
 
             sandra.lessons << ss101
           end
@@ -565,9 +562,8 @@ describe 'Query API' do
             it { expect(Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student)).to eq([danny]) }
             it { expect(Student.where(age: 15).lessons(:lesson).where(level: '101').pluck(:lesson)).not_to eq([[othmar]]) }
             it do
-              expect(Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student)).to eq(
-                Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student)
-              )
+              expect(Student.as(:student).where(age: 15).lessons(:lesson).where(level: 101).pluck(:student))
+                .to eq( Student.as(:student).node_where(age: 15).lessons(:lesson).node_where(level: 101).pluck(:student) )
             end
           end
 
@@ -687,8 +683,9 @@ describe 'Query API' do
           expect(Teacher.where(date: date).to_cypher_with_params).to include(converted_date.to_s)
           expect(Teacher.where(datetime: datetime).to_cypher_with_params).to include(converted_datetime.to_s)
           expect(Teacher.where(time: time).to_cypher_with_params).to include(converted_time.to_s)
-          expect(Teacher.where(age: '1').to_cypher_with_params).to include(':result_teacher2_age=>1')
-          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
+          expect(Teacher.where(age: '1').to_cypher_with_params).to include({ result_teacher2_age: 1 }.to_s)
+          expect(Student.where(likely_to_succeed: 'false').to_cypher_with_params)
+            .to include({ result_student2_likely_to_succeed: false }.to_s)
         end
 
         context '...and values already in the destination format' do
@@ -696,8 +693,9 @@ describe 'Query API' do
             expect(Teacher.where(date: converted_date).to_cypher_with_params).to include(converted_date.to_s)
             expect(Teacher.where(datetime: converted_datetime).to_cypher_with_params).to include(converted_datetime.to_s)
             expect(Teacher.where(time: converted_time).to_cypher_with_params).to include(converted_time.to_s)
-            expect(Teacher.where(age: 1).to_cypher_with_params).to include(':result_teacher2_age=>1')
-            expect(Student.where(likely_to_succeed: false).to_cypher_with_params).to include(':result_student2_likely_to_succeed=>false')
+            expect(Teacher.where(age: 1).to_cypher_with_params).to include({ result_teacher2_age: 1 }.to_s)
+            expect(Student.where(likely_to_succeed: false).to_cypher_with_params)
+              .to include({ result_student2_likely_to_succeed: false }.to_s)
           end
         end
 
@@ -741,9 +739,9 @@ describe 'Query API' do
 
     describe 'Associations with `unique` set' do
       let(:from_node) { Student.create }
-      let(:to_node)   { Interest.create }
-      let(:first_props) { {score: 900} }
-      let(:second_props) { {score: 1000} }
+      let(:to_node) { Interest.create }
+      let(:first_props) { { score: 900 } }
+      let(:second_props) { { score: 1000 } }
       let(:changed_props_create) { proc { from_node.interests.create(to_node, second_props) } }
 
       before do
@@ -752,7 +750,7 @@ describe 'Query API' do
       end
 
       context 'with `true` option' do
-        let(:student_interests_association_options) { {type: nil, unique: true} }
+        let(:student_interests_association_options) { { type: nil, unique: true } }
 
         it 'becomes :none' do
           expect(ActiveGraph::Shared::FilteredHash).to receive(:new).with(instance_of(Hash), :none).and_call_original
@@ -761,7 +759,7 @@ describe 'Query API' do
       end
 
       context 'with :none open' do
-        let(:student_interests_association_options) { {type: nil, unique: :none} }
+        let(:student_interests_association_options) { { type: nil, unique: :none } }
 
         it 'does not create additional rels, even when properties change' do
           expect do
@@ -771,7 +769,7 @@ describe 'Query API' do
       end
 
       context 'with `:all` option' do
-        let(:student_interests_association_options) { {type: nil, unique: :all} }
+        let(:student_interests_association_options) { { type: nil, unique: :all } }
 
         it 'creates additional rels when properties change' do
           expect { changed_props_create.call }.to change { from_node.interests.count }
@@ -779,7 +777,7 @@ describe 'Query API' do
       end
 
       context 'with {on: [keys]} option' do
-        let(:student_interests_association_options) { {type: nil, unique: {on: :score}} }
+        let(:student_interests_association_options) { { type: nil, unique: { on: :score } } }
 
         context 'and a listed property changes' do
           it 'creates a new rel' do
