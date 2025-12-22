@@ -72,7 +72,7 @@ module ActiveGraph
         # The relationship identifier most recently used by the QueryProxy chain.
         attr_reader :rel_var
         def rel_identity
-          ActiveSupport::Deprecation.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
+          ActiveGraph.deprecator.warn 'rel_identity is deprecated and may be removed from future releases, use rel_var instead.', caller
 
           @rel_var
         end
@@ -223,7 +223,7 @@ module ActiveGraph
 
           ActiveGraph::Base.transaction do
             other_nodes.each do |other_node|
-              if other_node.neo_id
+              if other_node.element_id
                 other_node.try(:delete_reverse_has_one_core_rel, association)
               else
                 other_node.save
@@ -238,7 +238,7 @@ module ActiveGraph
 
         def _nodeify!(*args)
           other_nodes = [args].flatten!.map! do |arg|
-            (arg.is_a?(Integer) || arg.is_a?(String)) ? @model.find_by(id: arg) : arg
+            arg.is_a?(String) ? @model.find_by(id: arg) : arg
           end.compact
 
           if @model && other_nodes.any? { |other_node| !other_node.class.mapped_label_names.include?(@model.mapped_label_name) }
@@ -351,7 +351,7 @@ module ActiveGraph
           fail 'Crazy error' if !(start_object || @query_proxy)
 
           if start_object
-            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id}"
+            :"#{start_object.class.name.gsub('::', '_').downcase}#{start_object.neo_id&.gsub(/[:\-]/, '_')}"
           else
             @query_proxy.node_var || :"node#{_chain_level}"
           end

@@ -5,7 +5,9 @@ module ActiveGraph::Relationship
     include ActiveGraph::Shared::Persistence
 
     class RelInvalidError < RuntimeError; end
+
     class ModelClassInvalidError < RuntimeError; end
+
     class RelCreateFailedError < RuntimeError; end
 
     def from_node_identifier
@@ -84,7 +86,7 @@ module ActiveGraph::Relationship
       end
 
       def query_as(neo_id, var = :r)
-        ActiveGraph::Base.new_query.match("()-[#{var}]->()").where(var => {neo_id: neo_id})
+        ActiveGraph::Base.new_query.match("()-[#{var}]->()").where(var => { neo_id: })
       end
     end
 

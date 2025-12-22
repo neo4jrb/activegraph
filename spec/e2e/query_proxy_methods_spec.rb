@@ -39,9 +39,9 @@ describe 'query_proxy_methods' do
       end
     end
   end
-  let!(:jimmy)    { Student.create(name: 'Jimmy') }
-  let!(:math)     { Lesson.create(name: 'math') }
-  let!(:science)  { Lesson.create(name: 'science') }
+  let!(:jimmy) { Student.create(name: 'Jimmy') }
+  let!(:math) { Lesson.create(name: 'math') }
+  let!(:science) { Lesson.create(name: 'science') }
   let!(:mr_jones) { Teacher.create }
   let!(:mr_adams) { Teacher.create }
 
@@ -52,8 +52,8 @@ describe 'query_proxy_methods' do
   end
 
   shared_examples 'finds existing records or initializes them with relations' do
-    let(:frank)       { Student.create(name: 'Frank') }
-    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:frank) { Student.create(name: 'Frank') }
+    let(:philosophy) { Lesson.create(name: 'philosophy') }
     before { philosophy.students << frank }
 
     context 'when it already exists' do
@@ -81,12 +81,12 @@ describe 'query_proxy_methods' do
   end
 
   shared_examples 'finds existing records or initializes them with attributes' do
-    let!(:old_emily)   { Teacher.create(name: 'Emily', age: 72) }
+    let!(:old_emily) { Teacher.create(name: 'Emily', age: 72) }
     let!(:young_emily) { Teacher.create(name: 'Emily', age: 24) }
 
     context 'when it already exists' do
       let(:teacher_name) { 'Emily' }
-      let(:teacher_age)  { 24 }
+      let(:teacher_age) { 24 }
 
       it_should_behave_like 'is initialized correctly with attributes'
       it { should be_persisted }
@@ -94,7 +94,7 @@ describe 'query_proxy_methods' do
 
     context 'when it\'s a new record' do
       let(:teacher_name) { 'Emily' }
-      let(:teacher_age)  { 37 }
+      let(:teacher_age) { 37 }
 
       it_should_behave_like 'is initialized correctly with attributes'
       it { should_not be_persisted }
@@ -106,8 +106,8 @@ describe 'query_proxy_methods' do
   end
 
   describe 'find_or_create_by' do
-    let(:emily)       { Student.create(name: 'Emily') }
-    let(:philosophy)  { Lesson.create(name: 'philosophy') }
+    let(:emily) { Student.create(name: 'Emily') }
+    let(:philosophy) { Lesson.create(name: 'philosophy') }
     let(:mixology) { Lesson.create(name: 'mixology') }
     before do
       philosophy.students << jimmy
@@ -146,7 +146,7 @@ describe 'query_proxy_methods' do
 
     context 'when a block is passed' do
       let(:teacher_name) { 'Donna' }
-      let(:teacher_age)  { 92 }
+      let(:teacher_age) { 92 }
 
       subject { Teacher.where(name: 'Emily').find_or_initialize_by(age: teacher_age) { |t| t.name = teacher_name } }
 
@@ -168,7 +168,7 @@ describe 'query_proxy_methods' do
 
     context 'when a block is passed' do
       let(:teacher_name) { 'Donna' }
-      let(:teacher_age)  { 92 }
+      let(:teacher_age) { 92 }
 
       subject { Teacher.where(name: 'Emily', age: teacher_age).first_or_initialize { |t| t.name = teacher_name } }
 
@@ -345,8 +345,8 @@ describe 'query_proxy_methods' do
       end
 
       it 'can be called on the class with a neo_id' do
-        expect(Lesson.exists?(math.neo_id)).to eq true
-        expect(Lesson.exists?(8_675_309)).to eq false
+        expect(Lesson.exists?(neo_id: math.neo_id)).to eq true
+        expect(Lesson.exists?('8_675_309')).to eq false
       end
 
       it 'can be called on a class with a primary key value' do
@@ -373,8 +373,8 @@ describe 'query_proxy_methods' do
       end
 
       it 'can be called with a neo_id' do
-        expect(Lesson.where(name: 'math').exists?(math.neo_id)).to eq true
-        expect(Lesson.where(name: 'math').exists?(science.neo_id)).to eq false
+        expect(Lesson.where(name: 'math').exists?(neo_id: math.neo_id)).to eq true
+        expect(Lesson.where(name: 'math').exists?(neo_id: science.neo_id)).to eq false
       end
 
       it 'can be called with a primary key' do
@@ -445,10 +445,10 @@ describe 'query_proxy_methods' do
   end
 
   describe 'distinct' do
-    let(:frank)       { Student.create(name: 'Frank') }
+    let(:frank) { Student.create(name: 'Frank') }
     let(:bill) { Teacher.create(name: 'Bill') }
-    let(:philosophy)  { Lesson.create(name: 'philosophy') }
-    let(:science)     { Lesson.create(name: 'science') }
+    let(:philosophy) { Lesson.create(name: 'philosophy') }
+    let(:science) { Lesson.create(name: 'science') }
     before do
       philosophy.students << frank
       science.students << frank
@@ -526,7 +526,7 @@ describe 'query_proxy_methods' do
 
   describe '#update_all' do
     let!(:jimmy_clone) { Student.create(name: 'Jimmy') }
-    let!(:john)        { Student.create(name: 'John') }
+    let!(:john) { Student.create(name: 'John') }
 
     let(:changing_students) { Student.where(name: 'Bob') }
 
@@ -672,7 +672,7 @@ describe 'query_proxy_methods' do
 
       context 'with a valid node' do
         it 'generates a match to the given node' do
-          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE (ID(result_lessons3) =')
+          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE (elementId(result_lessons3) =')
         end
 
         it 'matches the object' do
@@ -682,11 +682,7 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include(if Lesson.primary_key == :neo_id
-                                                                             'WHERE (ID(result_lessons3) ='
-                                                                           else
-                                                                             'WHERE (result_lessons3.uuid ='
-                                                                           end)
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('WHERE (result_lessons3.uuid =')
         end
 
         it 'matches' do
@@ -701,7 +697,7 @@ describe 'query_proxy_methods' do
           end
 
           it 'generates cypher using IN with the IDs of contained nodes' do
-            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('ID(result_lessons3) IN')
+            expect(@john.lessons.match_to([@history, @math]).to_cypher).to include('elementId(result_lessons3) IN')
             expect(@john.lessons.match_to([@history, @math]).to_a).to eq [@history]
             @john.lessons << @math
             expect(@john.lessons.match_to([@history, @math]).to_a.size).to eq 2

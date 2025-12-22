@@ -16,7 +16,7 @@ module ActiveGraph
       # @param node_var [Symbol, String] The variable name to specify in the query
       # @return [ActiveGraph::Core::Query]
       def query_as(node_var)
-        self.class.query_as(node_var, false).where("ID(#{node_var})" => self.neo_id)
+        self.class.query_as(node_var, false).where("elementId(#{node_var})" => neo_id)
       end
 
       # Starts a new QueryProxy with the starting identifier set to the given argument and QueryProxy source_object set to the node instance.

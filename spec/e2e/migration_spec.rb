@@ -4,7 +4,7 @@ describe 'migration tasks' do
   before do
     clear_model_memory_caches
 
-    stub_node_class('User') do
+    stub_node_class('User', constraint: :unique) do
       property :name
       has_many :out, :songs, model_class: :Song, type: 'songs'
     end
@@ -29,7 +29,7 @@ describe 'migration tasks' do
     stub_relationship_class('SecondRelClass') do
       from_class false
       to_class false
-      type 'singers'
+      type 'singer'
     end
 
     stub_relationship_class('ThirdRelClass') do
@@ -96,7 +96,7 @@ describe 'migration tasks' do
       create_constraint :Song, :my_id, type: :unique
 
       Song.id_property :my_id, on: :custom_id
-      ActiveGraph::Base.query('CREATE (n:`Song`) return n')
+      ActiveGraph::Base.query('CREATE (n:`Song`{uuid: randomUuid()}) return n')
       user = Song.first
       neo_id = user.neo_id
       expect(user).not_to respond_to(:uuid)

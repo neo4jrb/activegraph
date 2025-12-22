@@ -96,8 +96,8 @@ describe 'has_many' do
     rels = node.friends.rels
     expect(rels.count).to eq(1)
     rel = rels.first
-    expect(rel.start_node_id).to eq(node.neo_id)
-    expect(rel.end_node_id).to eq(friend1.neo_id)
+    expect(rel.start_node_element_id).to eq(node.neo_id)
+    expect(rel.end_node_element_id).to eq(friend1.neo_id)
   end
 
   describe 'me.friends << friend_1 << friend' do
@@ -178,7 +178,7 @@ describe 'has_many' do
 
         rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node_id)).to match_array([friend1.neo_id, friend2.neo_id])
+        expect(rs.map(&:end_node_element_id)).to match_array([friend1.neo_id, friend2.neo_id])
         rs.each do |r|
           expect(r.properties[:since]).to eq(1995)
         end
@@ -199,7 +199,7 @@ describe 'has_many' do
         r = node_rels(node, :outgoing, 'FRIENDS').first
 
         expect(r.properties[:since]).to eq(1996)
-        expect(r.end_node_id).to eq(p.neo_id)
+        expect(r.end_node_element_id).to eq(p.neo_id)
       end
 
       it 'creates a new relationship when given an array of unpersisted nodes and given properties' do
@@ -208,7 +208,7 @@ describe 'has_many' do
 
         rs = node_rels(node, :outgoing, 'FRIENDS')
 
-        expect(rs.map(&:end_node_id)).to match_array(peeps.map(&:neo_id))
+        expect(rs.map(&:end_node_element_id)).to match_array(peeps.map(&:neo_id))
         rs.each do |r|
           expect(r.properties[:since]).to eq(1997)
         end

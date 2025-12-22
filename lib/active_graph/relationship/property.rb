@@ -15,7 +15,7 @@ module ActiveGraph::Relationship
     alias end_node to_node
 
     %w(start_node end_node).each do |direction|
-      define_method("#{direction}_id") { send(direction).neo_id if direction }
+      define_method("#{direction}_element_id") { send(direction).neo_id if direction }
     end
 
     # @return [String] a string representing the relationship type that will be created
@@ -43,10 +43,6 @@ module ActiveGraph::Relationship
             relationship_props[key] = attributes.delete(key) if [:from_node, :to_node].include?(key)
           end
         end
-      end
-
-      def id_property_name
-        false
       end
 
       %w(to_class from_class).each do |direction|

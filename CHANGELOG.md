@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [12.0.0.beta.1] 2024-01-01
+
+## Added
+
+- removed deprecated usage of id (neo_id), replaced with element_id, requires neo4j-ruby-driver 5
+- removed the possibility of using neo_id as id_property
+- added id_property to relationships
+
 ## [11.5.0.beta.1] 2023-12-29
 
 ## Added

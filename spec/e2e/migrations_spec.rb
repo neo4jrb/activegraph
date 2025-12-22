@@ -178,7 +178,7 @@ module ActiveGraph
           end
 
           it 'run `down` without raising errors' do
-            create_constraint :Book, :some, type: :unique
+            create_constraint :Book, :some, type: :key
             SchemaMigration.create! migration_id: '8888888888'
             expect do
               expect do

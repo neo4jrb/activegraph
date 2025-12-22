@@ -1,12 +1,12 @@
 module ActiveGraph
   module Core
-    class Label < Element
+    class Type < Element
       def pattern(spec)
-        "(#{spec})"
+        "()-[#{spec}]-()"
       end
 
       def element_type
-        'NODE'
+        'RELATIONSHIP'
       end
     end
   end

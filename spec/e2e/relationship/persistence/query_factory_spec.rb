@@ -45,7 +45,7 @@ describe ActiveGraph::Relationship::Persistence::QueryFactory do
         end
 
         stub_relationship_class('Rel3Class') do
-          type 'REL'
+          type 'REL3'
           from_class :FromClass
           to_class :ToClass
 
@@ -53,7 +53,7 @@ describe ActiveGraph::Relationship::Persistence::QueryFactory do
         end
 
         stub_relationship_class('Rel4Class') do
-          type 'REL'
+          type 'REL4'
           from_class :ToClass
           to_class :FromClass
 

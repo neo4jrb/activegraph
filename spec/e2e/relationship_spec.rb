@@ -45,7 +45,7 @@ describe 'Relationship' do
     stub_relationship_class('MyRelClass') do
       from_class :FromClass
       to_class :ToClass
-      type 'rel_class_type'
+      type 'LegacyClass#legacy_type'
 
       property :score, type: Integer
       property :links
@@ -112,7 +112,7 @@ describe 'Relationship' do
   describe '#concurrent_increment!' do
     it 'increments an attribute (concurrently)' do
       rel1 = MyRelClass.create(from_node: from_node, to_node: to_node)
-      rel2 = MyRelClass.find(rel1.neo_id)
+      rel2 = MyRelClass.find(rel1.id)
       rel1.concurrent_increment!(:score)
       expect(rel1.score).to eq(1)
       expect(rel1.score_was).to eq(1)
@@ -127,7 +127,7 @@ describe 'Relationship' do
       stub_relationship_class('RelClassWithValidations') do
         from_class :FromClass
         to_class :ToClass
-        type 'rel_class_type'
+        type 'rel_class_with_validation_type'
 
         property :score
         validates :score, presence: true
@@ -354,14 +354,10 @@ describe 'Relationship' do
     let(:f1) { FromClass.create }
     let(:t1) { ToClass.create }
     let(:result) do
-      ActiveGraph::Base.query('MATCH (start)-[r]-() WHERE ID(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
+      ActiveGraph::Base.query('MATCH (start)-[r]-() WHERE elementId(start) = $start_id RETURN r.default AS value', start_id: f1.neo_id).to_a
     end
 
     context 'with a rel type requiring backticks' do
-      before do
-        MyRelClass.type 'LegacyClass#legacy_type'
-      end
-
       it 'creates correctly' do
         expect { f1.others << t1 }.to change { f1.reload.others.count }.by(1)
       end
@@ -467,9 +463,9 @@ describe 'Relationship' do
 
   describe 'objects and queries' do
     around do |ex|
-      ActiveSupport::Deprecation.silenced = true
+      ActiveGraph.deprecator.silenced = true
       ex.run
-      ActiveSupport::Deprecation.silenced = false
+      ActiveGraph.deprecator.silenced = false
     end
 
     let!(:rel1) { MyRelClass.create(from_node: from_node, to_node: to_node, score: 99) }
@@ -478,7 +474,7 @@ describe 'Relationship' do
     after { [rel1, rel2].each(&:destroy) }
 
     describe 'related nodes' do
-      let(:reloaded) { MyRelClass.find(rel1.neo_id) }
+      let(:reloaded) { MyRelClass.find(rel1.id) }
 
       # We only run this test in the Server environment. Embedded's loading of
       # relationships works differently, so we aren't as concerned with whether
@@ -495,8 +491,8 @@ describe 'Relationship' do
 
       describe 'neo id queries' do
         it 'aliases #{related_node}_neo_id to #{related_node}.neo_id' do
-          expect(rel1.start_node_id).to eq rel1.from_node.neo_id
-          expect(rel1.end_node_id).to eq rel1.to_node.neo_id
+          expect(rel1.start_node_element_id).to eq rel1.from_node.neo_id
+          expect(rel1.end_node_element_id).to eq rel1.to_node.neo_id
         end
       end
     end
@@ -529,11 +525,11 @@ describe 'Relationship' do
 
     describe 'find' do
       it 'returns the rel' do
-        expect(MyRelClass.find(rel1.neo_id)).to eq rel1
+        expect(MyRelClass.find(rel1.id)).to eq rel1
       end
 
       it 'with no results' do
-        expect { MyRelClass.find(8_675_309) }.to raise_error(ActiveGraph::RecordNotFound)
+        expect { MyRelClass.find('8_675_309') }.to raise_error(ActiveGraph::RecordNotFound)
       end
     end
 

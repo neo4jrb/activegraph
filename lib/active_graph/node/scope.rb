@@ -55,7 +55,7 @@ module ActiveGraph::Node
 
       # rubocop:disable Naming/PredicateName
       def has_scope?(name)
-        ActiveSupport::Deprecation.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
+        ActiveGraph.deprecator.warn 'has_scope? is deprecated and may be removed from future releases, use scope? instead.', caller
 
         scope?(name)
       end

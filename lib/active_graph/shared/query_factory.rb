@@ -47,7 +47,7 @@ module ActiveGraph::Shared
 
     def match_query
       base_query
-        .match(match_string).where("ID(#{identifier}) = $#{identifier_id}")
+        .match(match_string).where("elementId(#{identifier}) = $#{identifier_id}")
         .params(identifier_id.to_sym => graph_object.neo_id)
     end
 

@@ -67,7 +67,7 @@ describe ActiveGraph::Migrations::Helpers do
 
   describe '#rename_label' do
     it 'renames a label' do
-      execute 'CREATE (n:`Item` { name: "Lorem Ipsum" })'
+      execute 'CREATE (n:`Item` {uuid:  randomUuid(), name: "Lorem Ipsum"})'
       rename_label :Item, :Book
       expect(Book.find_by(name: 'Lorem Ipsum')).not_to be_nil
     end
@@ -116,20 +116,20 @@ describe ActiveGraph::Migrations::Helpers do
 
     it 'adds a constraint to a property' do
       expect do
-        add_constraint :Book, :code
+        add_constraint :Book, :code, type: :unique
       end.to change { label_object.constraint?(:code) }.from(false).to(true)
     end
 
     it 'fails when constraint is already defined' do
       expect do
-        expect { add_constraint :Book, :name }.to raise_error('Duplicate constraint for Book#name')
+        expect { add_constraint :Book, :name, type: :unique }.to raise_error('Duplicate constraint for Book#name')
       end.not_to change { label_object.constraint?(:name) }
     end
 
     it 'does not fail when constraint is already defined when forced' do
-      add_constraint :Book, :genre
+      add_constraint :Book, :genre, type: :unique
       expect do
-        expect { add_constraint :Book, :genre, force: true }.not_to raise_error
+        expect { add_constraint :Book, :genre, type: :unique, force: true }.not_to raise_error
       end.not_to change { label_object.constraint?(:genre) }
     end
   end
@@ -163,7 +163,7 @@ describe ActiveGraph::Migrations::Helpers do
         execute 'CREATE (d:`Dog`)'
       end
 
-      stub_node_class('Cat') {}
+      stub_node_class('Cat', constraint: :unique) {}
       stub_node_class('Dog') do
         id_property :my_id, on: :generate_id
 
@@ -264,7 +264,7 @@ describe ActiveGraph::Migrations::Helpers do
   describe '#drop_constraint' do
     it 'removes a constraint from a property' do
       expect do
-        drop_constraint :Book, :name
+        drop_constraint :Book, :name, type: :unique
       end.to change { label_object.constraint?(:name) }.from(true).to(false)
       expect { Book.create! name: Book.first.name }.not_to raise_error
     end

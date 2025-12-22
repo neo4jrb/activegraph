@@ -44,7 +44,7 @@ describe ActiveGraph::Node::IdProperty do
       expect(node.id).to eq('secure123')
     end
 
-    it 'can find by id uses the neo_id' do
+    it 'can find by id uses the id_property' do
       node = Clazz.create!
       node.name = 'kalle'
       expect(Clazz.find_by_id(node.id)).to eq(node)
@@ -72,19 +72,6 @@ describe ActiveGraph::Node::IdProperty do
         expect(node).to respond_to(:the_id)
         expect(Clazz.mapped_label.indexes).to match_array [a_hash_including(label: :Clazz, properties: [:the_id])]
       end
-    end
-  end
-
-  describe 'when having neo_id configuration' do
-    let_config(:id_property, :neo_id)
-
-    before do
-      stub_node_class('NeoIdTest')
-    end
-
-    it 'it will find node by neo_id' do
-      node = NeoIdTest.create
-      expect(NeoIdTest.where(id: node).first).to eq(node)
     end
   end
 
@@ -264,7 +251,7 @@ describe ActiveGraph::Node::IdProperty do
 
       property_name = id_property_name
       property_options = id_property_options
-      stub_node_class('Clazz', false) do
+      stub_node_class('Clazz', constraint: false) do
         id_property property_name, property_options.merge(auto: :uuid) if property_name
       end
       property_name = subclass_id_property_name
@@ -418,103 +405,6 @@ describe ActiveGraph::Node::IdProperty do
 
         found = Clazz.find_by_id('something else')
         expect(found).to be_nil
-      end
-    end
-  end
-
-  describe 'id_property :neo_id' do
-    before do
-      stub_node_class('NeoIdTest', false) do
-        id_property :neo_id
-      end
-    end
-
-    it 'has an index' do
-      NeoIdTest.ensure_id_property_info!
-
-      expect(NeoIdTest.mapped_label.indexes).to be_empty
-    end
-
-    describe 'property id' do
-      it 'is is set when saving ' do
-        node = NeoIdTest.new
-        expect { node.save }.to change { node.id.present? }.from(false).to(true)
-      end
-
-      it 'is same as neo_id' do
-        node = NeoIdTest.create
-        expect(node.id).to eq(node.neo_id)
-      end
-    end
-
-    describe 'find_by_id' do
-      it 'finds it if it exists' do
-        NeoIdTest.create
-        node = NeoIdTest.create
-        NeoIdTest.create
-
-        found = NeoIdTest.find_by_id(node.id)
-        expect(found).to eq(node)
-      end
-
-      it 'does not find it if it does not exist' do
-        found = NeoIdTest.find_by_id(NeoIdTest.create.id + 1)
-        expect(found).to be_nil
-      end
-    end
-
-    describe 'find_by_ids' do
-      it 'finds them if they exist' do
-        NeoIdTest.create
-        nodes = Array.new(3) { NeoIdTest.create }
-        NeoIdTest.create
-
-        expect(NeoIdTest.find_by_ids(nodes.map(&:id))).to match_array(nodes)
-      end
-
-      it 'does not find it if it does not exist' do
-        found = NeoIdTest.find_by_ids([NeoIdTest.create.id + 1])
-        expect(found).to be_empty
-      end
-    end
-
-    describe 'where' do
-      it 'should use neo_id' do
-        NeoIdTest.create
-        node = NeoIdTest.create
-        NeoIdTest.create
-
-        found = NeoIdTest.where(id: node.id).first
-        expect(found).to eq(node)
-      end
-
-      it 'should find if id is a string' do
-        node = NeoIdTest.create
-        expect(NeoIdTest.where(id: node.id.to_s).first).to eq(node)
-      end
-
-      it 'should find with array' do
-        NeoIdTest.create
-        nodes = Array.new(3) { NeoIdTest.create }
-        NeoIdTest.create
-
-        expect(NeoIdTest.where(id: nodes)).to match_array(nodes)
-      end
-    end
-
-    describe 'where_not' do
-      it 'should find complement' do
-        node = NeoIdTest.create
-        excluded = NeoIdTest.create
-        expect(NeoIdTest.where_not(id: excluded)).to eq([node])
-      end
-    end
-
-    describe 'order' do
-      it 'should order by neo_id' do
-        # ascending neo_ids during insertion cannot be guaranteed anymore in community version'
-        nodes = Array.new(3) { NeoIdTest.create }.sort_by!(&:id)
-        expect(NeoIdTest.order(id: :desc).to_a).to eq(nodes.reverse)
       end
     end
   end

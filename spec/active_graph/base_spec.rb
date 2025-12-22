@@ -1,5 +1,5 @@
 describe ActiveGraph::Base do
-  before { described_class.query('MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r') }
+  before { described_class.query('MATCH (n) DETACH DELETE n') }
 
   subject { described_class }
 
@@ -313,9 +313,9 @@ describe ActiveGraph::Base do
     end
   end
 
-  def create_constraint(label_name, property, options = {})
+  def create_constraint(label_name, property, type: :key)
     label_object = ActiveGraph::Core::Label.new(label_name)
-    label_object.create_constraint(property, options)
+    label_object.create_constraint(property, type:)
   end
 
   def create_index(label_name, property, options = {})

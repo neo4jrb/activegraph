@@ -134,7 +134,7 @@ module ActiveGraph::Shared
     def exist?
       return if !_persisted_obj
 
-      neo4j_query(query_as(:n).return('ID(n)')).any?
+      neo4j_query(query_as(:n).return('elementId(n)')).any?
     end
 
     # Returns +true+ if the object was destroyed.
@@ -223,6 +223,17 @@ module ActiveGraph::Shared
       end
     end
 
+    # As the name suggests, this inserts the primary key (id property) into the properties hash.
+    # The method called here, `default_property_values`, is a holdover from an earlier version of the gem. It does NOT
+    # contain the default values of properties, it contains the Default Property, which we now refer to as the ID Property.
+    # It will be deprecated and renamed in a coming refactor.
+    # @param [Hash] converted_props A hash of properties post-typeconversion, ready for insertion into the DB.
+    def inject_primary_key!(converted_props)
+      self.class.default_property_values(self).tap do |destination_props|
+        destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
+      end
+    end
+
     protected
 
     def increment_by_query!(match_query, attribute, by, element_name = :n)
@@ -265,7 +276,7 @@ module ActiveGraph::Shared
 
     def set_timestamps
       warning = 'This method has been replaced with `inject_timestamps!` and will be removed in a future version'.freeze
-      ActiveSupport::Deprecation.warn warning, caller
+      ActiveGraph.deprecator.warn warning, caller
       inject_timestamps!
     end
   end

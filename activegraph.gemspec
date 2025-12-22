@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name     = 'activegraph'
   s.version  = ActiveGraph::VERSION
 
-  s.required_ruby_version = '>= 2.6'
+  s.required_ruby_version = '>= 3.1'
 
   s.authors  = 'Andreas Ronge, Brian Underwood, Chris Grigg, Heinrich Klobuczek'
   s.email    = 'andreas.ronge@gmail.com, public@brian-underwood.codes, chris@subvertallmedia.com, heinrich@mail.com'
@@ -30,9 +30,9 @@ DESCRIPTION
     'bug_tracker_uri' => 'https://github.com/neo4jrb/activegraph/issues'
   }
 
-  s.add_dependency('activemodel', '>= 7')
+  s.add_dependency('activemodel')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
-  s.add_dependency('neo4j-ruby-driver', '>= 4.4.1', '< 5')
+  s.add_dependency('neo4j-ruby-driver', '>= 5.7.0.alpha.3')
   s.add_dependency('orm_adapter', '>= 0.5.0')
   s.add_dependency('sorted_set')
   s.add_development_dependency('guard')

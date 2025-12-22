@@ -389,7 +389,7 @@ module ActiveGraph::Shared
       def included(_)
         ActiveGraph::Shared::TypeConverters.constants.each do |constant_name|
           constant = ActiveGraph::Shared::TypeConverters.const_get(constant_name)
-          register_converter(constant) if constant.respond_to?(:convert_type)
+          register_converter(constant, force: false) if constant.respond_to?(:convert_type)
         end
       end
 
@@ -425,7 +425,8 @@ module ActiveGraph::Shared
         found_converter.respond_to?(:converted?) ? found_converter.converted?(value) : value.is_a?(found_converter.db_type)
       end
 
-      def register_converter(converter)
+      def register_converter(converter, force: true)
+        return if CONVERTERS.key?(converter.convert_type) && !force
         CONVERTERS[converter.convert_type] = converter
       end
     end

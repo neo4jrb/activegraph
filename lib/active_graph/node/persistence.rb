@@ -70,17 +70,6 @@ module ActiveGraph::Node
       neo4j_query(query, {props: node_props}, wrap: false).to_a[0][:n]
     end
 
-    # As the name suggests, this inserts the primary key (id property) into the properties hash.
-    # The method called here, `default_property_values`, is a holdover from an earlier version of the gem. It does NOT
-    # contain the default values of properties, it contains the Default Property, which we now refer to as the ID Property.
-    # It will be deprecated and renamed in a coming refactor.
-    # @param [Hash] converted_props A hash of properties post-typeconversion, ready for insertion into the DB.
-    def inject_primary_key!(converted_props)
-      self.class.default_property_values(self).tap do |destination_props|
-        destination_props.merge!(converted_props) if converted_props.is_a?(Hash)
-      end
-    end
-
     # @return [Array] Labels to be set on the node during a create event
     def labels_for_create
       self.class.mapped_label_names

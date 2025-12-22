@@ -4,7 +4,7 @@ describe ActiveGraph::Relationship::RelatedNode do
   before { allow_any_instance_of(RelatedNode).to receive(:call) }
 
   let(:node1) { ActiveGraph::Base.write_transaction { ActiveGraph::Base.query('CREATE (n) RETURN n').single.first } }
-  let(:id) { node1.id }
+  let(:id) { node1.element_id }
   let(:rel) { double('Relationship object') }
 
   describe 'initialize' do

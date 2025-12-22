@@ -1,6 +1,6 @@
 describe ActiveGraph::Transactions do
   let(:read_query) { 'RETURN 1' }
-  let(:write_query) { 'CREATE (n:Student) RETURN count(n)' }
+  let(:write_query) { 'CREATE (n:Student{uuid: randomUuid()}) RETURN count(n)' }
 
   before do
     clear_model_memory_caches

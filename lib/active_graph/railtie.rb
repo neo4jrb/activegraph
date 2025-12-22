@@ -65,6 +65,10 @@ module ActiveGraph
       end
     end
 
+    initializer "activegraph.deprecator" do |app|
+      app.deprecators[:activegraph] = ActiveGraph.deprecator
+    end
+
     def setup!(config = empty_config)
       config = final_driver_config!(config)
       scheme = config.delete(:scheme) || 'bolt'
