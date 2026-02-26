@@ -5,7 +5,7 @@ module ActiveGraph
     extend ActiveSupport::Concern
 
     included do
-      thread_mattr_accessor :explicit_session, :tx, :last_bookmark
+      thread_mattr_accessor :explicit_session, :tx, :last_bookmarks
     end
 
     class_methods do
@@ -14,16 +14,16 @@ module ActiveGraph
           self.explicit_session = session
           yield session
         ensure
-          self.last_bookmark = session.last_bookmark
+          self.last_bookmarks = session.last_bookmarks
         end
       end
 
       def write_transaction(**config, &block)
-        send_transaction(:write_transaction, **config, &block)
+        send_transaction(:execute_write, **config, &block)
       end
 
       def read_transaction(**config, &block)
-        send_transaction(:read_transaction, **config, &block)
+        send_transaction(:execute_read, **config, &block)
       end
 
       alias transaction write_transaction
