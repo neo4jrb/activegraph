@@ -4,7 +4,6 @@ gemspec
 
 active_model_version = ENV['ACTIVE_MODEL_VERSION']
 gem 'activemodel', "~> #{active_model_version}" if active_model_version&.length&.positive?
-gem 'ostruct'
 
 group 'test' do
   # gem 'coveralls', require: false
