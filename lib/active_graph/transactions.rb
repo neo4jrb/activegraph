@@ -58,8 +58,6 @@ module ActiveGraph
         end.tap { tx.apply_callbacks }
       rescue ActiveGraph::Rollback
         # rollbacks are silently swallowed
-      ensure
-        self.tx = nil
       end
     end
   end

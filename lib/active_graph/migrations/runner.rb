@@ -11,13 +11,14 @@ module ActiveGraph
       MIGRATION_RUNNING = {up: 'running', down: 'reverting'}.freeze
       MIGRATION_DONE = {up: 'migrated', down: 'reverted'}.freeze
 
+      attr_reader :up_versions
+
       def initialize(options = {})
         @silenced = options[:silenced] || !!ENV['MIGRATIONS_SILENCED']
         label = SchemaMigration.mapped_label
         label.create_constraint(:migration_id, type: :unique) unless label.constraint?(:migration_id)
-        @schema_migrations = SchemaMigration.all.to_a
-        # SortedSet replaced with this because of https://github.com/knu/sorted_set/issues/18
-        @up_versions = Set[@schema_migrations.map(&:migration_id).sort]
+        @schema_migrations = SchemaMigration.all.to_a.sort_by(&:migration_id)
+        @up_versions = @schema_migrations.map(&:migration_id)
       end
 
       def all
@@ -44,17 +45,13 @@ module ActiveGraph
 
       def rollback(steps)
         handle_incomplete_states!
-        @up_versions.to_a.reverse.first(steps).each do |version|
+        @up_versions.reverse.first(steps).each do |version|
           down(version)
         end
       end
 
       def pending_migrations
         all_migrations.select { |migration| !up?(migration) }
-      end
-
-      def complete_migration_versions
-        @schema_migrations.map(&:migration_id)
       end
 
       def mark_versions_as_complete(versions)
@@ -159,7 +156,7 @@ MSG
       end
 
       def incomplete_states
-        @incomplete_states ||= @schema_migrations.select(&:incomplete?).sort_by(&:migration_id)
+        @incomplete_states ||= @schema_migrations.select(&:incomplete?)
       end
 
       delegate :migration_files, :migration_files_versions, to: :class

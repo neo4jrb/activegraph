@@ -65,7 +65,7 @@ COMMENT
       schema_data = ActiveGraph::Migrations::Schema.fetch_schema_data
 
       runner = ActiveGraph::Migrations::Runner.new
-      schema_data[:versions] = runner.complete_migration_versions.sort
+      schema_data[:versions] = runner.up_versions
 
       FileUtils.mkdir_p(File.dirname(SCHEMA_YAML_PATH))
       File.open(SCHEMA_YAML_PATH, 'w') { |file| file << SCHEMA_YAML_COMMENT + schema_data.to_yaml }

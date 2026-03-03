@@ -36,7 +36,6 @@ DESCRIPTION
   s.add_dependency('neo4j-ruby-driver', '>= 6.0.0.alpha.2')
   s.add_dependency('orm_adapter', '>= 0.5.0')
   s.add_dependency('ostruct')
-  s.add_dependency('sorted_set')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
