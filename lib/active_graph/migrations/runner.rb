@@ -16,7 +16,8 @@ module ActiveGraph
         label = SchemaMigration.mapped_label
         label.create_constraint(:migration_id, type: :unique) unless label.constraint?(:migration_id)
         @schema_migrations = SchemaMigration.all.to_a
-        @up_versions = SortedSet.new(@schema_migrations.map(&:migration_id))
+        # SortedSet replaced with this because of https://github.com/knu/sorted_set/issues/18
+        @up_versions = Set[@schema_migrations.map(&:migration_id).sort]
       end
 
       def all
@@ -158,7 +159,7 @@ MSG
       end
 
       def incomplete_states
-        @incomplete_states ||= SortedSet.new(@schema_migrations.select(&:incomplete?))
+        @incomplete_states ||= @schema_migrations.select(&:incomplete?).sort_by(&:migration_id)
       end
 
       delegate :migration_files, :migration_files_versions, to: :class
