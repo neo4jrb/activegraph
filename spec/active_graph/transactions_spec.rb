@@ -95,7 +95,7 @@ describe ActiveGraph::Transactions do
             tx.run(read_query)
             Student.create
           end
-          session.write_transaction { |tx| tx.run(write_query) }
+          session.execute_write { |tx| tx.run(write_query) }
           session.run(read_query, {}, timeout: 1.minute)
         end
       end.not_to raise_error
