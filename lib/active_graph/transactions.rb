@@ -29,13 +29,13 @@ module ActiveGraph
       alias transaction write_transaction
 
       def lock_node(node)
-        node.as(:n).query.remove('n._AGLOCK_').exec if tx&.open?
+        node.as(:n).query.remove('n._AGLOCK_').exec
       end
 
       private
 
       def send_transaction(method, **config, &block)
-        return yield tx if tx&.open?
+        return yield tx if tx
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
         driver.session(bookmarks: last_bookmarks) do |session|
           run_transaction_work(session, method, **config, &block)
@@ -58,6 +58,8 @@ module ActiveGraph
         end.tap { tx.apply_callbacks }
       rescue ActiveGraph::Rollback
         # rollbacks are silently swallowed
+      ensure
+        self.tx = nil
       end
     end
   end
