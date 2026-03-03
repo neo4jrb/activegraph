@@ -17,12 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby, ruby ]
-        neo4j: [ 5.26.0 ]
-        active_model: [ 7.1.5.1, 7.2.2.1 ]
+        neo4j: [ 2025.08.0 ]
+        active_model: [ 7.1.6, 7.2.3, 8.0.4 ]
         include:
           - ruby: ruby
-            neo4j: 5.26.0
-            active_model: 8.0.1
+            neo4j: 2025.08.0
+            active_model: 8.1.2
           - ruby: jruby
             java-version: 17
     env:
