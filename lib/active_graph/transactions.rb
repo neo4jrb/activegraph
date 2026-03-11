@@ -37,10 +37,8 @@ module ActiveGraph
       def send_transaction(method, **config, &block)
         return yield tx if tx
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
-        driver.session(bookmarks: last_bookmarks) do |session|
+        driver.session do |session|
           run_transaction_work(session, method, **config, &block)
-        ensure
-          self.last_bookmarks = session.last_bookmarks
         end
       end
 
