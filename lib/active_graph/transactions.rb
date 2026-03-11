@@ -29,7 +29,7 @@ module ActiveGraph
       alias transaction write_transaction
 
       def lock_node(node)
-        node.as(:n).query.remove('n._AGLOCK_').exec
+        node.as(:n).query.remove('n._AGLOCK_').exec if tx
       end
 
       private
@@ -56,6 +56,7 @@ module ActiveGraph
         end.tap { tx.apply_callbacks }
       rescue ActiveGraph::Rollback
         # rollbacks are silently swallowed
+        false # to satisfy save and update conventions
       ensure
         self.tx = nil
       end

@@ -1,8 +1,7 @@
 module ActiveGraph
   module Transaction
     def rollback
-      super
-      @rolled_back = true
+      fail ActiveGraph::Rollback
     end
 
     def after_commit(&block)
@@ -10,7 +9,7 @@ module ActiveGraph
     end
 
     def apply_callbacks
-      after_commit_registry.each(&:call) unless @rolled_back
+      after_commit_registry.each(&:call)
     end
 
     private
