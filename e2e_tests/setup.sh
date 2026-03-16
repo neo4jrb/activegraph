@@ -5,7 +5,7 @@
 rm -r ./myapp
 gem install rails -v $ACTIVE_MODEL_VERSION --no-document
 
-env ACTIVEGRAPH_PATH=.. rails _${ACTIVE_MODEL_VERSION}_ new myapp -O -m docs/activegraph.rb
+env ACTIVEGRAPH_PATH=.. rails _${ACTIVE_MODEL_VERSION}_ new myapp -O -m docs/activegraph.rb --skip-kamal
 cd myapp
 
 if [[ -n "$E2E_PORT" ]]
