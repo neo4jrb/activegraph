@@ -2,10 +2,6 @@
 
 gem 'activegraph', ENV['ACTIVEGRAPH_PATH']&.then { |path| { path: } } || '>= 11.1'
 
-gem_group :development do
-  gem 'neo4j-rake_tasks'
-end
-
 inject_into_file 'config/application.rb', before: '# Require the gems listed in Gemfile' do <<END
 require 'active_graph/railtie'
 

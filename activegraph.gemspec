@@ -38,7 +38,6 @@ DESCRIPTION
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
-  s.add_development_dependency('neo4j-rake_tasks', '>= 0.3.0')
   s.add_development_dependency('os')
   s.add_development_dependency('ostruct')
   s.add_development_dependency('pry')
