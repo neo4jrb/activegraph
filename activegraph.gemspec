@@ -31,10 +31,10 @@ DESCRIPTION
   }
 
   s.add_dependency('activemodel')
+  s.add_dependency('benchmark')
   s.add_dependency('i18n', '!= 1.8.8') # https://github.com/jruby/jruby/issues/6547
   s.add_dependency('neo4j-ruby-driver', '>= 6.0.3.alpha.0')
   s.add_dependency('orm_adapter', '>= 0.5.0')
-  s.add_dependency('benchmark')
   s.add_development_dependency('guard')
   s.add_development_dependency('guard-rspec')
   s.add_development_dependency('guard-rubocop')
