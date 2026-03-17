@@ -17,7 +17,7 @@ module ActiveGraph
         @silenced = options[:silenced] || !!ENV['MIGRATIONS_SILENCED']
         label = SchemaMigration.mapped_label
         label.create_constraint(:migration_id, type: :unique) unless label.constraint?(:migration_id)
-        @schema_migrations = SchemaMigration.all.to_a.sort_by(&:migration_id)
+        @schema_migrations = SchemaMigration.order(:migration_id).to_a
         @up_versions = @schema_migrations.map(&:migration_id)
       end
 
