@@ -19,7 +19,6 @@ require 'neo4j/driver'
 require 'orm_adapter'
 require 'rake'
 require 'set'
-require 'sorted_set'
 require 'yaml'
 
 loader = Zeitwerk::Loader.for_gem
