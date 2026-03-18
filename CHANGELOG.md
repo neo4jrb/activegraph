@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [12.0.0.beta.6] 2026-03-18
+
+## Added
+
+- reworked rollback handling, using `ActiveGraph::Rollback` exception
+- bumped required ruby version to `>= 3.4`
+- bumped `neo4j-ruby-driver` dependency to `>= 6.0.3.alpha.0`
+- updated CI to test against ActiveRecord 7.1, 7.2, 8.0, 8.1
+- updated CI to use Java 21 for JRuby
+- internal: switched from `write_transaction`/`read_transaction` to `execute_write`/`execute_read` in line with new driver API
+- internal: replaced `last_bookmark` with `last_bookmarks`
+- internal: removed `sorted_set` and `neo4j-rake_tasks` dependencies
+- internal: added `benchmark` as a dependency
+
 ## [12.0.0.beta.1] 2024-01-01
 
 ## Added
