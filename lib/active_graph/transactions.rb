@@ -40,6 +40,7 @@ module ActiveGraph
 
         yield tx
       rescue ActiveGraph::Rollback
+        tx.clear_callbacks
         false
       end
 

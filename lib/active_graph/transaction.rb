@@ -12,6 +12,10 @@ module ActiveGraph
       after_commit_registry.each(&:call)
     end
 
+    def clear_callbacks
+      after_commit_registry.clear
+    end
+
     private
 
     def after_commit_registry
