@@ -35,11 +35,12 @@ module ActiveGraph
       private
 
       def send_transaction(method, **config, &block)
-        return yield tx if tx
-        return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
-        driver.session do |session|
-          run_transaction_work(session, method, **config, &block)
-        end
+        return run_transaction_work(explicit_session, method, **config, &block) if !tx && explicit_session&.open?
+        return driver.session { |session| run_transaction_work(session, method, **config, &block) } unless tx
+
+        yield tx
+      rescue ActiveGraph::Rollback
+        false
       end
 
       def run_transaction_work(session, method, **config, &block)

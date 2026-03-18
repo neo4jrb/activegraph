@@ -122,4 +122,14 @@ describe ActiveGraph::Transactions do
       end
     end
   end
+
+  describe 'rollback in nested transaction' do
+    it 'returns false from the inner transaction when rollback is called' do
+      inner_result = nil
+      ActiveGraph::Base.transaction do
+        inner_result = ActiveGraph::Base.transaction(&:rollback)
+      end
+      expect(inner_result).to eq false
+    end
+  end
 end
