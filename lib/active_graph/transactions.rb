@@ -42,23 +42,26 @@ module ActiveGraph
         end
       end
 
-      def run_transaction_work(session, method, **config, &block)
-        implicit = config.delete(:implicit)
+      def run_transaction_work(session, method, implicit: false, **config, &block)
+        result = nil
         session.send(method, **config) do |tx|
           self.tx = tx
-          block.call(tx).tap do |result|
-            if implicit &&
-              [Core::Result, ActiveGraph::Node::Query::QueryProxy, ActiveGraph::Core::Query]
-                .any?(&result.method(:is_a?))
-              result.store
-            end
+          (result = block.call(tx)).tap do
+            store(it) if implicit
+            tx.check_rollback
           end
         end.tap { tx.apply_callbacks }
       rescue ActiveGraph::Rollback
         # rollbacks are silently swallowed
-        false # to satisfy save and update conventions
+        result
       ensure
         self.tx = nil
+      end
+
+      def store(result)
+        if [Core::Result, ActiveGraph::Node::Query::QueryProxy, ActiveGraph::Core::Query].any?(&result.method(:is_a?))
+          result.store
+        end
       end
     end
   end
