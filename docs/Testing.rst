@@ -86,7 +86,7 @@ If you are using RSpec you can perform tests in a transaction as you would using
   config.around do |example|
     ActiveGraph::Base.transaction do |tx|
       example.run
-      tx.failure
+      tx.rollback if tx.open?
     end
   end
 
