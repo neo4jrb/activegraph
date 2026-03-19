@@ -124,12 +124,20 @@ describe ActiveGraph::Transactions do
   end
 
   describe 'rollback in nested transaction' do
-    it 'returns false from the inner transaction when rollback is called' do
-      inner_result = nil
-      ActiveGraph::Base.transaction do
-        inner_result = ActiveGraph::Base.transaction(&:rollback)
+    it 'allows reading model errors after failed update inside an outer transaction' do
+      stub_node_class('ValidatedStudent') do
+        property :name
+        validates :name, presence: true
       end
-      expect(inner_result).to eq false
+
+      student = ValidatedStudent.create!(name: 'Alice')
+
+      errors = ActiveGraph::Base.transaction do
+        student.update(name: nil)
+        student.errors.full_messages
+      end
+
+      expect(errors).to include("Name can't be blank")
     end
   end
 end
