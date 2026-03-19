@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [12.0.0.beta.7] (2026-03-19)
+
+### Fixed
+- Improved rollback handling in nested transactions to ensure the result of the block is returned even when a rollback is triggered.
+
 ## [12.0.0.beta.6] 2026-03-18
 
 ## Added
