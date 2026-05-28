@@ -270,6 +270,11 @@ module ActiveGraph
           end.first
         end
 
+        # @return [Array] An array of primary key values
+        def ids
+          pluck(association_id_key)
+        end
+
         # @return [String] The primary key of a the current QueryProxy's model or target class
         def association_id_key
           self.association.nil? ? model.primary_key : self.association.target_class.primary_key

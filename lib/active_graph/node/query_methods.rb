@@ -49,6 +49,13 @@ module ActiveGraph
         end
       end
 
+      # Returns an array of all the IDs (primary key values) of the model's nodes.
+      # ActiveRecord-compatible shortcut for `pluck(primary_key)`.
+      # @return [Array] An array of primary key values
+      def ids
+        self.all.ids
+      end
+
       private
 
       def exists_query_start(condition)

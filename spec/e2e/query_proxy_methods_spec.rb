@@ -444,6 +444,34 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'ids' do
+    before(:each) do
+      [Student, Lesson].each(&:delete_all)
+
+      @john = Student.create(name: 'John')
+      @history = Lesson.create(name: 'history')
+      @math2 = Lesson.create(name: 'math2')
+      @john.lessons << @history
+      @john.lessons << @math2
+    end
+
+    it 'returns the ids of nodes on the class' do
+      expect(Lesson.ids).to match_array([@history.id, @math2.id])
+    end
+
+    it 'returns the ids of nodes on a query proxy association' do
+      expect(@john.lessons.ids).to match_array([@history.id, @math2.id])
+    end
+
+    it 'returns the ids of nodes on a where chain' do
+      expect(Lesson.where(name: 'history').ids).to eq([@history.id])
+    end
+
+    it 'returns an empty array when there are no matches' do
+      expect(Lesson.where(name: 'nope').ids).to eq([])
+    end
+  end
+
   describe 'distinct' do
     let(:frank) { Student.create(name: 'Frank') }
     let(:bill) { Teacher.create(name: 'Bill') }
