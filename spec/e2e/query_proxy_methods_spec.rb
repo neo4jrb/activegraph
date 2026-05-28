@@ -470,6 +470,34 @@ describe 'query_proxy_methods' do
     it 'returns an empty array when there are no matches' do
       expect(Lesson.where(name: 'nope').ids).to eq([])
     end
+
+    context 'when the association target uses a custom id_property' do
+      before(:each) do
+        stub_node_class('Book') do
+          id_property :book_id, on: :generate_book_id
+          property :title
+          has_many :in, :owners, model_class: 'Reader', origin: :books
+          def generate_book_id
+            "book-#{SecureRandom.hex(4)}"
+          end
+        end
+
+        stub_node_class('Reader') do
+          property :name
+          has_many :out, :books, model_class: 'Book', type: 'OWNS'
+        end
+
+        @reader = Reader.create(name: 'Ada')
+        @b1 = Book.create(title: 'A')
+        @b2 = Book.create(title: 'B')
+        @reader.books << @b1
+        @reader.books << @b2
+      end
+
+      it 'uses the target class primary key when traversing an association' do
+        expect(@reader.books.ids).to match_array([@b1.book_id, @b2.book_id])
+      end
+    end
   end
 
   describe 'distinct' do
