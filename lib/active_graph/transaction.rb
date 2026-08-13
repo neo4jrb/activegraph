@@ -2,6 +2,7 @@ module ActiveGraph
   module Transaction
     def rollback
       @active_graph_rolled_back = true
+      super
     end
 
     def check_rollback
