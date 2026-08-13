@@ -1,0 +1,66 @@
+# git-cliff configuration — generates CHANGELOG.md from conventional-commit
+# subjects. Keeps only user-facing entries (features, fixes, performance);
+# chore/ci/docs/refactor and non-conventional commits are dropped automatically.
+# See https://git-cliff.org
+
+[changelog]
+header = """
+# Change Log
+All notable changes to this project will be documented in this file.
+This file should follow the standards specified on [http://keepachangelog.com/]
+This project adheres to [Semantic Versioning](http://semver.org/).
+"""
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] ({{ timestamp | date(format="%Y-%m-%d") }})
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}\
+- {{ commit.message | upper_first }}
+{% endfor %}\
+{% endfor %}\n
+"""
+trim = true
+footer = """
+{% for release in releases -%}
+    {% if release.version -%}
+        {% if release.previous.version -%}
+[{{ release.version | trim_start_matches(pat="v") }}]: \
+https://github.com/neo4jrb/activegraph/compare/{{ release.previous.version }}..{{ release.version }}
+        {% else -%}
+[{{ release.version | trim_start_matches(pat="v") }}]: \
+https://github.com/neo4jrb/activegraph/commits/{{ release.version }}
+        {% endif -%}
+    {% else -%}
+[unreleased]: https://github.com/neo4jrb/activegraph/compare/{{ release.previous.version }}..HEAD
+    {% endif -%}
+{% endfor %}
+"""
+
+[git]
+conventional_commits = true
+# drop merges & anything non-conventional
+filter_commits = true
+filter_unconventional = true
+protect_breaking_commits = false
+split_commits = false
+
+# turn "(#123)" in a subject into a PR link
+commit_preprocessors = [
+  { pattern = '\(#(\d+)\)', replace = "([#${1}](https://github.com/neo4jrb/activegraph/pull/${1}))" },
+]
+
+# keep only user-facing types; first match wins, everything else skipped
+commit_parsers = [
+  { message = "^feat", group = "Added" },
+  { message = "^fix",  group = "Fixed" },
+  { message = "^perf", group = "Performance" },
+  { message = "^.*",   skip = true },
+]
+
+filter_reference_type = "all"
+tag_pattern = "v[0-9]*"
+sort_commits = "oldest"

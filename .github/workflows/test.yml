@@ -17,8 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby, ruby ]
-        neo4j: [ 2026.01.4 ]
-        active_model: [ 7.1.6, 7.2.3, 8.0.4, 8.1.2 ]
+        neo4j: [ 2026.07.1 ]
+        active_model: [ 7.1.6, 7.2.3.2, 8.0.5.1, 8.1.3.1 ]
         include:
           - ruby: jruby
             java-version: 21
@@ -30,7 +30,7 @@ jobs:
       - name: Start neo4j
         run: docker run --name neo4j --env NEO4J_AUTH=neo4j/password --env NEO4J_ACCEPT_LICENSE_AGREEMENT=yes --env NEO4J_dbms_directories_import= -p7687:7687 -p7474:7474 -v `pwd`/tmp:/var/lib/neo4j/import --rm neo4j:${{ matrix.neo4j }}-enterprise &
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -60,3 +60,15 @@ jobs:
 
 #      - name: Run tests
 #        run: bundle exec rubocop
+
+  # Stable aggregator context to require in branch protection — its name never
+  # changes when the matrix (ruby / neo4j / active_model versions) is bumped.
+  build-success:
+    name: build-success
+    needs: [test]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ needs.test.result != 'success' }}
+        run: |
+          echo "test matrix: ${{ needs.test.result }}"; exit 1

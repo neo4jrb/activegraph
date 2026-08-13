@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+# default to nothing; each job grants only what it needs
+permissions: {}
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # create the Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify the tag matches ActiveGraph::VERSION
+        run: |
+          expected="v$(ruby -Ilib -r active_graph/version -e 'print ActiveGraph::VERSION')"
+          [ "$GITHUB_REF_NAME" = "$expected" ] || {
+            echo "::error::tag $GITHUB_REF_NAME != $expected"; exit 1; }
+
+      - name: Create the release with generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          # a letter in the version => prerelease (e.g. v12.0.0.beta.7)
+          pre=; case "${tag#v}" in *[a-zA-Z]*) pre=--prerelease ;; esac
+          # idempotent: skip if the release already exists
+          gh release view "$tag" >/dev/null 2>&1 \
+            || gh release create "$tag" --generate-notes $pre
+
+  publish:
+    needs: github-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write          # the OIDC token for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby
+
+      - name: Build the gem
+        run: gem build activegraph.gemspec -o pkg/activegraph.gem
+
+      - name: Configure credentials (OIDC)
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8 # v2.1.0
+
+      - name: Push (retry-safe)
+        run: |
+          if out=$(gem push pkg/activegraph.gem 2>&1); then echo "$out"
+          else
+            echo "$out"
+            echo "$out" | grep -qiE "already been pushed|Repushing.*not allowed" \
+              && { echo "already published — ok"; exit 0; }
+            exit 1
+          fi

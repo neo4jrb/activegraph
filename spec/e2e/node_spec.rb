@@ -57,7 +57,7 @@ describe 'ActiveGraph::Node' do
       property :expiry_date, type: Date
       property :make_date, type: Neo4j::Driver::Types::OffsetTime
       property :storage, type: String
-      property :best_before, type: ActiveSupport::Duration
+      property :best_before, type: Neo4j::Driver::Types::Duration
       property :place, type: Neo4j::Driver::Types::Point
       property :local_time, type: Neo4j::Driver::Types::LocalTime
       property :local_datetime, type: Neo4j::Driver::Types::LocalDateTime
@@ -75,11 +75,11 @@ describe 'ActiveGraph::Node' do
     let(:suger) { Float::MAX }
     let(:ingredients) { { suger: 20, water: 50 } }
     let(:storage) { [1, 2, 3].pack('C*') }
-    let(:best_before) { 6.months }
+    let(:best_before) { Neo4j::Driver::Types::Duration.parse('P6M') }
     let(:place) { Neo4j::Driver::Types::Point.new(x: 10, y: 5) }
-    let(:make_date) { Neo4j::Driver::Types::OffsetTime.new(Time.now) }
-    let(:local_time) { Neo4j::Driver::Types::LocalTime.new(Time.now) }
-    let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.new(Time.now.utc) }
+    let(:make_date) { Neo4j::Driver::Types::OffsetTime.from_time(Time.now) }
+    let(:local_time) { Neo4j::Driver::Types::LocalTime.from_time(Time.now) }
+    let(:local_datetime) { Neo4j::Driver::Types::LocalDateTime.from_time(Time.now) }
 
     it 'should support types' do
       IceCandy.create(name: name, calories_min: calories_min, calories_max: calories_max, expiry_date: expiry_date,
