@@ -7,7 +7,7 @@
 header = """
 # Change Log
 All notable changes to this project will be documented in this file.
-This file should follow the standards specified on [http://keepachangelog.com/]
+This file should follow the standards specified on [keep a changelog](http://keepachangelog.com/)
 This project adheres to [Semantic Versioning](http://semver.org/).
 """
 body = """
@@ -62,5 +62,6 @@ commit_parsers = [
 ]
 
 filter_reference_type = "all"
-tag_pattern = "v[0-9]*"
+# match dotted/prerelease tags like v12.0.0.beta.7, not just v12
+tag_pattern = "v[0-9].*"
 sort_commits = "oldest"
