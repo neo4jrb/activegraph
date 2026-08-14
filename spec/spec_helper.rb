@@ -254,6 +254,10 @@ RSpec.configure do |config|
     delete_db
     delete_schema
     @base_logger = spy('Base logger')
+    # `warn` is a Kernel method present on every object, so a spy records it via
+    # method_missing only on MRI; on JRuby the real Kernel#warn runs and the call
+    # is never recorded. Stub it explicitly so have_received(:warn) works on both.
+    allow(@base_logger).to receive(:warn)
     allow(ActiveGraph::Base).to receive(:logger).and_return(@base_logger)
   end
 
