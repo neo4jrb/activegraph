@@ -20,7 +20,7 @@ module ActiveGraph
           count = count_relations(relation_query)
           output "Indexing #{count} #{old_name}s into #{new_name}..."
           while count > 0
-            relation_query.create("(a)-[r2:`#{new_name}`]->(b)").set('r2 = r').with(:r).limit(max_per_batch).delete(:r).exec
+            relation_query.create("(a)-[r2:`#{new_name}`]->(b)").set('r2 = properties(r)').with(:r).limit(max_per_batch).delete(:r).exec
             count = count_relations(relation_query)
             output "... #{count} #{old_name}'s left to go.." if count > 0
           end
