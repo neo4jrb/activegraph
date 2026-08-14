@@ -1,3 +1,10 @@
+# Load the driver before SimpleCov starts. On JRuby the driver's Zeitwerk
+# eager_load resolves implicit-namespace directories (Internal, Ext, ...) via a
+# require-decoration that SimpleCov's coverage bypasses, so requiring it under
+# an active SimpleCov session raises "cannot load such file -- .../driver/internal".
+# Loading it first makes the later require in active_graph a no-op.
+require 'neo4j/driver'
+
 # To run coverage in CI
 require 'simplecov'
 require 'dotenv'
