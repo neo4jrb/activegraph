@@ -62,6 +62,6 @@ commit_parsers = [
 ]
 
 filter_reference_type = "all"
-# match dotted/prerelease tags like v12.0.0.beta.7, not just v12
-tag_pattern = "v[0-9].*"
+# match dotted/prerelease tags like v12.0.0.beta.7, not just v12 (anchored)
+tag_pattern = "^v[0-9].*"
 sort_commits = "oldest"

@@ -35,7 +35,7 @@ jobs:
         run: gem build activegraph.gemspec -o activegraph.gem
 
       - name: Configure credentials (OIDC)
-        uses: rubygems/configure-rubygems-credentials@dc5a8d8 # v2.1.0
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
 
       - name: Push (retry-safe)
         run: |
