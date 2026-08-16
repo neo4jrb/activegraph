@@ -21,7 +21,7 @@ describe ActiveGraph::Migrations::Schema do
   let(:unique_constraint) { 'CREATE CONSTRAINT `unique_constraint` FOR (n:`Person`) REQUIRE (n.`name`) IS UNIQUE' }
   let(:not_null_rel_prop_constraint) { 'CREATE CONSTRAINT `not_null_rel_prop_constraint` FOR ()-[r:`LIKED`]-() REQUIRE (r.`when`) IS NOT NULL' }
   let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` FOR (n:`Person`) REQUIRE (n.`name`) IS NOT NULL' }
-  let(:node_key_constraint) { 'CREATE CONSTRAINT `node_key_constraint` FOR (n:`Person`) REQUIRE (n.`name`, n.`surname`) IS NODE KEY' }
+  let(:node_key_constraint) { 'CREATE CONSTRAINT `node_key_constraint` FOR (n:`Person`) REQUIRE (n.`name`, n.`surname`) IS KEY' }
 
   if ActiveGraph::Base.version?('<5')
     let(:text_index) { 'CREATE TEXT INDEX `text_index` FOR ()-[r:`KNOWS`]-() ON (r.`city`)' }
