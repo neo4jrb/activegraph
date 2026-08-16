@@ -3,9 +3,11 @@ name: Test
 on:
   push:
     branches: [ '12' ]
-    # Housekeeping-only changes (docs, changelog, version bump) can't affect
-    # tests — skip the heavy CI on them. A mixed change still runs (paths-ignore
-    # skips only when EVERY changed file matches).
+    # Skip the heavy CI when a change touches only docs or the version file:
+    # a docs/changelog edit or a version bump isn't expected to affect the test
+    # suite. (version.rb is Ruby, so this is an assumption, not a guarantee —
+    # keep version bumps to the constant.) paths-ignore skips only when EVERY
+    # changed file matches, so any mixed change still runs.
     paths-ignore: ['**/*.md', 'lib/active_graph/version.rb']
   pull_request:
     branches: [ '12' ]
