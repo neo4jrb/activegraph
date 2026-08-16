@@ -185,6 +185,48 @@ module ActiveGraph::Shared
       end
     end
 
+    # Converts ActiveSupport::Duration to/from the driver-native
+    # Neo4j::Driver::Types::Duration. Kept for backwards compatibility: since
+    # driver 6.2.1 a Neo4j duration is a Types::Duration, but models may still
+    # declare `type: ActiveSupport::Duration`. The mapping is field-to-field
+    # (parts <-> months/days/seconds/nanoseconds) and value-exact; the only soft
+    # spot is a fractional calendar month, which has no exact finer form and
+    # degrades to seconds via ActiveSupport's own rate.
+    class DurationConverter < BaseConverter
+      class << self
+        def convert_type
+          ActiveSupport::Duration
+        end
+
+        def db_type
+          Neo4j::Driver::Types::Duration
+        end
+
+        def to_db(value)
+          parts = Hash.new(0).merge(value.parts)
+          months_f = parts[:years] * 12 + parts[:months]
+          days_f = parts[:weeks] * 7 + parts[:days]
+          months = months_f.to_i
+          days = days_f.to_i
+          # whole calendar units stay put; fractional months/days cascade into
+          # seconds rather than truncating (which would lose magnitude)
+          seconds = parts[:hours] * 3600 + parts[:minutes] * 60 + parts[:seconds] +
+                    (months_f - months) * ActiveSupport::Duration::SECONDS_PER_MONTH +
+                    (days_f - days) * ActiveSupport::Duration::SECONDS_PER_DAY
+          Neo4j::Driver::Types::Duration.new(months, days, seconds.floor, ((seconds % 1) * 1_000_000_000).round)
+        end
+
+        def to_ruby(value)
+          return value if value.is_a?(ActiveSupport::Duration)
+          # map each Neo4j field back to its ActiveSupport unit, field-to-field,
+          # so the calendar structure survives the round trip
+          ActiveSupport::Duration.months(value.months) +
+            ActiveSupport::Duration.days(value.days) +
+            ActiveSupport::Duration.seconds(value.seconds + Rational(value.nanoseconds, 1_000_000_000))
+        end
+      end
+    end
+
     class BooleanConverter < BaseConverter
       FALSE_VALUES = %w(n N no No NO false False FALSE off Off OFF f F).to_set
 

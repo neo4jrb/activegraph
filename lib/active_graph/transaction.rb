@@ -1,11 +1,11 @@
 module ActiveGraph
   module Transaction
     def rollback
-      @rolled_back = true
+      @active_graph_rolled_back = true
     end
 
     def check_rollback
-      fail ActiveGraph::Rollback if @rolled_back
+      fail ActiveGraph::Rollback if @active_graph_rolled_back
     end
 
     def after_commit(&block)

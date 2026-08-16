@@ -59,8 +59,12 @@ module ActiveGraph
         @major ||= version.segments.first
       end
 
+      # Neo4j 2026.07+ renamed the uniqueness constraint types
+      # (UNIQUENESS -> NODE_PROPERTY_UNIQUENESS, RELATIONSHIP_UNIQUENESS ->
+      # RELATIONSHIP_PROPERTY_UNIQUENESS); accept both the old and new names.
       def constraint_filter(record)
-        %w[UNIQUENESS RELATIONSHIP_UNIQUENESS RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY RELATIONSHIP_KEY].include?(record[:type])
+        %w[UNIQUENESS NODE_PROPERTY_UNIQUENESS RELATIONSHIP_UNIQUENESS RELATIONSHIP_PROPERTY_UNIQUENESS
+           RELATIONSHIP_PROPERTY_EXISTENCE NODE_PROPERTY_EXISTENCE NODE_KEY RELATIONSHIP_KEY].include?(record[:type])
       end
 
       def index_cypher(label, properties)

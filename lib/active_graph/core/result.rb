@@ -13,7 +13,7 @@ module ActiveGraph
 
       def each(&block)
         store if wrap? # TODO: why? This is preventing streaming
-        @records&.each(&block) || super
+        @wrapped_records&.each(&block) || super
       end
 
       ## To avoid to_a on Neo4j::Driver::Result as that one does not call the above block
@@ -22,13 +22,13 @@ module ActiveGraph
       end
 
       def store
-        return if @records
+        return if @wrapped_records
         keys
-        @records = []
+        @wrapped_records = []
         # TODO: implement 'each' without block parameter
         method(:each).super_method.call do |record|
           record.wrap = wrap?
-          @records << record
+          @wrapped_records << record
         end
       end
     end
