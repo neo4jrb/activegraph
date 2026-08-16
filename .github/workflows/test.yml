@@ -3,8 +3,13 @@ name: Test
 on:
   push:
     branches: [ '12' ]
+    # Housekeeping-only changes (docs, changelog, version bump) can't affect
+    # tests — skip the heavy CI on them. A mixed change still runs (paths-ignore
+    # skips only when EVERY changed file matches).
+    paths-ignore: ['**/*.md', 'lib/active_graph/version.rb']
   pull_request:
     branches: [ '12' ]
+    paths-ignore: ['**/*.md', 'lib/active_graph/version.rb']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
