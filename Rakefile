@@ -55,19 +55,30 @@ task 'coverage' do
   task.invoke
 end
 
-# Regenerate CHANGELOG.md from the commit history with git-cliff
-# (https://git-cliff.org; `brew install git-cliff`). Run after merging PRs to
-# refresh [Unreleased]; pass the release tag to finalize a version section:
-#   rake "changelog[v12.0.0.beta.7]"
-desc 'Regenerate CHANGELOG.md from commits (git-cliff)'
+# Refresh CHANGELOG.md's [Unreleased] section from conventional commits with
+# git-cliff (https://git-cliff.org; `brew install git-cliff`). Non-destructive:
+# generates only the new (unreleased) entries and inserts them under the
+# preamble, leaving the hand-written history below untouched — activegraph's
+# pre-conventional-commit history can't be regenerated. Pass the release tag to
+# finalize the section as a version at release time:
+#   rake "changelog[v12.0.0.beta.8]"
+desc 'Refresh CHANGELOG.md [Unreleased] from conventional commits (git-cliff)'
 task :changelog, [:tag] do |_task, args|
-  cmd = %w[git cliff]
+  cmd = %w[git cliff --unreleased --strip all]
   if (tag = args[:tag])
-    tag.match?(/\Av\d[\w.-]*\z/) or raise "Invalid tag #{tag.inspect} (expected e.g. v12.0.0.beta.7)" # rubocop:disable Style/AndOr
+    # array form (no shell) means the tag can't inject commands
+    tag.match?(/\Av\d[\w.-]*\z/) or raise "Invalid tag #{tag.inspect} (expected e.g. v12.0.0.beta.8)" # rubocop:disable Style/AndOr
     cmd += ['--tag', tag]
   end
-  # Pass args to sh as an array — no shell, so the tag can't inject commands.
-  sh(*cmd, '-o', 'CHANGELOG.md')
+  section = IO.popen(cmd, &:read).strip
+  # git-cliff still emits a bare `## [Unreleased]` heading with no entries when
+  # nothing matched — only touch the file when there's at least one entry.
+  abort 'git-cliff produced no entries (no conventional commits since the last release).' unless section.match?(/^- /)
+  changelog = File.read('CHANGELOG.md')
+             .sub(/^## \[Unreleased\].*?(?=^## \[)/m, '')  # drop a stale [Unreleased] block
+             .sub(/^(?=## \[)/, "#{section}\n\n")          # insert fresh section under the preamble
+  File.write('CHANGELOG.md', changelog)
+  puts "Updated CHANGELOG.md:\n#{section}"
 end
 
 task default: ['spec']
