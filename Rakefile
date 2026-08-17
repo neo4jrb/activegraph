@@ -55,4 +55,19 @@ task 'coverage' do
   task.invoke
 end
 
+# Regenerate CHANGELOG.md from the commit history with git-cliff
+# (https://git-cliff.org; `brew install git-cliff`). Run after merging PRs to
+# refresh [Unreleased]; pass the release tag to finalize a version section:
+#   rake "changelog[v12.0.0.beta.7]"
+desc 'Regenerate CHANGELOG.md from commits (git-cliff)'
+task :changelog, [:tag] do |_task, args|
+  cmd = %w[git cliff]
+  if (tag = args[:tag])
+    tag.match?(/\Av\d[\w.-]*\z/) or raise "Invalid tag #{tag.inspect} (expected e.g. v12.0.0.beta.7)" # rubocop:disable Style/AndOr
+    cmd += ['--tag', tag]
+  end
+  # Pass args to sh as an array — no shell, so the tag can't inject commands.
+  sh(*cmd, '-o', 'CHANGELOG.md')
+end
+
 task default: ['spec']
