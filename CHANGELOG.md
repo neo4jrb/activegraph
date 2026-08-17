@@ -254,12 +254,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Micro-optimizations which help when dealing with a lot of data (thanks @jgaskins / see #1490)
 
-## [9.1.8] 2018-03-27
-
-## Fixed
-
-- Micro-optimizations which help when dealing with a lot of data (thanks @jgaskins / see #1490)
-
 ## [9.1.7] 2018-03-27
 
 ## Fixed
