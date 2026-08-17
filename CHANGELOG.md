@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [12.0.0] (2026-08-16)
+
+### Changed
+- Use the driver-native Neo4j::Driver::Types::Duration instead of ActiveSupport::Duration
+
+### Added
+- Type converted for ActiveSupport::Duration to Neo4j::Driver::Types::Duration for backward compatibility. The converter is lossy if fractional units are used in ActiveSupport::Duration.
+
+### Fixed
+- Adapt to neo4j-ruby-driver 6.2.1
+
 ## [12.0.0.beta.7] (2026-03-19)
 
 ### Fixed
