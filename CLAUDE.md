@@ -4,7 +4,7 @@
 
 All new commits **and PR titles** must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 type(optional-scope): short imperative subject
 ```
 

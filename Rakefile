@@ -70,13 +70,24 @@ task :changelog, [:tag] do |_task, args|
     tag.match?(/\Av\d[\w.-]*\z/) or raise "Invalid tag #{tag.inspect} (expected e.g. v12.0.0.beta.8)" # rubocop:disable Style/AndOr
     cmd += ['--tag', tag]
   end
-  section = IO.popen(cmd, &:read).strip
-  # git-cliff still emits a bare `## [Unreleased]` heading with no entries when
-  # nothing matched — only touch the file when there's at least one entry.
+  require 'open3'
+  section, stderr, status = Open3.capture3(*cmd)
+  warn stderr unless stderr.empty?  # surface git-cliff's own warnings (e.g. skipped commits)
+  abort "git-cliff failed (exit #{status.exitstatus})" unless status.success?
+  section = section.strip
+  # git-cliff still emits a bare `## [<id>]` heading with no entries when nothing
+  # matched — only touch the file when there's at least one entry.
   abort 'git-cliff produced no entries (no conventional commits since the last release).' unless section.match?(/^- /)
+  # generated heading is `## [Unreleased]`, or `## [<version>]` when a tag is given
+  id = section[/\A## \[([^\]]+)\]/, 1]
   changelog = File.read('CHANGELOG.md')
-             .sub(/^## \[Unreleased\].*?(?=^## \[)/m, '')  # drop a stale [Unreleased] block
-             .sub(/^(?=## \[)/, "#{section}\n\n")          # insert fresh section under the preamble
+  # drop a stale [Unreleased] and any existing section for the target id (so a
+  # re-run at release is idempotent); the lookahead stops at the next heading or
+  # end of file, so a trailing section is handled too
+  ['Unreleased', id].uniq.each do |heading|
+    changelog = changelog.sub(/^## \[#{Regexp.escape(heading)}\].*?(?=^## \[|\z)/m, '')
+  end
+  changelog = changelog.sub(/^(?=## \[)/, "#{section}\n\n")  # insert under the preamble
   File.write('CHANGELOG.md', changelog)
   puts "Updated CHANGELOG.md:\n#{section}"
 end
