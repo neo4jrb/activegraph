@@ -64,7 +64,13 @@ module ActiveGraph
         config.app_middleware.insert_after ::ActionDispatch::Callbacks, ActiveGraph::Migrations::CheckPending
       end
     end
+    initializer 'activegraph.controller_runtime' do
+      require 'active_graph/railties/controller_runtime'
 
+      ActiveSupport.on_load(:action_controller) do
+        include ActiveGraph::Railties::ControllerRuntime
+      end
+    end
     initializer "activegraph.deprecator" do |app|
       app.deprecators[:activegraph] = ActiveGraph.deprecator
     end
