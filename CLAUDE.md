@@ -33,8 +33,9 @@ Reference a PR/issue in the subject as `(#1234)` — `cliff.toml` turns it into 
 ## CHANGELOG.md
 
 - The `[Unreleased]` section is generated from conventional commits:
-  `rake changelog` (refresh) / `rake "changelog[v12.0.0.beta.8]"` (finalize a
-  version at release).
+  `rake changelog` (refresh). At release time `rake release` (or
+  `rake "release[12.0.2]"` to bump first) finalizes it, commits, pushes the
+  default branch and tags — see `RELEASING.md`. Don't open release PRs by hand.
 - The task is **non-destructive**: it only rewrites the top `[Unreleased]`/version
   section and inserts it under the preamble. Everything below is **hand-written
   history from before conventional commits were adopted — never regenerate or
