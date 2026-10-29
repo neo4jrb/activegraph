@@ -298,11 +298,13 @@ module ActiveGraph::Shared
         end
 
         def to_db(value)
-          value.to_json
+          ActiveSupport::JSON.encode(value)
         end
 
         def to_ruby(value)
-          JSON.parse(value, quirks_mode: true)
+          # `quirks_mode` was removed from the json gem in 2.0 (scalar top-level values are accepted
+          # by default since) and json >= 3.0 raises on unknown options.
+          JSON.parse(value)
         end
       end
     end

@@ -76,6 +76,15 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 | Causal Cluster             |   No   |  No  | No      | No     | Yes                 |
 | Embedded JVM support       |   Yes  |  Yes | Yes     | Yes    | via bolt only       |
 
+## Rails version support
+
+activegraph 12 is tested against ActiveModel 7.1, 7.2, 8.0 and 8.1.
+
+Note that ActiveSupport < 8.1 is incompatible with the `json` gem >= 3.0 (its JSON encoder passes an option
+that json 3 rejects, see [rails/rails#54224](https://github.com/rails/rails/pull/54224)). This affects every
+`to_json` call in such an application, not only activegraph's JSON-typed properties, so on Rails < 8.1 pin
+`gem 'json', '< 3'` in your Gemfile until you upgrade to a Rails release that includes the fix.
+
 ## Documentation
 
 * [Website](http://neo4jrb.io/) (for an introduction)
