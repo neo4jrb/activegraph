@@ -90,5 +90,12 @@ really "pull the bad release, then ship a *new* version".
 3. **Fix, then release a new version** with `rake "release[<next version>]"`.
    You cannot reuse the yanked number.
 
-> Only need to re-run a *failed publish* (not a version change)? Re-push the
-> same tag — both workflow jobs are idempotent.
+> Only need to re-run a *failed publish* (not a version change)? Re-run the
+> failed workflow run — pushing an unchanged tag is a no-op and fires nothing:
+>
+> ```bash
+> gh run list --workflow release.yml --limit 1   # find the run id
+> gh run rerun <run-id> --failed
+> ```
+>
+> Both workflow jobs are idempotent, so a rerun is safe at any point.

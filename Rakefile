@@ -145,14 +145,15 @@ def cut_release(version_arg) # rubocop:disable Metrics/AbcSize, Metrics/MethodLe
   abort "✗ #{tag} is already released (tag on origin) — bump the version." \
     unless `git ls-remote --tags origin "refs/tags/#{tag}"`.empty?
 
-  # Checks passed — now it's safe to bump version.rb (only when a version was given).
+  # --- finalize changelog + land the commit on the default branch ----------
+  # The changelog task takes the tag explicitly and aborts (without writing)
+  # when git-cliff fails or finds no entries, so run it BEFORE bumping
+  # version.rb — a changelog failure then leaves the tree clean for a re-run.
+  Rake::Task[:changelog].invoke(tag)
   if version_arg
     src = File.read(VERSION_FILE)
     File.write(VERSION_FILE, src.sub(/VERSION = '[^']*'/, "VERSION = '#{version}'"))
   end
-
-  # --- finalize changelog + land the commit on the default branch ----------
-  Rake::Task[:changelog].invoke(tag)
   run.call('git', 'add', VERSION_FILE, 'CHANGELOG.md')
   if probe.call('git', 'diff', '--cached', '--quiet')
     puts "• No version/changelog change to commit — #{main} already holds #{tag}'s content."
@@ -175,7 +176,14 @@ def cut_release(version_arg) # rubocop:disable Metrics/AbcSize, Metrics/MethodLe
   end
 
   run.call('git', 'tag', tag)
-  run.call('git', 'push', 'origin', tag)
+  unless system('git', 'push', 'origin', tag)
+    # Drop the local tag so the "already exists locally" check doesn't block a
+    # re-run; the changelog commit is already on origin, so re-running resumes
+    # at the tag step. If origin did receive the tag despite the error, the
+    # re-run stops at the "already released" check — the workflow has fired.
+    system('git', 'tag', '-d', tag, out: File::NULL)
+    abort "✗ pushing #{tag} failed — local tag removed. Re-run `rake release` to retry."
+  end
   puts "\n✓ Pushed #{tag}. Release workflow:\n  " \
        'https://github.com/neo4jrb/activegraph/actions/workflows/release.yml'
 end
