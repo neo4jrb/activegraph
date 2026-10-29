@@ -122,7 +122,9 @@ def cut_release(version_arg) # rubocop:disable Metrics/AbcSize, Metrics/MethodLe
   abort '✗ could not determine the default branch via gh.' if main.empty?
   branch = `git rev-parse --abbrev-ref HEAD`.strip
   abort "✗ not on #{main} (on #{branch}). Releases are cut from #{main}." unless branch == main
-  abort '✗ working tree is dirty — commit or stash first.' unless `git status --porcelain`.empty?
+  # Untracked files are fine: the release commit adds only version.rb and
+  # CHANGELOG.md, so a stray IDE directory can't leak into it.
+  abort '✗ working tree is dirty — commit or stash first.' unless `git status --porcelain --untracked-files=no`.empty?
 
   run.call('git', 'fetch', '--quiet', 'origin', main, '--tags')
   if `git rev-parse HEAD`.strip != `git rev-parse origin/#{main}`.strip
