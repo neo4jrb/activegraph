@@ -94,7 +94,7 @@ really "pull the bad release, then ship a *new* version".
 > failed workflow run — pushing an unchanged tag is a no-op and fires nothing:
 >
 > ```bash
-> gh run list --workflow release.yml --limit 1   # find the run id
+> gh run list --workflow release.yml --status failure --limit 10   # pick the run for your tag
 > gh run rerun <run-id> --failed
 > ```
 >
