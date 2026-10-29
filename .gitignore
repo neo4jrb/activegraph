@@ -43,3 +43,6 @@ docs_site/
 # Vagrant
 .vagrant/*
 ubuntu*
+
+# Maven (stray; not used by this pure-Ruby gem)
+.mvn/
