@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 This file should follow the standards specified on [http://keepachangelog.com/]
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [12.0.1] (2026-10-29)
+
+### Fixed
+- Updated dependency 'neo4j-ruby-driver' to stable release version 6.2.1
+- Make JSON properties work with json >= 3.0 ([#1748](https://github.com/neo4jrb/activegraph/pull/1748))
+- Update 'neo4j-ruby-driver' version to 6.3.0 ([#1747](https://github.com/neo4jrb/activegraph/pull/1747))
+
 ## [12.0.0] (2026-08-16)
 
 ### Changed
