@@ -1,7 +1,7 @@
 QueryClauseMethods
 ==================
 
-The ``ActiveGraph::Core::Query`` class gem defines a DSL which allows for easy creation of Neo4j `Cypher queries <http://neo4j.com/developer/cypher-query-language>`_.  They can be started from a session like so:
+The ``ActiveGraph::Core::Query`` class defines a DSL which allows for easy creation of Neo4j `Cypher queries <http://neo4j.com/developer/cypher-query-language>`_.  They can be started from a session like so:
 
 .. code-block:: ruby
 
@@ -15,7 +15,7 @@ Advantages of using the `Query` class include:
  * Ability to pass in data directly from other sources (like Hash to match keys/values)
  * Ability to use native Ruby objects (such as translating `nil` values to `IS NULL`, regular expressions to Cypher-style regular expression matches, etc...)
 
-Below is a series of Ruby code samples and the resulting Cypher that would be generated.  These examples are all generated directly from the `spec file <https://github.com/neo4jrb/neo4j-core/blob/master/spec/neo4j-core/unit/query_spec.rb>`_ and are thus all tested to work.
+Below is a series of Ruby code samples and the resulting Cypher that would be generated.  These examples are all generated directly from the `spec file <https://github.com/neo4jrb/activegraph/blob/master/spec/active_graph/core/query_spec.rb>`_ and are thus all tested to work.
 
 ActiveGraph::Core::Query
 ------------------------
@@ -161,9 +161,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (n {name: $n_name, age: {n_age}})
+    MATCH (n {name: $n_name, age: $n_age})
 
-**Parameters:** ``{:n_name=>"Brian", :n_age=>33}``
+**Parameters:** ``{n_name: "Brian", n_age: 33}``
 
 ------------
 
@@ -177,32 +177,19 @@ ActiveGraph::Core::Query
 
     MATCH (n:`Person` {name: $n_Person_name, age: $n_Person_age})
 
-**Parameters:** ``{:n_Person_name=>"Brian", :n_Person_age=>33}``
+**Parameters:** ``{n_Person_name: "Brian", n_Person_age: 33}``
 
 ------------
 
 :Ruby:
   .. code-block:: ruby
 
-    .match('(n)--(o)')
+    .match('n--o')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (n)--(o)
-
-
-------------
-
-:Ruby:
-  .. code-block:: ruby
-
-    .match('(n)--(o)', '(o)--(p)')
-
-:Cypher:
-  .. code-block:: cypher
-
-    MATCH (n)--(o), (o)--(p)
+    MATCH n--o
 
 
 ------------
@@ -210,12 +197,25 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('(n)--(o)').match('(o)--(p)')
+    .match('n--o', 'o--p')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (n)--(o), (o)--(p)
+    MATCH n--o, o--p
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .match('n--o').match('o--p')
+
+:Cypher:
+  .. code-block:: cypher
+
+    MATCH n--o, o--p
 
 
 ------------
@@ -239,12 +239,28 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('(m)--(n)').optional_match('(n)--(o)').match('(o)--(p)')
+    .match('m--n').optional_match('n--o').match('o--p')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (m)--(n), (o)--(p) OPTIONAL MATCH (n)--(o)
+    MATCH m--n, o--p OPTIONAL MATCH n--o
+
+
+------------
+
+#call
+~~~~~
+
+:Ruby:
+  .. code-block:: ruby
+
+    .call('db.constraints()')
+
+:Cypher:
+  .. code-block:: cypher
+
+    CALL db.constraints()
 
 
 ------------
@@ -304,6 +320,7 @@ ActiveGraph::Core::Query
 
 
 
+
 ------------
 
 :Ruby:
@@ -313,6 +330,7 @@ ActiveGraph::Core::Query
 
 :Cypher:
   .. code-block:: cypher
+
 
 
 
@@ -326,7 +344,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age > 30)
+    WHERE q.age > 30
 
 
 ------------
@@ -339,9 +357,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age => $q_age)
+    WHERE q.age = $q_age
 
-**Parameters:** ``{:q_age=>30}``
+**Parameters:** ``{q_age: 30}``
 
 ------------
 
@@ -353,9 +371,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN $q_age)
+    WHERE q.age IN $q_age
 
-**Parameters:** ``{:q_age=>[30, 32, 34]}``
+**Parameters:** ``{q_age: [30, 32, 34]}``
 
 ------------
 
@@ -367,9 +385,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN $age)
+    WHERE q.age IN $age
 
-**Parameters:** ``{:age=>[30, 32, 34]}``
+**Parameters:** ``{age: [30, 32, 34]}``
 
 ------------
 
@@ -383,7 +401,7 @@ ActiveGraph::Core::Query
 
     WHERE (q.age IN $age)
 
-**Parameters:** ``{:age=>[30, 32, 34]}``
+**Parameters:** ``{age: [30, 32, 34]}``
 
 ------------
 
@@ -395,9 +413,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.name =~ $question_mark_param)
+    WHERE q.name =~ $question_mark_param
 
-**Parameters:** ``{:question_mark_param=>".*test.*"}``
+**Parameters:** ``{question_mark_param: ".*test.*"}``
 
 ------------
 
@@ -411,7 +429,7 @@ ActiveGraph::Core::Query
 
     WHERE (q.name =~ $question_mark_param)
 
-**Parameters:** ``{:question_mark_param=>".*test.*"}``
+**Parameters:** ``{question_mark_param: ".*test.*"}``
 
 ------------
 
@@ -425,7 +443,7 @@ ActiveGraph::Core::Query
 
     WHERE (LOWER(str(q.name)) =~ $question_mark_param)
 
-**Parameters:** ``{:question_mark_param=>".*test.*"}``
+**Parameters:** ``{question_mark_param: ".*test.*"}``
 
 ------------
 
@@ -437,9 +455,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN $question_mark_param)
+    WHERE q.age IN $question_mark_param
 
-**Parameters:** ``{:question_mark_param=>[30, 32, 34]}``
+**Parameters:** ``{question_mark_param: [30, 32, 34]}``
 
 ------------
 
@@ -451,9 +469,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN $question_mark_param) AND (q.age != $question_mark_param2)
+    WHERE ((q.age IN $question_mark_param) AND (q.age != $question_mark_param2))
 
-**Parameters:** ``{:question_mark_param=>[30, 32, 34], :question_mark_param2=>60}``
+**Parameters:** ``{question_mark_param: [30, 32, 34], question_mark_param2: 60}``
 
 ------------
 
@@ -465,9 +483,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN $q_age)
+    WHERE q.age IN $q_age
 
-**Parameters:** ``{:q_age=>[30, 32, 34]}``
+**Parameters:** ``{q_age: [30, 32, 34]}``
 
 ------------
 
@@ -479,7 +497,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IS NULL)
+    WHERE q.age IS NULL
 
 
 ------------
@@ -492,7 +510,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IS NULL)
+    WHERE q.age IS NULL
 
 
 ------------
@@ -505,9 +523,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (ID(q) = $ID_q)
+    WHERE elementId(q) = $elementId_q
 
-**Parameters:** ``{:ID_q=>22}``
+**Parameters:** ``{elementId_q: 22}``
 
 ------------
 
@@ -521,7 +539,7 @@ ActiveGraph::Core::Query
 
     WHERE (q.age = $q_age AND q.name = $q_name)
 
-**Parameters:** ``{:q_age=>30, :q_name=>"Brian"}``
+**Parameters:** ``{q_age: 30, q_name: "Brian"}``
 
 ------------
 
@@ -533,9 +551,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age = $q_age AND q.name = $q_name) AND (r.grade = 80)
+    WHERE (q.age = $q_age AND q.name = $q_name AND (r.grade = 80))
 
-**Parameters:** ``{:q_age=>30, :q_name=>"Brian"}``
+**Parameters:** ``{q_age: 30, q_name: "Brian"}``
 
 ------------
 
@@ -547,9 +565,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.name =~ $q_name)
+    WHERE q.name =~ $q_name
 
-**Parameters:** ``{:q_name=>"(?i)Brian.*"}``
+**Parameters:** ``{q_name: "(?i)Brian.*"}``
 
 ------------
 
@@ -561,9 +579,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (name =~ $name)
+    WHERE name =~ $name
 
-**Parameters:** ``{:name=>"(?i)Brian.*"}``
+**Parameters:** ``{name: "(?i)Brian.*"}``
 
 ------------
 
@@ -575,9 +593,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (name =~ $name) AND (name =~ $name2)
+    WHERE (name =~ $name AND name =~ $name2)
 
-**Parameters:** ``{:name=>"(?i)Brian.*", :name2=>"(?i)Smith.*"}``
+**Parameters:** ``{name: "(?i)Brian.*", name2: "(?i)Smith.*"}``
 
 ------------
 
@@ -589,9 +607,51 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age IN RANGE($q_age_range_min, $q_age_range_max))
+    WHERE (q.age >= $q_age_range_min AND q.age <= $q_age_range_max)
 
-**Parameters:** ``{:q_age_range_min=>30, :q_age_range_max=>40}``
+**Parameters:** ``{q_age_range_min: 30, q_age_range_max: 40}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where(q: { created_at: 0.0...5.0 })
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.created_at >= $q_created_at_range_min AND q.created_at < $q_created_at_range_max)
+
+**Parameters:** ``{q_created_at_range_min: 0.0, q_created_at_range_max: 5.0}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where(q: { created_at: Date.new(2017, 6, 1)...Date.new(2017, 6, 3) })
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.created_at >= $q_created_at_range_min AND q.created_at < $q_created_at_range_max)
+
+**Parameters:** ``{q_created_at_range_min: Thu, 01 Jun 2017, q_created_at_range_max: Sat, 03 Jun 2017}``
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .where(q: { created_at: Date.new(2017, 6, 1)..Date.new(2017, 6, 3) })
+
+:Cypher:
+  .. code-block:: cypher
+
+    WHERE (q.created_at >= $q_created_at_range_min AND q.created_at <= $q_created_at_range_max)
+
+**Parameters:** ``{q_created_at_range_min: Thu, 01 Jun 2017, q_created_at_range_max: Sat, 03 Jun 2017}``
 
 ------------
 
@@ -607,6 +667,8 @@ ActiveGraph::Core::Query
   .. code-block:: cypher
 
 
+
+
 ------------
 
 :Ruby:
@@ -616,6 +678,8 @@ ActiveGraph::Core::Query
 
 :Cypher:
   .. code-block:: cypher
+
+
 
 
 ------------
@@ -628,7 +692,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.age > 30)
+    WHERE NOT (q.age > 30)
 
 
 ------------
@@ -641,9 +705,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.age = $q_age)
+    WHERE NOT (q.age = $q_age)
 
-**Parameters:** ``{:q_age=>30}``
+**Parameters:** ``{q_age: 30}``
 
 ------------
 
@@ -655,9 +719,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.age IN $question_mark_param)
+    WHERE NOT (q.age IN $question_mark_param)
 
-**Parameters:** ``{:question_mark_param=>[30, 32, 34]}``
+**Parameters:** ``{question_mark_param: [30, 32, 34]}``
 
 ------------
 
@@ -669,9 +733,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.age = $q_age AND q.name = $q_name)
+    WHERE NOT ((q.age = $q_age AND q.name = $q_name))
 
-**Parameters:** ``{:q_age=>30, :q_name=>"Brian"}``
+**Parameters:** ``{q_age: 30, q_name: "Brian"}``
 
 ------------
 
@@ -683,9 +747,9 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.name =~ $q_name)
+    WHERE NOT (q.name =~ $q_name)
 
-**Parameters:** ``{:q_name=>"(?i)Brian.*"}``
+**Parameters:** ``{q_name: "(?i)Brian.*"}``
 
 ------------
 
@@ -697,7 +761,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE (q.age > 10) AND NOT(q.age > 30)
+    WHERE ((q.age > 10) AND NOT (q.age > 30))
 
 
 ------------
@@ -710,7 +774,7 @@ ActiveGraph::Core::Query
 :Cypher:
   .. code-block:: cypher
 
-    WHERE NOT(q.age > 30) AND (q.age > 10)
+    WHERE (NOT (q.age > 30) AND (q.age > 10))
 
 
 ------------
@@ -729,9 +793,9 @@ one node object
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (var) WHERE (ID(var) = $ID_var)
+    MATCH (var) WHERE elementId(var) = $elementId_var
 
-**Parameters:** ``{:ID_var=>246}``
+**Parameters:** ``{elementId_var: 246}``
 
 ------------
 
@@ -743,9 +807,9 @@ one node object
 :Cypher:
   .. code-block:: cypher
 
-    OPTIONAL MATCH (var) WHERE (ID(var) = $ID_var)
+    OPTIONAL MATCH (var) WHERE elementId(var) = $elementId_var
 
-**Parameters:** ``{:ID_var=>246}``
+**Parameters:** ``{elementId_var: 246}``
 
 ------------
 
@@ -760,9 +824,9 @@ integer
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (var) WHERE (ID(var) = $ID_var)
+    MATCH (var) WHERE elementId(var) = $elementId_var
 
-**Parameters:** ``{:ID_var=>924}``
+**Parameters:** ``{elementId_var: 924}``
 
 ------------
 
@@ -777,9 +841,9 @@ two node objects
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)
+    MATCH (user), (post) WHERE (elementId(user) = $elementId_user AND elementId(post) = $elementId_post)
 
-**Parameters:** ``{:ID_user=>246, :ID_post=>123}``
+**Parameters:** ``{elementId_user: 246, elementId_post: 123}``
 
 ------------
 
@@ -794,9 +858,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (user), (post) WHERE (ID(user) = $ID_user) AND (ID(post) = $ID_post)
+    MATCH (user), (post) WHERE (elementId(user) = $elementId_user AND elementId(post) = $elementId_post)
 
-**Parameters:** ``{:ID_user=>246, :ID_post=>652}``
+**Parameters:** ``{elementId_user: 246, elementId_post: 652}``
 
 ------------
 
@@ -931,7 +995,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    RETURN ID(q)
+    RETURN elementId(q)
 
 
 ------------
@@ -944,7 +1008,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    RETURN ID(q), q.prop
+    RETURN elementId(q), q.prop
 
 
 ------------
@@ -1012,7 +1076,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ORDER BY ID(q)
+    ORDER BY elementId(q)
 
 
 ------------
@@ -1038,7 +1102,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ORDER BY q.age, ID(q) DESC
+    ORDER BY q.age, elementId(q) DESC
 
 
 ------------
@@ -1064,7 +1128,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ORDER BY q.age, q.name DESC, ID(q) ASC
+    ORDER BY q.age, q.name DESC, elementId(q) ASC
 
 
 ------------
@@ -1090,7 +1154,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ORDER BY q.age ASC, ID(q) DESC
+    ORDER BY q.age ASC, elementId(q) DESC
 
 
 ------------
@@ -1116,7 +1180,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ORDER BY ID(q), q.name desc
+    ORDER BY elementId(q), q.name desc
 
 
 ------------
@@ -1134,7 +1198,7 @@ node object and integer
 
     LIMIT $limit_3
 
-**Parameters:** ``{:limit_3=>3}``
+**Parameters:** ``{limit_3: 3}``
 
 ------------
 
@@ -1148,7 +1212,7 @@ node object and integer
 
     LIMIT $limit_3
 
-**Parameters:** ``{:limit_3=>3}``
+**Parameters:** ``{limit_3: 3}``
 
 ------------
 
@@ -1162,7 +1226,7 @@ node object and integer
 
     LIMIT $limit_5
 
-**Parameters:** ``{:limit_3=>3, :limit_5=>5}``
+**Parameters:** ``{limit_3: 3, limit_5: 5}``
 
 ------------
 
@@ -1173,6 +1237,7 @@ node object and integer
 
 :Cypher:
   .. code-block:: cypher
+
 
 
 
@@ -1191,7 +1256,7 @@ node object and integer
 
     SKIP $skip_5
 
-**Parameters:** ``{:skip_5=>5}``
+**Parameters:** ``{skip_5: 5}``
 
 ------------
 
@@ -1205,7 +1270,7 @@ node object and integer
 
     SKIP $skip_5
 
-**Parameters:** ``{:skip_5=>5}``
+**Parameters:** ``{skip_5: 5}``
 
 ------------
 
@@ -1219,7 +1284,7 @@ node object and integer
 
     SKIP $skip_10
 
-**Parameters:** ``{:skip_5=>5, :skip_10=>10}``
+**Parameters:** ``{skip_5: 5, skip_10: 10}``
 
 ------------
 
@@ -1233,7 +1298,7 @@ node object and integer
 
     SKIP $skip_6
 
-**Parameters:** ``{:skip_6=>6}``
+**Parameters:** ``{skip_6: 6}``
 
 ------------
 
@@ -1293,7 +1358,7 @@ node object and integer
 ------------
 
 #with_distinct
---------------
+~~~~~~~~~~~~~~
 
 :Ruby:
   .. code-block:: ruby
@@ -1371,7 +1436,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (:Person)
+    CREATE (:`Person`)
 
 
 ------------
@@ -1386,7 +1451,7 @@ node object and integer
 
     CREATE ( {age: $age, height: $height})
 
-**Parameters:** ``{:age=>41, :height=>70}``
+**Parameters:** ``{age: 41, height: 70}``
 
 ------------
 
@@ -1400,7 +1465,7 @@ node object and integer
 
     CREATE (:`Person` {age: $Person_age, height: $Person_height})
 
-**Parameters:** ``{:Person_age=>41, :Person_height=>70}``
+**Parameters:** ``{Person_age: 41, Person_height: 70}``
 
 ------------
 
@@ -1412,9 +1477,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (q:`Person` {age: $q_Person_age, height: {q_Person_height}})
+    CREATE (q:`Person` {age: $q_Person_age, height: $q_Person_height})
 
-**Parameters:** ``{:q_Person_age=>41, :q_Person_height=>70}``
+**Parameters:** ``{q_Person_age: 41, q_Person_height: 70}``
 
 ------------
 
@@ -1426,9 +1491,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (q:`Person` {age: $q_Person_age, height: {q_Person_height}})
+    CREATE (q:`Person` {age: $q_Person_age, height: $q_Person_height})
 
-**Parameters:** ``{:q_Person_age=>nil, :q_Person_height=>70}``
+**Parameters:** ``{q_Person_age: nil, q_Person_height: 70}``
 
 ------------
 
@@ -1440,9 +1505,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (q:`Child:Person` {age: $q_Child_Person_age, height: {q_Child_Person_height}})
+    CREATE (q:`Child:Person` {age: $q_Child_Person_age, height: $q_Child_Person_height})
 
-**Parameters:** ``{:q_Child_Person_age=>41, :q_Child_Person_height=>70}``
+**Parameters:** ``{q_Child_Person_age: 41, q_Child_Person_height: 70}``
 
 ------------
 
@@ -1454,9 +1519,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (:`Child:Person` {age: $Child_Person_age, height: {Child_Person_height}})
+    CREATE (:`Child:Person` {age: $Child_Person_age, height: $Child_Person_height})
 
-**Parameters:** ``{:Child_Person_age=>41, :Child_Person_height=>70}``
+**Parameters:** ``{Child_Person_age: 41, Child_Person_height: 70}``
 
 ------------
 
@@ -1468,9 +1533,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (q:`Child`:`Person` {age: $q_Child_Person_age, height: {q_Child_Person_height}})
+    CREATE (q:`Child`:`Person` {age: $q_Child_Person_age, height: $q_Child_Person_height})
 
-**Parameters:** ``{:q_Child_Person_age=>41, :q_Child_Person_height=>70}``
+**Parameters:** ``{q_Child_Person_age: 41, q_Child_Person_height: 70}``
 
 ------------
 
@@ -1482,9 +1547,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE (:`Child`:`Person` {age: $Child_Person_age, height: {Child_Person_height}})
+    CREATE (:`Child`:`Person` {age: $Child_Person_age, height: $Child_Person_height})
 
-**Parameters:** ``{:Child_Person_age=>41, :Child_Person_height=>70}``
+**Parameters:** ``{Child_Person_age: 41, Child_Person_height: 70}``
 
 ------------
 
@@ -1499,7 +1564,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE UNIQUE (:Person)
+    MERGE (:Person)
 
 
 ------------
@@ -1512,7 +1577,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE UNIQUE (:Person)
+    MERGE (:`Person`)
 
 
 ------------
@@ -1525,9 +1590,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE UNIQUE ( {age: $age, height: {height}})
+    MERGE ( {age: $age, height: $height})
 
-**Parameters:** ``{:age=>41, :height=>70}``
+**Parameters:** ``{age: 41, height: 70}``
 
 ------------
 
@@ -1539,9 +1604,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE UNIQUE (:`Person` {age: $Person_age, height: {Person_height}})
+    MERGE (:`Person` {age: $Person_age, height: $Person_height})
 
-**Parameters:** ``{:Person_age=>41, :Person_height=>70}``
+**Parameters:** ``{Person_age: 41, Person_height: 70}``
 
 ------------
 
@@ -1553,9 +1618,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    CREATE UNIQUE (q:`Person` {age: $q_Person_age, height: {q_Person_height}})
+    MERGE (q:`Person` {age: $q_Person_age, height: $q_Person_height})
 
-**Parameters:** ``{:q_Person_age=>41, :q_Person_height=>70}``
+**Parameters:** ``{q_Person_age: 41, q_Person_height: 70}``
 
 ------------
 
@@ -1583,7 +1648,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MERGE (:Person)
+    MERGE (:`Person`)
 
 
 ------------
@@ -1596,7 +1661,7 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MERGE (:Person) MERGE (:Thing)
+    MERGE (:`Person`) MERGE (:`Thing`)
 
 
 ------------
@@ -1609,9 +1674,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MERGE ( {age: $age, height: {height}})
+    MERGE ( {age: $age, height: $height})
 
-**Parameters:** ``{:age=>41, :height=>70}``
+**Parameters:** ``{age: 41, height: 70}``
 
 ------------
 
@@ -1623,9 +1688,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MERGE (:`Person` {age: $Person_age, height: {Person_height}})
+    MERGE (:`Person` {age: $Person_age, height: $Person_height})
 
-**Parameters:** ``{:Person_age=>41, :Person_height=>70}``
+**Parameters:** ``{Person_age: 41, Person_height: 70}``
 
 ------------
 
@@ -1637,9 +1702,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    MERGE (q:`Person` {age: $q_Person_age, height: {q_Person_height}})
+    MERGE (q:`Person` {age: $q_Person_age, height: $q_Person_height})
 
-**Parameters:** ``{:q_Person_age=>41, :q_Person_height=>70}``
+**Parameters:** ``{q_Person_age: 41, q_Person_height: 70}``
 
 ------------
 
@@ -1776,7 +1841,7 @@ node object and integer
 
     SET n = $n_set_props
 
-**Parameters:** ``{:n_set_props=>{:name=>"Brian", :age=>30}}``
+**Parameters:** ``{n_set_props: {name: "Brian", age: 30}}``
 
 ------------
 
@@ -1804,9 +1869,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    SET n.`name` = $setter_n_name, n.`age` = $setter_n_age
+    SET n.name = $setter_n_name, n.age = $setter_n_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -1818,9 +1883,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age
+    SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30, :setter_o_age=>29}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30, setter_o_age: 29}``
 
 ------------
 
@@ -1832,9 +1897,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29
+    SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -1874,6 +1939,7 @@ node object and integer
 
 
 
+
 ------------
 
 #on_create_set
@@ -1902,6 +1968,7 @@ node object and integer
 
 
 
+
 ------------
 
 :Ruby:
@@ -1912,9 +1979,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age
+    ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -1926,9 +1993,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age
+    ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30, :setter_o_age=>29}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30, setter_o_age: 29}``
 
 ------------
 
@@ -1940,9 +2007,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29
+    ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -1972,6 +2039,7 @@ node object and integer
 
 
 
+
 ------------
 
 :Ruby:
@@ -1982,9 +2050,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age
+    ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -1996,9 +2064,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age
+    ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30, :setter_o_age=>29}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30, setter_o_age: 29}``
 
 ------------
 
@@ -2010,9 +2078,9 @@ node object and integer
 :Cypher:
   .. code-block:: cypher
 
-    ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29
+    ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29
 
-**Parameters:** ``{:setter_n_name=>"Brian", :setter_n_age=>30}``
+**Parameters:** ``{setter_n_name: "Brian", setter_n_age: 30}``
 
 ------------
 
@@ -2150,7 +2218,7 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q:`Person`) WHERE (q.age > 30)
+    MATCH (q:`Person`) WHERE q.age > 30
 
 
 ------------
@@ -2163,7 +2231,7 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q:`Person`) WHERE (q.age > 30)
+    MATCH (q:`Person`) WHERE q.age > 30
 
 
 ------------
@@ -2176,7 +2244,7 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    START n MATCH (q:`Person`) WHERE (q.age > 30)
+    START n MATCH (q:`Person`) WHERE q.age > 30
 
 
 ------------
@@ -2189,9 +2257,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q {age: {q_age}}) SET q = $q_set_props
+    MATCH (q {age: $q_age}) SET q = $q_set_props
 
-**Parameters:** ``{:q_age=>30, :q_set_props=>{:age=>31}}``
+**Parameters:** ``{q_age: 30, q_set_props: {age: 31}}``
 
 ------------
 
@@ -2216,7 +2284,7 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q:`Person`) WITH count(q) AS count WHERE (count > 2)
+    MATCH (q:`Person`) WITH count(q) AS count WHERE count > 2
 
 
 ------------
@@ -2229,7 +2297,7 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q:`Person`) WITH count(q) AS count WHERE (count > 2) WITH count + 5 AS new_count
+    MATCH (q:`Person`) WITH count(q) AS count WHERE count > 2 WITH count + 5 AS new_count
 
 
 ------------
@@ -2281,9 +2349,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)
+    WITH a ORDER BY a.name DESC WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo"}``
+**Parameters:** ``{a_name: "Foo"}``
 
 ------------
 
@@ -2295,9 +2363,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a LIMIT $limit_2 WHERE (a.name = $a_name)
+    WITH a LIMIT $limit_2 WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo", :limit_2=>2}``
+**Parameters:** ``{a_name: "Foo", limit_2: 2}``
 
 ------------
 
@@ -2309,9 +2377,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)
+    WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo", :limit_2=>2}``
+**Parameters:** ``{a_name: "Foo", limit_2: 2}``
 
 ------------
 
@@ -2323,9 +2391,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)
+    WITH a ORDER BY a.name DESC WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo"}``
+**Parameters:** ``{a_name: "Foo"}``
 
 ------------
 
@@ -2337,9 +2405,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a LIMIT $limit_2 WHERE (a.name = $a_name)
+    WITH a LIMIT $limit_2 WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo", :limit_2=>2}``
+**Parameters:** ``{a_name: "Foo", limit_2: 2}``
 
 ------------
 
@@ -2351,9 +2419,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)
+    WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE a.name = $a_name
 
-**Parameters:** ``{:a_name=>"Foo", :limit_2=>2}``
+**Parameters:** ``{a_name: "Foo", limit_2: 2}``
 
 ------------
 
@@ -2365,9 +2433,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    WITH 1 AS a WHERE (a = $a) LIMIT $limit_2
+    WITH 1 AS a LIMIT $limit_2 WHERE a = $a
 
-**Parameters:** ``{:a=>1, :limit_2=>2}``
+**Parameters:** ``{a: 1, limit_2: 2}``
 
 ------------
 
@@ -2379,6 +2447,9 @@ clause combinations
 :Cypher:
   .. code-block:: cypher
 
-    MATCH (q:`Person`) WHERE (q.age = $age)
+    MATCH (q:`Person`) WHERE q.age = $age
 
-**Parameters:** ``{:age=>15}``
+**Parameters:** ``{age: 15}``
+
+------------
+

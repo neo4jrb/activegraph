@@ -1,5 +1,5 @@
 class DocGenerator
-  QUERY_DOCS_PATH = File.join('..', 'neo4j', 'docs')
+  QUERY_DOCS_PATH = File.expand_path('../../../docs', __dir__)
 
   RST_HEADER_ORDER = %w[- ~ ^]
 
@@ -50,7 +50,7 @@ class DocGenerator
 
     add_headers(context_class)
 
-    @file.puts <<-RST.strip_heredoc
+    @file.puts <<~RST.gsub(/ +$/, '')
       :Ruby:
         .. code-block:: ruby
 
@@ -61,7 +61,7 @@ class DocGenerator
 
           #{cypher}
 
-RST
+    RST
 
     @file.puts "**Parameters:** ``#{params.inspect}``" unless params.empty?
     @file.puts
