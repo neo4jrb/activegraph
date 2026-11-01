@@ -351,6 +351,25 @@ describe 'Association Proxy' do
         end
       end
     end
+
+    describe '#to_s' do
+      context 'when calling to_s on an association proxy' do
+        let(:association_proxy) { billy.lessons }
+
+        it 'returns the string representation of the resulting elements' do
+          expect(association_proxy.to_s).to eq(association_proxy.to_a.to_s)
+          expect(association_proxy.to_s).not_to include('ActiveGraph::Node::HasN::AssociationProxy')
+        end
+      end
+
+      context 'when the association proxy is empty' do
+        let(:empty_proxy) { Student.create(name: 'Empty').lessons }
+
+        it 'returns empty array string representation' do
+          expect(empty_proxy.to_s).to eq('[]')
+        end
+      end
+    end
   end
 
   context 'multi relationships' do
