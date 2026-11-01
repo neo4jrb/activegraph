@@ -130,10 +130,6 @@ module ActiveGraph
       # RETURN clause
       # @return [Query]
 
-      # @method return_distinct *args
-      # RETURN DISTINCT clause
-      # @return [Query]
-
       # @method create *args
       # CREATE clause
       # @return [Query]
@@ -162,7 +158,7 @@ module ActiveGraph
       # DETACH DELETE clause
       # @return [Query]
 
-      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return return_distinct order skip limit union call_subquery_start call_subquery_end] # rubocop:disable Layout/LineLength
+      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return order skip limit union call_subquery_start call_subquery_end] # rubocop:disable Layout/LineLength
       BREAK_METHODS = %w(with with_distinct call call_subquery_start call_subquery_end)
 
       CLAUSIFY_CLAUSE = proc { |method| const_get(method.to_s.split('_').map(&:capitalize).join + 'Clause') }
@@ -194,6 +190,12 @@ module ActiveGraph
       # Cypher NOT() function
       def where_not(*args)
         build_deeper_query(WhereClause, args, not: true)
+      end
+
+      # Works the same as the #return method, but the projection is RETURN DISTINCT; combined with
+      # `return` in the same query part, the whole projection becomes distinct
+      def return_distinct(*args)
+        build_deeper_query(ReturnClause, args, distinct: true)
       end
 
       # Works the same as the #set method, but when given a nested array it will set properties rather than setting entire objects
@@ -257,8 +259,9 @@ module ActiveGraph
 
       include Enumerable
 
+      # `count(*)`, or the count of a variable, a Cypher text such as `'DISTINCT n'` or a cypher-dsl expression
       def count(var = nil)
-        counted = var.nil? ? CypherDSL::Cypher.asterisk : QueryClauses::Fragments.name_or_raw(var)
+        counted = var.nil? ? CypherDSL::Cypher.asterisk : QueryClauses::Fragments.expression(var)
         pluck(CypherDSL::Cypher.count(counted)).first
       end
 
@@ -365,8 +368,13 @@ module ActiveGraph
 
       # The parameters registered by the clause arguments and by `params`, plus the values of
       # cypher-dsl parameters passed in directly (`where(n[:age].gt(Cypher.parameter(:min, 18)))`).
+      # A name bound to different values by the two raises CypherDSL::ConflictingParametersException.
       def parameters
-        dsl_parameters.merge(merge_params)
+        conflicts = {}
+        dsl_parameters.merge(merge_params) do |name, dsl_value, registered_value|
+          conflicts[name] = Set[dsl_value, registered_value] if dsl_value != registered_value
+          registered_value
+        end.tap { fail CypherDSL::ConflictingParametersException, conflicts if conflicts.any? }
       end
 
       def partitioned_clauses

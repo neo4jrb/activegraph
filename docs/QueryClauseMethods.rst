@@ -1042,6 +1042,19 @@ node object and integer
 
 ------------
 
+:Ruby:
+  .. code-block:: ruby
+
+    .return(:q).return_distinct(:r)
+
+:Cypher:
+  .. code-block:: cypher
+
+    RETURN DISTINCT q, r
+
+
+------------
+
 #order
 ~~~~~~
 

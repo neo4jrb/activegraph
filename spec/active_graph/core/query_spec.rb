@@ -550,6 +550,10 @@ describe ActiveGraph::Core::Query do
     describe '.return_distinct(q: [:name, :age])' do
       it_generates 'RETURN DISTINCT q.name, q.age'
     end
+
+    describe '.return(:q).return_distinct(:r)' do
+      it_generates 'RETURN DISTINCT q, r'
+    end
   end
 
   # ORDER BY
@@ -1064,6 +1068,22 @@ describe ActiveGraph::Core::Query do
       query2 = ActiveGraph::Core::Query.new.where(n: {age: 31})
       expect((query1 & query2).to_cypher).to eq('MATCH (n:`Person`) WHERE (n.age = $n_age AND n.age = $n_age)')
       expect { (query1 & query2).parameters }.to raise_error(CypherDSL::ConflictingParametersException)
+    end
+
+    it 'raises when a registered parameter and a cypher-dsl parameter share a name with different values' do
+      query = ActiveGraph::Core::Query.new.match(person).where(person.property(:age).gt(CypherDSL::Cypher.parameter(:min, 18)))
+      expect(query.params(min: 18).parameters).to eq(min: 18)
+      expect { query.params(min: 21).parameters }.to raise_error(CypherDSL::ConflictingParametersException, /min/)
+    end
+
+    it 'counts a cypher-dsl expression, keeping its parameters' do
+      query = ActiveGraph::Core::Query.new.match(person)
+      expect(query).to receive(:pluck) do |count|
+        expect(query.return_query([count]).to_cypher).to eq('MATCH (p:`Person`) RETURN count(p.age > $min)')
+        expect(query.return_query([count]).parameters).to eq(min: 18)
+        [1]
+      end
+      expect(query.count(person.property(:age).gt(CypherDSL::Cypher.parameter(:min, 18)))).to eq(1)
     end
 
     it 'spells out every hash pattern, also for a name matched before' do

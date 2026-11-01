@@ -835,18 +835,13 @@ module ActiveGraph
           end
         end
 
+        # One projection; RETURN DISTINCT when any of the clauses came from `return_distinct`.
         def self.apply(assembler, clauses)
           items = values(clauses)
-          assembler.append(:return) { |builder| builder.returning(*items) } unless items.empty?
-        end
-      end
+          return if items.empty?
 
-      class ReturnDistinctClause < ReturnClause
-        KEYWORD = 'RETURN DISTINCT'
-
-        def self.apply(assembler, clauses)
-          items = values(clauses)
-          assembler.append(:return) { |builder| builder.returning_distinct(*items) } unless items.empty?
+          projection = clauses.any? { |clause| clause.options[:distinct] } ? :returning_distinct : :returning
+          assembler.append(:return) { |builder| builder.send(projection, *items) }
         end
       end
     end
