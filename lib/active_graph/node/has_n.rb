@@ -177,6 +177,10 @@ module ActiveGraph::Node
         to_a.map { |record| record.serializable_hash(options) }
       end
 
+      def to_s
+        to_a.to_s
+      end
+
       private
 
       def map_results_as_nodes(result)
