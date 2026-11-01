@@ -184,12 +184,12 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('n--o')
+    .match('(n)--(o)')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH n--o
+    MATCH (n)--(o)
 
 
 ------------
@@ -197,12 +197,12 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('n--o', 'o--p')
+    .match('(n)--(o)', '(o)--(p)')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH n--o, o--p
+    MATCH (n)--(o), (o)--(p)
 
 
 ------------
@@ -210,12 +210,12 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('n--o').match('o--p')
+    .match('(n)--(o)').match('(o)--(p)')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH n--o, o--p
+    MATCH (n)--(o), (o)--(p)
 
 
 ------------
@@ -239,12 +239,12 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .match('m--n').optional_match('n--o').match('o--p')
+    .match('(m)--(n)').optional_match('(n)--(o)').match('(o)--(p)')
 
 :Cypher:
   .. code-block:: cypher
 
-    MATCH m--n, o--p OPTIONAL MATCH n--o
+    MATCH (m)--(n), (o)--(p) OPTIONAL MATCH (n)--(o)
 
 
 ------------
@@ -255,12 +255,12 @@ ActiveGraph::Core::Query
 :Ruby:
   .. code-block:: ruby
 
-    .call('db.constraints()')
+    .call('db.labels()')
 
 :Cypher:
   .. code-block:: cypher
 
-    CALL db.constraints()
+    CALL db.labels()
 
 
 ------------
@@ -813,20 +813,20 @@ one node object
 
 ------------
 
-integer
-^^^^^^^
+element id
+^^^^^^^^^^
 
 :Ruby:
   .. code-block:: ruby
 
-    .match_nodes(var: 924)
+    .match_nodes(var: '4:0e5f8a7b-1c2d-4e3f-9a8b-7c6d5e4f3a2b:924')
 
 :Cypher:
   .. code-block:: cypher
 
     MATCH (var) WHERE elementId(var) = $elementId_var
 
-**Parameters:** ``{elementId_var: 924}``
+**Parameters:** ``{elementId_var: "4:0e5f8a7b-1c2d-4e3f-9a8b-7c6d5e4f3a2b:924"}``
 
 ------------
 

@@ -251,16 +251,16 @@ describe ActiveGraph::Core::Query do
       it_generates 'MATCH (n:`Person` {name: $n_Person_name, age: $n_Person_age})', n_Person_name: 'Brian', n_Person_age: 33
     end
 
-    describe ".match('n--o')" do
-      it_generates 'MATCH n--o'
+    describe ".match('(n)--(o)')" do
+      it_generates 'MATCH (n)--(o)'
     end
 
-    describe ".match('n--o', 'o--p')" do
-      it_generates 'MATCH n--o, o--p'
+    describe ".match('(n)--(o)', '(o)--(p)')" do
+      it_generates 'MATCH (n)--(o), (o)--(p)'
     end
 
-    describe ".match('n--o').match('o--p')" do
-      it_generates 'MATCH n--o, o--p'
+    describe ".match('(n)--(o)').match('(o)--(p)')" do
+      it_generates 'MATCH (n)--(o), (o)--(p)'
     end
   end
 
@@ -271,16 +271,16 @@ describe ActiveGraph::Core::Query do
       it_generates 'OPTIONAL MATCH (n:`Person`)'
     end
 
-    describe ".match('m--n').optional_match('n--o').match('o--p')" do
-      it_generates 'MATCH m--n, o--p OPTIONAL MATCH n--o'
+    describe ".match('(m)--(n)').optional_match('(n)--(o)').match('(o)--(p)')" do
+      it_generates 'MATCH (m)--(n), (o)--(p) OPTIONAL MATCH (n)--(o)'
     end
   end
 
   # CALL
 
   describe '#call' do
-    describe ".call('db.constraints()')" do
-      it_generates 'CALL db.constraints()'
+    describe ".call('db.labels()')" do
+      it_generates 'CALL db.labels()'
     end
   end
 
@@ -465,9 +465,9 @@ describe ActiveGraph::Core::Query do
       end
     end
 
-    context 'integer' do
-      describe '.match_nodes(var: 924)' do
-        it_generates 'MATCH (var) WHERE elementId(var) = $elementId_var', elementId_var: 924
+    context 'element id' do
+      describe ".match_nodes(var: '4:0e5f8a7b-1c2d-4e3f-9a8b-7c6d5e4f3a2b:924')" do
+        it_generates 'MATCH (var) WHERE elementId(var) = $elementId_var', elementId_var: '4:0e5f8a7b-1c2d-4e3f-9a8b-7c6d5e4f3a2b:924'
       end
     end
 
