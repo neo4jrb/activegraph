@@ -69,6 +69,8 @@ module ActiveGraph
         def pluck(*args)
           transformable_attributes = (model ? model.attribute_names + [model.id_property_name.to_s] : []) + %w(uuid neo_id)
           arg_list = args.map do |arg|
+            next arg unless arg.is_a?(String) || arg.is_a?(Symbol)
+
             arg = ActiveGraph::Node::Query::QueryProxy::Link.converted_key(model, arg)
             if transformable_attributes.include?(arg.to_s)
               { identity => arg }
@@ -82,17 +84,19 @@ module ActiveGraph
 
         protected
 
-        def ensure_distinct(node, force = false)
-          @distinct || force ? "DISTINCT(#{node})" : node
+        # `count(var)`, or `count(DISTINCT var)` for a distinct chain.
+        def count_expression(var, force = false)
+          name = CypherDSL::Cypher.name(var)
+          @distinct || force ? CypherDSL::Cypher.count_distinct(name) : CypherDSL::Cypher.count(name)
         end
 
         private
 
         def pluck_vars(node, rel)
           vars = []
-          vars << ensure_distinct(identity) if node
+          vars << identity if node
           vars << @rel_var if rel
-          pluck(*vars)
+          @distinct ? query.pluck_distinct(*vars) : pluck(*vars)
         end
 
         def set_instance_caches(instance, node, rel)

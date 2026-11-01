@@ -78,10 +78,11 @@ module ActiveGraph
 
         def update_all_with_query(var_name, updates, params)
           query = all.query
+          count = CypherDSL::Cypher.count(CypherDSL::Cypher.name(var_name))
 
           case updates
-          when Hash then query.set(var_name => updates).pluck("count(#{var_name})").first
-          when String then query.set(updates).params(params).pluck("count(#{var_name})").first
+          when Hash then query.set(var_name => updates).pluck(count).first
+          when String then query.set(updates).params(params).pluck(count).first
           else
             fail ArgumentError, "Invalid parameter type #{updates.class} for `updates`."
           end

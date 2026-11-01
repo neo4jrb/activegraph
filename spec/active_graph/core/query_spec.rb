@@ -542,6 +542,16 @@ describe ActiveGraph::Core::Query do
     end
   end
 
+  describe '#return_distinct' do
+    describe '.return_distinct(:q)' do
+      it_generates 'RETURN DISTINCT q'
+    end
+
+    describe '.return_distinct(q: [:name, :age])' do
+      it_generates 'RETURN DISTINCT q.name, q.age'
+    end
+  end
+
   # ORDER BY
 
   describe '#order' do

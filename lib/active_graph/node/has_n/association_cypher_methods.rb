@@ -1,79 +1,62 @@
 module ActiveGraph
   module Node
     module HasN
+      # The relationship part of a pattern for an association, as a cypher-dsl relationship
+      # pattern (`relationship_pattern`) or as Cypher text (`arrow_cypher`).
       module AssociationCypherMethods
-        # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
-        def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
+        PATTERN_METHODS = {out: :relationship_to, in: :relationship_from, both: :relationship_between}.freeze
+
+        # The pattern `left-[var:TYPE*length {properties}]-right` in the direction of the association.
+        # `left` is a node or a pattern to extend, `right` a node.
+        # @return [CypherDSL::Relationship, CypherDSL::RelationshipChain]
+        def relationship_pattern(left, right, var: nil, properties: {}, create: false, reverse: false, length: nil)
           validate_origin!
 
           if create && length.present?
             fail(ArgumentError, 'rel_length option cannot be specified when creating a relationship')
           end
 
-          direction_cypher(get_relationship_cypher(var, properties, create, length), create, reverse)
+          types = Array(relationship_type(create).presence) # nil or false for an untyped match
+          pattern = left.public_send(PATTERN_METHODS[get_direction(create, reverse)], right, *types)
+          pattern = pattern.named(var) if var
+          pattern = pattern.with_properties(properties) if properties.present?
+          with_rel_length(pattern, length)
+        end
+
+        # Return cypher partial query string for the relationship part of a MATCH (arrow / relationship definition)
+        def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
+          options = {var: var, properties: properties, create: create, reverse: reverse, length: length}
+          pattern = relationship_pattern(CypherDSL::Cypher.any_node, CypherDSL::Cypher.any_node, **options)
+          ActiveGraph::Core::Query::RENDERER.render_fragment(pattern).delete_prefix('()').delete_suffix('()')
         end
 
         private
 
-        def direction_cypher(relationship_cypher, create, reverse = false)
-          case get_direction(create, reverse)
-          when :out
-            "-#{relationship_cypher}->"
-          when :in
-            "<-#{relationship_cypher}-"
-          when :both
-            "-#{relationship_cypher}-"
-          end
-        end
-
-        def get_relationship_cypher(var, properties, create, length)
-          relationship_type = relationship_type(create)
-          relationship_name_cypher = ":`#{relationship_type}`" if relationship_type
-          rel_length_cypher = cypher_for_rel_length(length)
-          properties_string = get_properties_string(properties)
-
-          "[#{var}#{relationship_name_cypher}#{rel_length_cypher}#{properties_string}]"
-        end
-
-        def get_properties_string(properties)
-          p = properties.map do |key, value|
-            "#{key}: #{value.inspect}"
-          end.join(', ')
-          p.empty? ? '' : " {#{p}}"
-        end
-
         VALID_REL_LENGTH_SYMBOLS = {
           any: '*'
-        }
+        }.freeze
 
-        def cypher_for_rel_length(length)
-          return nil if length.blank?
+        def with_rel_length(pattern, length)
+          return pattern if length.blank?
 
           validate_rel_length!(length)
 
           case length
-          when Symbol then VALID_REL_LENGTH_SYMBOLS[length]
-          when Integer then "*#{length}"
-          when Range then cypher_for_range_rel_length(length)
-          when Hash then cypher_for_hash_rel_length(length)
+          when Symbol then pattern.unbounded
+          when Integer then pattern.length(length, length)
+          when Range then pattern.length(length.begin, finite_end(length.end))
+          when Hash then pattern.length(length[:min], finite_end(length[:max]))
           end
         end
 
-        def cypher_for_range_rel_length(length)
-          range_end = length.end
-          range_end = nil if range_end == Float::INFINITY
-          "*#{length.begin}..#{range_end}"
-        end
-
-        def cypher_for_hash_rel_length(length)
-          range_end = length[:max]
-          range_end = nil if range_end == Float::INFINITY
-          "*#{length[:min]}..#{range_end}"
+        def finite_end(value)
+          value == Float::INFINITY ? nil : value
         end
 
         def validate_rel_length!(length)
           message = rel_length_error_message(length)
           fail(ArgumentError, "Invalid value for rel_length (#{length.inspect}): #{message}") if message
+
           true
         end
 

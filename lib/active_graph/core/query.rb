@@ -130,6 +130,10 @@ module ActiveGraph
       # RETURN clause
       # @return [Query]
 
+      # @method return_distinct *args
+      # RETURN DISTINCT clause
+      # @return [Query]
+
       # @method create *args
       # CREATE clause
       # @return [Query]
@@ -158,7 +162,7 @@ module ActiveGraph
       # DETACH DELETE clause
       # @return [Query]
 
-      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return order skip limit union call_subquery_start call_subquery_end] # rubocop:disable Layout/LineLength
+      METHODS = %w[start match optional_match call using where create create_unique merge set on_create_set on_match_set remove unwind delete detach_delete with with_distinct return return_distinct order skip limit union call_subquery_start call_subquery_end] # rubocop:disable Layout/LineLength
       BREAK_METHODS = %w(with with_distinct call call_subquery_start call_subquery_end)
 
       CLAUSIFY_CLAUSE = proc { |method| const_get(method.to_s.split('_').map(&:capitalize).join + 'Clause') }
@@ -254,8 +258,8 @@ module ActiveGraph
       include Enumerable
 
       def count(var = nil)
-        v = var.nil? ? '*' : var
-        pluck("count(#{v})").first
+        counted = var.nil? ? CypherDSL::Cypher.asterisk : QueryClauses::Fragments.name_or_raw(var)
+        pluck(CypherDSL::Cypher.count(counted)).first
       end
 
       def each
@@ -286,24 +290,24 @@ module ActiveGraph
       #    Query.new.match(n: :Person).return(p: :name}.pluck('p, DISTINCT p.name') # => Array of [node, name] pairs
       #
       def pluck(*columns)
-        fail ArgumentError, 'No columns specified for Query#pluck' if columns.size.zero?
+        fail ArgumentError, 'No columns specified for Query#pluck' if columns.empty?
 
-        query = return_query(columns)
-        columns = query.response.keys
-
-        if columns.size == 1
-          column = columns[0]
-          query.map { |row| row[column] }
-        else
-          query.map { |row| columns.map { |column| row[column] } }
-        end
+        column_values(return_query(columns))
       end
 
-      def return_query(columns)
+      # Like #pluck, with RETURN DISTINCT
+      def pluck_distinct(*columns)
+        fail ArgumentError, 'No columns specified for Query#pluck_distinct' if columns.empty?
+
+        column_values(return_query(columns, distinct: true))
+      end
+
+      # The query with its RETURN clause replaced by one returning `columns`
+      def return_query(columns, distinct: false)
         query = copy
         query.remove_clause_class(ReturnClause)
 
-        query.return(*columns)
+        distinct ? query.return_distinct(*columns) : query.return(*columns)
       end
 
       # The query as a cypher-dsl statement, or nil when no clause has been added yet.
@@ -421,6 +425,18 @@ module ActiveGraph
       end
 
       private
+
+      # The values of the returned columns: a flat array for a single column, arrays of values otherwise.
+      def column_values(query)
+        columns = query.response.keys
+
+        if columns.size == 1
+          column = columns[0]
+          query.map { |row| row[column] }
+        else
+          query.map { |row| columns.map { |column| row[column] } }
+        end
+      end
 
       # Values of the parameters the rendered statement carries. A name bound to two different
       # values (possible when queries built separately are merged with `&`) raises

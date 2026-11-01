@@ -75,43 +75,27 @@ module ActiveGraph
           @_cache.add(node).tap { |n| init_associations(n, element) }
         end
 
-        def with_associations_return_clause
-          path_names.map { |n| var(n, :collection, &:itself) }.join(',')
-        end
-
-        def var(*parts)
-          yield(escape(parts.compact.join('_')))
-        end
-
-        # In neo4j version 2.1.8 this fails due to a bug:
-        # MATCH (`n`) WITH `n` RETURN `n`
-        # but this
-        # MATCH (`n`) WITH n RETURN `n`
-        # and this
-        # MATCH (`n`) WITH `n` AS `n` RETURN `n`
-        # does not
-        def var_fix(*var)
-          var(*var, &method(:as_alias))
-        end
-
-        def as_alias(var)
-          "#{var} AS #{var}"
-        end
-
-        def escape(s)
-          "`#{s}`"
-        end
-
+        # The variables of one path: the node, its relationship, the named path and the collection of
+        # relationship/node pairs handed on from WITH to WITH.
         def path_name(path)
           path.map(&:name).join('.')
+        end
+
+        def path_node(path)
+          CypherDSL::Cypher.any_node(path_name(path))
         end
 
         def path_names
           with_associations_tree.paths.map { |path| path_name(path) }
         end
 
+        def collection_name(path)
+          CypherDSL::Cypher.name("#{path_name(path)}_collection")
+        end
+
         def build_query
-          before_pluck(query_from_association_tree).pluck(identity, "[#{with_associations_return_clause}]")
+          collections = with_associations_tree.paths.map { |path| collection_name(path) }
+          before_pluck(query_from_association_tree).pluck(identity, CypherDSL::Cypher.list_of(*collections))
         end
 
         def before_pluck(query)
@@ -119,46 +103,48 @@ module ActiveGraph
         end
 
         def query_from_association_tree
-          previous_with_vars = []
-          with_associations_tree.paths.inject(query_as(identity).with(ensure_distinct(identity))) do |query, path|
-            with_association_query_part(query, path, previous_with_vars).tap do
-              previous_with_vars << var_fix(path_name(path), :collection)
+          previous_collections = []
+          with_method = @distinct ? :with_distinct : :with
+          start_query = query_as(identity).send(with_method, identity)
+          with_associations_tree.paths.inject(start_query) do |query, path|
+            with_association_query_part(query, path, previous_collections).tap do
+              previous_collections << collection_name(path)
             end
           end
         end
 
-        def with_association_query_part(base_query, path, previous_with_vars)
-          optional_match_with_where(base_query, path, previous_with_vars)
-            .with(identity,
-                  "[#{relationship_collection(path)}, collect(#{escape path_name(path)})] "\
-                  "AS #{escape("#{path_name(path)}_collection")}",
-                  *previous_with_vars)
+        def with_association_query_part(base_query, path, previous_collections)
+          nodes = CypherDSL::Cypher.collect(path_node(path))
+          pairs = CypherDSL::Cypher.list_of(relationship_collection(path), nodes)
+          optional_match_with_where(base_query, path)
+            .with(identity, pairs.as(collection_name(path)), *previous_collections)
         end
 
+        # `collect(rel)`, or the last relationship of each path for a variable-length association.
         def relationship_collection(path)
-          path.last.rel_length ? "collect(last(relationships(#{escape("#{path_name(path)}_path")})))" : "collect(#{escape("#{path_name(path)}_rel")})"
-        end
-
-        def optional_match_with_where(base_query, path, _)
-          path
-            .each_with_index.map { |_, index| path[0..index] }
-            .inject(optional_match(base_query, path)) do |query, path_prefix|
-            query.where(path_prefix.last.association.target_where_clause(escape(path_name(path_prefix))))
+          if path.last.rel_length
+            path = CypherDSL::Cypher.name("#{path_name(path)}_path")
+            CypherDSL::Cypher.collect(CypherDSL::Cypher.last(CypherDSL::Cypher.relationships(path)))
+          else
+            CypherDSL::Cypher.collect(CypherDSL::Cypher.name("#{path_name(path)}_rel"))
           end
         end
 
-        def optional_match(base_query, path)
-          start_path = "#{escape("#{path_name(path)}_path")}=(#{identity})"
-          base_query.optional_match(
-            "#{start_path}#{path.each_with_index.map do |element, index|
-              relationship_part(element.association, path_name(path[0..index]), element.rel_length)
-            end.join}"
-          )
+        def optional_match_with_where(base_query, path)
+          path.each_index.map { |index| path[0..index] }.inject(optional_match(base_query, path)) do |query, path_prefix|
+            condition = path_prefix.last.association.target_condition(path_name(path_prefix))
+            condition ? query.where(condition) : query
+          end
         end
 
-        def relationship_part(association, path_name, rel_length)
-          rel_name = escape("#{path_name}_rel") unless rel_length
-          "#{association.arrow_cypher(rel_name, {}, false, false, rel_length)}(#{escape(path_name)})"
+        # `OPTIONAL MATCH path = (identity)-[rel]->(node)-[…]->(…)`, one hop per element of the path.
+        def optional_match(base_query, path)
+          pattern = path.each_index.inject(CypherDSL::Cypher.any_node(identity)) do |left, index|
+            element = path[index]
+            rel_name = "#{path_name(path[0..index])}_rel" unless element.rel_length
+            element.association.relationship_pattern(left, path_node(path[0..index]), var: rel_name, length: element.rel_length)
+          end
+          base_query.optional_match(CypherDSL::Cypher.path("#{path_name(path)}_path").defined_by(pattern))
         end
 
         def chain

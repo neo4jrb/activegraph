@@ -1013,6 +1013,35 @@ node object and integer
 
 ------------
 
+#return_distinct
+~~~~~~~~~~~~~~~~
+
+:Ruby:
+  .. code-block:: ruby
+
+    .return_distinct(:q)
+
+:Cypher:
+  .. code-block:: cypher
+
+    RETURN DISTINCT q
+
+
+------------
+
+:Ruby:
+  .. code-block:: ruby
+
+    .return_distinct(q: [:name, :age])
+
+:Cypher:
+  .. code-block:: cypher
+
+    RETURN DISTINCT q.name, q.age
+
+
+------------
+
 #order
 ~~~~~~
 
