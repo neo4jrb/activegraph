@@ -672,7 +672,7 @@ describe 'query_proxy_methods' do
 
       context 'with a valid node' do
         it 'generates a match to the given node' do
-          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE (elementId(result_lessons3) =')
+          expect(@john.lessons.match_to(@history).to_cypher).to include('WHERE elementId(result_lessons3) =')
         end
 
         it 'matches the object' do
@@ -682,7 +682,7 @@ describe 'query_proxy_methods' do
 
       context 'with an id' do
         it 'generates cypher using the primary key' do
-          expect(@john.lessons.match_to(@history.id).to_cypher).to include('WHERE (result_lessons3.uuid =')
+          expect(@john.lessons.match_to(@history.id).to_cypher).to include('WHERE result_lessons3.uuid =')
         end
 
         it 'matches' do
@@ -714,7 +714,7 @@ describe 'query_proxy_methods' do
 
       context 'with a null object' do
         it 'generates cypher with 1 = 2' do
-          expect(@john.lessons.match_to(nil).to_cypher).to include('WHERE (1 = 2')
+          expect(@john.lessons.match_to(nil).to_cypher).to include('WHERE 1 = 2')
         end
 
         it 'matches nil' do

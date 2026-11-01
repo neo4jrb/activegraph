@@ -313,19 +313,19 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".where('q.age > 30')" do
-      it_generates 'WHERE (q.age > 30)'
+      it_generates 'WHERE q.age > 30'
     end
 
     describe ".where('q.age' => 30)" do
-      it_generates 'WHERE (q.age = $q_age)', q_age: 30
+      it_generates 'WHERE q.age = $q_age', q_age: 30
     end
 
     describe ".where('q.age' => [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN $q_age)', q_age: [30, 32, 34]
+      it_generates 'WHERE q.age IN $q_age', q_age: [30, 32, 34]
     end
 
     describe ".where('q.age IN $age', age: [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN $age)', age: [30, 32, 34]
+      it_generates 'WHERE q.age IN $age', age: [30, 32, 34]
     end
 
     describe ".where('(q.age IN $age)', age: [30, 32, 34])" do
@@ -333,7 +333,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".where('q.name =~ ?', '.*test.*')" do
-      it_generates 'WHERE (q.name =~ $question_mark_param)', question_mark_param: '.*test.*'
+      it_generates 'WHERE q.name =~ $question_mark_param', question_mark_param: '.*test.*'
     end
 
     describe ".where('(q.name =~ ?)', '.*test.*')" do
@@ -345,28 +345,28 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".where('q.age IN ?', [30, 32, 34])" do
-      it_generates 'WHERE (q.age IN $question_mark_param)', question_mark_param: [30, 32, 34]
+      it_generates 'WHERE q.age IN $question_mark_param', question_mark_param: [30, 32, 34]
     end
 
     describe ".where('q.age IN ?', [30, 32, 34]).where('q.age != ?', 60)" do
-      it_generates 'WHERE (q.age IN $question_mark_param) AND (q.age != $question_mark_param2)', question_mark_param: [30, 32, 34], question_mark_param2: 60
+      it_generates 'WHERE ((q.age IN $question_mark_param) AND (q.age != $question_mark_param2))', question_mark_param: [30, 32, 34], question_mark_param2: 60
     end
 
 
     describe '.where(q: {age: [30, 32, 34]})' do
-      it_generates 'WHERE (q.age IN $q_age)', q_age: [30, 32, 34]
+      it_generates 'WHERE q.age IN $q_age', q_age: [30, 32, 34]
     end
 
     describe ".where('q.age' => nil)" do
-      it_generates 'WHERE (q.age IS NULL)'
+      it_generates 'WHERE q.age IS NULL'
     end
 
     describe '.where(q: {age: nil})' do
-      it_generates 'WHERE (q.age IS NULL)'
+      it_generates 'WHERE q.age IS NULL'
     end
 
     describe '.where(q: {neo_id: 22})' do
-      it_generates 'WHERE (elementId(q) = $elementId_q)', elementId_q: 22
+      it_generates 'WHERE elementId(q) = $elementId_q', elementId_q: 22
     end
 
     describe ".where(q: {age: 30, name: 'Brian'})" do
@@ -374,19 +374,19 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".where(q: {age: 30, name: 'Brian'}).where('r.grade = 80')" do
-      it_generates 'WHERE (q.age = $q_age AND q.name = $q_name) AND (r.grade = 80)', q_age: 30, q_name: 'Brian'
+      it_generates 'WHERE (q.age = $q_age AND q.name = $q_name AND (r.grade = 80))', q_age: 30, q_name: 'Brian'
     end
 
     describe '.where(q: {name: /Brian.*/i})' do
-      it_generates 'WHERE (q.name =~ $q_name)', q_name: '(?i)Brian.*'
+      it_generates 'WHERE q.name =~ $q_name', q_name: '(?i)Brian.*'
     end
 
     describe '.where(name: /Brian.*/i)' do
-      it_generates 'WHERE (name =~ $name)', name: '(?i)Brian.*'
+      it_generates 'WHERE name =~ $name', name: '(?i)Brian.*'
     end
 
     describe '.where(name: /Brian.*/i).where(name: /Smith.*/i)' do
-      it_generates 'WHERE (name =~ $name) AND (name =~ $name2)', name: '(?i)Brian.*', name2: '(?i)Smith.*'
+      it_generates 'WHERE (name =~ $name AND name =~ $name2)', name: '(?i)Brian.*', name2: '(?i)Smith.*'
     end
 
     describe '.where(q: {age: (30..40)})' do
@@ -423,32 +423,32 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".where_not('q.age > 30')" do
-      it_generates 'WHERE NOT(q.age > 30)'
+      it_generates 'WHERE NOT (q.age > 30)'
     end
 
     describe ".where_not('q.age' => 30)" do
-      it_generates 'WHERE NOT(q.age = $q_age)', q_age: 30
+      it_generates 'WHERE NOT (q.age = $q_age)', q_age: 30
     end
 
     describe ".where_not('q.age IN ?', [30, 32, 34])" do
-      it_generates 'WHERE NOT(q.age IN $question_mark_param)', question_mark_param: [30, 32, 34]
+      it_generates 'WHERE NOT (q.age IN $question_mark_param)', question_mark_param: [30, 32, 34]
     end
 
     describe ".where_not(q: {age: 30, name: 'Brian'})" do
-      it_generates 'WHERE NOT(q.age = $q_age AND q.name = $q_name)', q_age: 30, q_name: 'Brian'
+      it_generates 'WHERE NOT ((q.age = $q_age AND q.name = $q_name))', q_age: 30, q_name: 'Brian'
     end
 
     describe '.where_not(q: {name: /Brian.*/i})' do
-      it_generates 'WHERE NOT(q.name =~ $q_name)', q_name: '(?i)Brian.*'
+      it_generates 'WHERE NOT (q.name =~ $q_name)', q_name: '(?i)Brian.*'
     end
 
 
     describe ".where('q.age > 10').where_not('q.age > 30')" do
-      it_generates 'WHERE (q.age > 10) AND NOT(q.age > 30)'
+      it_generates 'WHERE ((q.age > 10) AND NOT (q.age > 30))'
     end
 
     describe ".where_not('q.age > 30').where('q.age > 10')" do
-      it_generates 'WHERE NOT(q.age > 30) AND (q.age > 10)'
+      it_generates 'WHERE (NOT (q.age > 30) AND (q.age > 10))'
     end
   end
 
@@ -457,17 +457,17 @@ describe ActiveGraph::Core::Query do
       let(:node_object) { double(neo_id: 246) }
 
       describe '.match_nodes(var: node_object)' do
-        it_generates 'MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 246
+        it_generates 'MATCH (var) WHERE elementId(var) = $elementId_var', elementId_var: 246
       end
 
       describe '.optional_match_nodes(var: node_object)' do
-        it_generates 'OPTIONAL MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 246
+        it_generates 'OPTIONAL MATCH (var) WHERE elementId(var) = $elementId_var', elementId_var: 246
       end
     end
 
     context 'integer' do
       describe '.match_nodes(var: 924)' do
-        it_generates 'MATCH (var) WHERE (elementId(var) = $elementId_var)', elementId_var: 924
+        it_generates 'MATCH (var) WHERE elementId(var) = $elementId_var', elementId_var: 924
       end
     end
 
@@ -476,7 +476,7 @@ describe ActiveGraph::Core::Query do
       let(:post) { double(neo_id: 123) }
 
       describe '.match_nodes(user: user, post: post)' do
-        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user) AND (elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 123
+        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user AND elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 123
       end
     end
 
@@ -484,7 +484,7 @@ describe ActiveGraph::Core::Query do
       let(:user) { double(neo_id: 246) }
 
       describe '.match_nodes(user: user, post: 652)' do
-        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user) AND (elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 652
+        it_generates 'MATCH (user), (post) WHERE (elementId(user) = $elementId_user AND elementId(post) = $elementId_post)', elementId_user: 246, elementId_post: 652
       end
     end
   end
@@ -671,7 +671,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.create(:Person)' do
-      it_generates 'CREATE (:Person)'
+      it_generates 'CREATE (:`Person`)'
     end
 
     describe '.create(age: 41, height: 70)' do
@@ -713,7 +713,7 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.create_unique(:Person)' do
-      it_generates 'MERGE (:Person)'
+      it_generates 'MERGE (:`Person`)'
     end
 
     describe '.create_unique(age: 41, height: 70)' do
@@ -735,11 +735,11 @@ describe ActiveGraph::Core::Query do
     end
 
     describe '.merge(:Person)' do
-      it_generates 'MERGE (:Person)'
+      it_generates 'MERGE (:`Person`)'
     end
 
     describe '.merge(:Person).merge(:Thing)' do
-      it_generates 'MERGE (:Person) MERGE (:Thing)'
+      it_generates 'MERGE (:`Person`) MERGE (:`Thing`)'
     end
 
     describe '.merge(age: 41, height: 70)' do
@@ -814,15 +814,15 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".set(n: {name: 'Brian', age: 30})" do
-      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'SET n.name = $setter_n_name, n.age = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".set(n: {name: 'Brian', age: 30}).set_props('o.age = 29')" do
-      it_generates 'SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe '.set(n: :Label)' do
@@ -849,15 +849,15 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30})" do
-      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_create_set(n: {name: 'Brian', age: 30}).on_create_set('o.age = 29')" do
-      it_generates 'ON CREATE SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON CREATE SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
   end
 
@@ -871,15 +871,15 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30})" do
-      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age', setter_n_name: 'Brian', setter_n_age: 30
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}, o: {age: 29})" do
-      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.`age` = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
+      it_generates 'ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = $setter_o_age', setter_n_name: 'Brian', setter_n_age: 30, setter_o_age: 29
     end
 
     describe ".on_match_set(n: {name: 'Brian', age: 30}).on_match_set('o.age = 29')" do
-      it_generates 'ON MATCH SET n.`name` = $setter_n_name, n.`age` = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
+      it_generates 'ON MATCH SET n.name = $setter_n_name, n.age = $setter_n_age, o.age = 29', setter_n_name: 'Brian', setter_n_age: 30
     end
   end
 
@@ -925,14 +925,14 @@ describe ActiveGraph::Core::Query do
       q = ActiveGraph::Core::Query.new.match(o: :Person).where(o: {age: 10})
       result = ActiveGraph::Core::Query.new.match(n: :Person).union_cypher(q)
 
-      expect(result).to eq('MATCH (n:`Person`) UNION MATCH (o:`Person`) WHERE (o.age = $o_age)')
+      expect(result).to eq('MATCH (n:`Person`) UNION MATCH (o:`Person`) WHERE o.age = $o_age')
     end
 
     it 'can represent UNION ALL with an option' do
       q = ActiveGraph::Core::Query.new.match(o: :Person).where(o: {age: 10})
       result = ActiveGraph::Core::Query.new.match(n: :Person).union_cypher(q, all: true)
 
-      expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE (o.age = $o_age)')
+      expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE o.age = $o_age')
     end
   end
 
@@ -952,15 +952,15 @@ describe ActiveGraph::Core::Query do
 
   describe 'clause combinations' do
     describe ".match(q: Person).where('q.age > 30')" do
-      it_generates 'MATCH (q:`Person`) WHERE (q.age > 30)'
+      it_generates 'MATCH (q:`Person`) WHERE q.age > 30'
     end
 
     describe ".where('q.age > 30').match(q: Person)" do
-      it_generates 'MATCH (q:`Person`) WHERE (q.age > 30)'
+      it_generates 'MATCH (q:`Person`) WHERE q.age > 30'
     end
 
     describe ".where('q.age > 30').start('n').match(q: Person)" do
-      it_generates 'START n MATCH (q:`Person`) WHERE (q.age > 30)'
+      it_generates 'START n MATCH (q:`Person`) WHERE q.age > 30'
     end
 
     describe '.match(q: {age: 30}).set_props(q: {age: 31})' do
@@ -974,11 +974,11 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".match(q: Person).with('count(q) AS count').where('count > 2')" do
-      it_generates 'MATCH (q:`Person`) WITH count(q) AS count WHERE (count > 2)'
+      it_generates 'MATCH (q:`Person`) WITH count(q) AS count WHERE count > 2'
     end
 
     describe ".match(q: Person).with(count: 'count(q)').where('count > 2').with(new_count: 'count + 5')" do
-      it_generates 'MATCH (q:`Person`) WITH count(q) AS count WHERE (count > 2) WITH count + 5 AS new_count'
+      it_generates 'MATCH (q:`Person`) WITH count(q) AS count WHERE count > 2 WITH count + 5 AS new_count'
     end
 
     # breaks
@@ -996,36 +996,70 @@ describe ActiveGraph::Core::Query do
     end
 
     describe ".with(:a).order(a: {name: :desc}).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)', a_name: 'Foo'
+      it_generates 'WITH a ORDER BY a.name DESC WHERE a.name = $a_name', a_name: 'Foo'
     end
 
     describe ".with(:a).limit(2).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a LIMIT $limit_2 WHERE a.name = $a_name', a_name: 'Foo', limit_2: 2
     end
 
     describe ".with(:a).order(a: {name: :desc}).limit(2).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE a.name = $a_name', a_name: 'Foo', limit_2: 2
     end
 
     describe ".order(a: {name: :desc}).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC WHERE (a.name = $a_name)', a_name: 'Foo'
+      it_generates 'WITH a ORDER BY a.name DESC WHERE a.name = $a_name', a_name: 'Foo'
     end
 
     describe ".limit(2).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a LIMIT $limit_2 WHERE a.name = $a_name', a_name: 'Foo', limit_2: 2
     end
 
     describe ".order(a: {name: :desc}).limit(2).with(:a).where(a: {name: 'Foo'})" do
-      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE (a.name = $a_name)', a_name: 'Foo', limit_2: 2
+      it_generates 'WITH a ORDER BY a.name DESC LIMIT $limit_2 WHERE a.name = $a_name', a_name: 'Foo', limit_2: 2
     end
 
     describe ".with('1 AS a').where(a: 1).limit(2)" do
-      it_generates 'WITH 1 AS a WHERE (a = $a) LIMIT $limit_2', a: 1, limit_2: 2
+      it_generates 'WITH 1 AS a LIMIT $limit_2 WHERE a = $a', a: 1, limit_2: 2
     end
 
     # params
     describe ".match(q: Person).where('q.age = $age').params(age: 15)" do
-      it_generates 'MATCH (q:`Person`) WHERE (q.age = $age)', age: 15
+      it_generates 'MATCH (q:`Person`) WHERE q.age = $age', age: 15
+    end
+  end
+
+  describe 'cypher-dsl arguments' do
+    let(:cypher) { CypherDSL::Cypher }
+    let(:person) { cypher.node('Person').named(:p) }
+
+    it 'accepts patterns, conditions, expressions and sort items as they are' do
+      query = ActiveGraph::Core::Query.new
+                .match(person)
+                .where(person.property(:age).gt(cypher.parameter(:min_age, 18)))
+                .return(person.property(:name).as(:name))
+                .order(person.property(:name).descending)
+      expect(query.to_cypher).to eq('MATCH (p:`Person`) WHERE p.age > $min_age RETURN p.name AS name ORDER BY p.name DESC')
+      expect(query.parameters).to eq(min_age: 18)
+    end
+
+    it 'mixes them with the hash and string forms' do
+      query = ActiveGraph::Core::Query.new.match(person, 'p-->(m)').where(m: {name: 'Brian'}).where(person.property(:age).is_null)
+      expect(query.to_cypher).to eq('MATCH (p:`Person`), p-->(m) WHERE (m.name = $m_name AND p.age IS NULL)')
+      expect(query.parameters).to eq(m_name: 'Brian')
+    end
+
+    it 'exposes the statement' do
+      statement = ActiveGraph::Core::Query.new.match(n: :Person).return(:n).statement
+      expect(statement).to be_a(CypherDSL::Statement)
+      expect(statement.cypher).to eq('MATCH (n:`Person`) RETURN n')
+      expect(ActiveGraph::Core::Query.new.statement).to be_nil
+    end
+
+    it 'pretty prints one clause per line with coloured keywords' do
+      pretty = ActiveGraph::Core::Query.new.match(n: :Person).where(n: {age: 30}).return(:n).limit(1).to_cypher(pretty: true)
+      expect(pretty.gsub(/\e\[[0-9;]*m/, '')).to eq("MATCH (n:`Person`)\nWHERE n.age = $n_age\nRETURN n LIMIT $limit_1")
+      expect(pretty).to include("#{ActiveGraph::ANSI::CYAN}MATCH#{ActiveGraph::ANSI::CLEAR}")
     end
   end
 

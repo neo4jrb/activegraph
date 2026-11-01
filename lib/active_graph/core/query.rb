@@ -306,29 +306,47 @@ module ActiveGraph
         query.return(*columns)
       end
 
+      # The query as a cypher-dsl statement, or nil when no clause has been added yet.
+      # Clauses of one part are applied in a fixed order (MATCH before WHERE before RETURN, …),
+      # whatever the order they were called in.
+      # @return [CypherDSL::Statement, nil]
+      def statement
+        return @statement if defined?(@statement)
+
+        assembler = QueryClauses::Assembler.new
+        partitioned_clauses.each do |clauses|
+          clauses_by_class = clauses.group_by(&:class)
+          CLAUSES.each do |clause_class|
+            clause_class.apply(assembler, clauses_by_class[clause_class]) if clauses_by_class[clause_class]
+          end
+        end
+        @statement = assembler.statement
+      end
+
+      RENDERER = CypherDSL::Renderer.default
+      PRETTY_RENDERER = CypherDSL::Renderer.get_renderer(
+        CypherDSL::Renderer::Configuration.new_config.with_pretty_print(true).always_escape_names(true).build
+      )
+      KEYWORD_COLORS = Hash.new(ANSI::CYAN).merge(
+        'CREATE' => ANSI::GREEN, 'MERGE' => ANSI::MAGENTA,
+        'SET' => ANSI::YELLOW, 'ON CREATE SET' => ANSI::YELLOW, 'ON MATCH SET' => ANSI::YELLOW,
+        'DELETE' => ANSI::RED, 'DETACH DELETE' => ANSI::RED
+      ).freeze
+      KEYWORDS = /^(\s*)(OPTIONAL MATCH|MATCH|WHERE|WITH DISTINCT|WITH|RETURN DISTINCT|RETURN|ORDER BY|SKIP|LIMIT|CREATE|MERGE|ON CREATE SET|ON MATCH SET|SET|REMOVE|DETACH DELETE|DELETE|UNWIND|CALL|UNION ALL|UNION|USING|START|FOREACH|LOAD CSV)\b/ # rubocop:disable Layout/LineLength
+
       # Returns a CYPHER query string from the object query representation
       # @example
-      #    Query.new.match(p: :Person).where(p: {age: 30})  # => "MATCH (p:Person) WHERE p.age = 30
+      #    Query.new.match(p: :Person).where(p: {age: 30})  # => "MATCH (p:`Person`) WHERE p.age = $p_age"
       #
+      # @param [Hash] options `pretty: true` renders one clause per line with coloured keywords
       # @return [String] Resulting cypher query string
-      EMPTY = ' '
-      NEWLINE = "\n"
-
       def to_cypher(options = {})
-        join_string = options[:pretty] ? NEWLINE : EMPTY
-
-        cypher_string = partitioned_clauses.map do |clauses|
-          clauses_by_class = clauses.group_by(&:class)
-
-          cypher_parts = CLAUSES.map do |clause_class|
-            clause_class.to_cypher(clauses, options[:pretty]) if clauses = clauses_by_class[clause_class]
-          end.compact
-
-          cypher_parts.join(join_string).tap(&:strip!)
-        end.join(join_string)
-
+        built = statement
+        renderer = options[:pretty] ? PRETTY_RENDERER : RENDERER
+        cypher_string = built ? renderer.render(built) : ''
+        cypher_string = colorize(cypher_string) if options[:pretty]
         cypher_string = "CYPHER #{@options[:parser]} #{cypher_string}" if @options[:parser]
-        cypher_string.tap(&:strip!)
+        cypher_string.strip
       end
 
       alias cypher to_cypher
@@ -341,9 +359,10 @@ module ActiveGraph
         @options[:context]
       end
 
+      # The parameters registered by the clause arguments and by `params`, plus the values of
+      # cypher-dsl parameters passed in directly (`where(n[:age].gt(Cypher.parameter(:min, 18)))`).
       def parameters
-        to_cypher
-        merge_params
+        dsl_parameters.merge(merge_params)
       end
 
       def partitioned_clauses
@@ -377,9 +396,9 @@ module ActiveGraph
 
       def copy
         dup.tap do |query|
-          to_cypher
           query.instance_variable_set('@params'.freeze, @params.copy)
           query.instance_variable_set('@partitioned_clauses'.freeze, nil)
+          query.remove_instance_variable('@statement') if query.instance_variable_defined?('@statement')
           query.instance_variable_set('@response'.freeze, nil)
         end
       end
@@ -402,6 +421,19 @@ module ActiveGraph
       end
 
       private
+
+      # Values of the parameters the rendered statement carries; names bound to conflicting values
+      # (possible after `&`) are left to the registries, as before.
+      def dsl_parameters
+        built = statement
+        built ? built.parameters.transform_keys(&:to_sym) : {}
+      rescue CypherDSL::ConflictingParametersException
+        {}
+      end
+
+      def colorize(cypher_string)
+        cypher_string.gsub(KEYWORDS) { "#{Regexp.last_match(1)}#{KEYWORD_COLORS[Regexp.last_match(2)]}#{Regexp.last_match(2)}#{ANSI::CLEAR}" }
+      end
 
       def build_deeper_query(clause_class, args = {}, options = {})
         copy.tap do |new_query|
@@ -473,9 +505,10 @@ module ActiveGraph
       end
 
       # SHOULD BE DEPRECATED
+      # Clauses merged in from other queries (see `&`) carry their own parameter registries.
       def merge_params
-        @merge_params_base ||= @clauses.compact.inject({}) { |params, clause| params.merge!(clause.params) }
-        @params.to_hash.merge(@merge_params_base)
+        clause_params = @clauses.compact.inject({}) { |params, clause| params.merge!(clause.params.to_hash) }
+        @params.to_hash.merge(clause_params)
       end
     end
   end
