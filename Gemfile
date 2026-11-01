@@ -2,9 +2,6 @@ source 'http://rubygems.org'
 
 gemspec
 
-# Until cypher-dsl 0.1.0.alpha.3 is published on rubygems.org.
-gem 'cypher-dsl', github: 'neo4jrb/cypher-dsl', tag: 'v0.1.0.alpha.3'
-
 active_model_version = ENV['ACTIVE_MODEL_VERSION']
 if active_model_version&.length&.positive?
   gem 'activemodel', "~> #{active_model_version}"

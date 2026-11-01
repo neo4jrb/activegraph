@@ -2,9 +2,6 @@
 
 gem 'activegraph', ENV['ACTIVEGRAPH_PATH']&.then { |path| { path: } } || '>= 11.1'
 
-# Until cypher-dsl 0.1.0.alpha.3 is published on rubygems.org.
-gem 'cypher-dsl', github: 'neo4jrb/cypher-dsl', tag: 'v0.1.0.alpha.3' if ENV['ACTIVEGRAPH_PATH']
-
 inject_into_file 'config/application.rb', before: '# Require the gems listed in Gemfile' do <<END
 require 'active_graph/railtie'
 
