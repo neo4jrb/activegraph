@@ -286,26 +286,20 @@ module ActiveGraph
           value.is_a?(Enumerable) && !value.is_a?(Hash)
         end
 
-        # A typed node, or a raw pattern when a label is given as Cypher text (`':Person'`, `'Person {x: 1}'`).
+        # A node pattern as a raw fragment with its properties map embedded: labels given as Cypher
+        # text (`':Person'`, `'Person {x: 1}'`) stay as they are, others are escaped. A raw fragment
+        # rather than a cypher-dsl node, because the latter renders as `(n)` once a node of that name
+        # has been rendered, whereas every hash pattern here spells out its own constraints.
         def node_pattern(var, labels, properties)
           labels = [labels].flatten.compact.map { |label| label.to_s.strip }.reject(&:empty?)
-          if labels.any? { |label| raw_label?(label) }
-            raw_parts("(#{var}#{labels.map { |label| format_label(label) }.join}", *([' ', properties] if properties), ')')
-          else
-            node = labels.empty? ? CypherDSL::Cypher.any_node : CypherDSL::Cypher.node(*labels)
-            node = node.named(var) if var
-            properties ? node.with_properties(properties) : node
-          end
-        end
-
-        def raw_label?(label)
-          label.start_with?(':') || label.include?(' ')
+          raw_parts("(#{var}#{labels.map { |label| format_label(label) }.join}", *([' ', properties] if properties), ')')
         end
 
         def format_label(label)
           return label if label.start_with?(':')
+          return ":#{label}" if label.include?(' ')
 
-          ":#{label.include?(' ') ? label : "`#{label}`"}"
+          ":#{CypherDSL::Renderer::Escaper.escape(label)}"
         end
 
         # `{key: $param, …}`; a value that already is a Cypher map literal (`'{a: 1}'`) stays as it is.
@@ -673,9 +667,9 @@ module ActiveGraph
         end
       end
 
-      class LimitClause < Clause
-        KEYWORD = 'LIMIT'
-
+      # Shared by LIMIT and SKIP, which stay unrelated classes because `Query#clause?(:limit)` and
+      # `QueryProxy#limit_value` look for LimitClause instances.
+      class PagingClause < Clause
         def from_string(value)
           from_integer(value.to_i)
         end
@@ -688,7 +682,7 @@ module ActiveGraph
           nil
         end
 
-        # The last LIMIT wins, like in the previous string-based implementation.
+        # The last LIMIT / SKIP wins, like in the previous string-based implementation.
         def self.apply(assembler, clauses)
           amount = clauses.last.value
           return if amount.nil?
@@ -698,7 +692,11 @@ module ActiveGraph
         end
       end
 
-      class SkipClause < LimitClause
+      class LimitClause < PagingClause
+        KEYWORD = 'LIMIT'
+      end
+
+      class SkipClause < PagingClause
         KEYWORD = 'SKIP'
       end
 

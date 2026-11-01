@@ -1049,6 +1049,24 @@ describe ActiveGraph::Core::Query do
       expect(query.parameters).to eq(m_name: 'Brian')
     end
 
+    it 'raises when merged queries bind one parameter name to different values' do
+      query1 = ActiveGraph::Core::Query.new.match(n: :Person).where(n: {age: 30})
+      query2 = ActiveGraph::Core::Query.new.where(n: {age: 31})
+      expect((query1 & query2).to_cypher).to eq('MATCH (n:`Person`) WHERE (n.age = $n_age AND n.age = $n_age)')
+      expect { (query1 & query2).parameters }.to raise_error(CypherDSL::ConflictingParametersException)
+    end
+
+    it 'spells out every hash pattern, also for a name matched before' do
+      query = ActiveGraph::Core::Query.new.match(n: :Person).match(n: {age: 30}).break.match(n: {Person: {name: 'Brian'}})
+      expect(query.to_cypher).to eq('MATCH (n:`Person`), (n {age: $n_age}) MATCH (n:`Person` {name: $n_Person_name})')
+      expect(query.parameters).to eq(n_age: 30, n_Person_name: 'Brian')
+    end
+
+    it 'keeps SKIP and LIMIT apart' do
+      expect(ActiveGraph::Core::Query.new.skip(5).clause?(:limit)).to be(false)
+      expect(ActiveGraph::Core::Query.new.skip(5).limit(10).clause?(:skip)).to be(true)
+    end
+
     it 'exposes the statement' do
       statement = ActiveGraph::Core::Query.new.match(n: :Person).return(:n).statement
       expect(statement).to be_a(CypherDSL::Statement)

@@ -422,13 +422,12 @@ module ActiveGraph
 
       private
 
-      # Values of the parameters the rendered statement carries; names bound to conflicting values
-      # (possible after `&`) are left to the registries, as before.
+      # Values of the parameters the rendered statement carries. A name bound to two different
+      # values (possible when queries built separately are merged with `&`) raises
+      # CypherDSL::ConflictingParametersException instead of running a query with one of them.
       def dsl_parameters
         built = statement
         built ? built.parameters.transform_keys(&:to_sym) : {}
-      rescue CypherDSL::ConflictingParametersException
-        {}
       end
 
       def colorize(cypher_string)
