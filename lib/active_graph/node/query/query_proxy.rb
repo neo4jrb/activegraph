@@ -93,16 +93,21 @@ module ActiveGraph
         # .. code-block:: ruby
         #
         #   student.lessons.query_as(:l).with('your cypher here...')
-        def query_as(var, with_labels = true)
+        # @param [String] params_namespace A prefix for the generated parameter names, see Core::Query#params_namespace.
+        def query_as(var, with_labels = true, params_namespace: nil)
           init_outer_query_var(var)
           var_name = @outer_query_var || var
-          query_obj = if chain.first&.start_of_subquery? && !@association && !starting_query
-                        _query
-                      else
-                        base_query(var_name, with_labels).params(@params)
-                      end
+          start = chain_start_query(var_name, with_labels)
+          # The chain then binds its names in the namespaced registry right away, so every union branch is built once.
+          start = start.params_namespace(params_namespace) if params_namespace
+          query_from_chain(chain, start, var_name).tap { |query| query.proxy_chain_level = _chain_level }
+        end
 
-          query_from_chain(chain, query_obj, var_name).tap { |query| query.proxy_chain_level = _chain_level }
+        # Empty when the chain opens with a union subquery, whose branches then hold the MATCH.
+        def chain_start_query(var, with_labels)
+          return _query if chain.first&.start_of_subquery? && !@association && !starting_query
+
+          base_query(var, with_labels).params(@params)
         end
 
         def init_outer_query_var(var)
