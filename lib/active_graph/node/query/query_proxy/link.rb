@@ -129,7 +129,7 @@ module ActiveGraph
                     result << new_for_key_and_value(model, key, value)
                   end
                 end
-              elsif arg.is_a?(String)
+              elsif !arg.nil? # a Cypher string or a cypher-dsl condition
                 result << new(:where, arg, args)
               end
               result
@@ -171,9 +171,11 @@ module ActiveGraph
               neo_id = value.try(:neo_id) || value
               fail ArgumentError, "Invalid value for '#{name}' condition" unless neo_id.is_a?(String)
 
+              association = model.associations[name]
+              other = CypherDSL::Cypher.any_node(n_string)
               [
-                new(:match, ->(v, _) { "(#{v})#{model.associations[name].arrow_cypher}(#{n_string})" }),
-                new(:where, ->(_, _) { {"elementId(#{n_string})" => neo_id} })
+                new(:match, ->(v, _) { association.relationship_pattern(CypherDSL::Cypher.any_node(v), other) }),
+                new(:where, ->(_, _) { {n_string => {neo_id: neo_id}} })
               ]
             end
 

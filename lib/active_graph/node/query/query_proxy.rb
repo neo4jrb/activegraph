@@ -121,8 +121,8 @@ module ActiveGraph
         def base_query(var, with_labels = true)
           if @association
             chain_var = _association_chain_var
-            (_association_query_start(chain_var) & _query).break.send(@match_type,
-                                                                      "(#{chain_var})#{_association_arrow}(#{var}#{_model_label_string})")
+            pattern = _association_pattern(CypherDSL::Cypher.any_node(chain_var), _model_node(var))
+            (_association_query_start(chain_var) & _query).break.send(@match_type, pattern)
           else
             starting_query ? starting_query : _query_model_as(var, with_labels)
           end
@@ -132,8 +132,19 @@ module ActiveGraph
         # therefore do not need labels.
         # The @association_labels instance var is set during init and used during association chaining to keep labels out of Cypher queries.
         def _model_label_string(with_labels = true)
+          _model_labels(with_labels)&.map { |label_name| ":`#{label_name}`" }&.join
+        end
+
+        def _model_labels(with_labels = true)
           return if !@model || (!with_labels || @association_labels == false)
-          @model.mapped_label_names.map { |label_name| ":`#{label_name}`" }.join
+          @model.mapped_label_names
+        end
+
+        # The node `(var:Label)` of the model, or `(var)` when labels are left out.
+        # @return [CypherDSL::Node]
+        def _model_node(var, with_labels = true)
+          labels = _model_labels(with_labels)
+          labels ? CypherDSL::Cypher.node(*labels).named(var) : CypherDSL::Cypher.any_node(var)
         end
 
         # Scope all queries to the current scope.
@@ -324,8 +335,7 @@ module ActiveGraph
         # @param [Boolean] with_labels Send "true" to include model labels where possible.
         def _match_arg(var, with_labels)
           if @model && with_labels != false
-            labels = @model.respond_to?(:mapped_label_names) ? _model_label_string : @model
-            {var.to_sym => labels}
+            @model.respond_to?(:mapped_label_names) ? _model_node(var) : {var.to_sym => @model}
           else
             var.to_sym
           end
@@ -339,8 +349,13 @@ module ActiveGraph
           "result_#{(association || model).try(:name)}#{index}".downcase.tr(':', '').to_sym
         end
 
-        def _association_arrow(properties = {}, create = false)
-          @association && @association.arrow_cypher(@rel_var, properties, create, false, @rel_length)
+        # The association's relationship pattern between the nodes `from` and `to`, with the chain's
+        # relationship variable and length.
+        def _association_pattern(from, to, properties = {}, create = false)
+          return unless @association
+
+          @association.relationship_pattern(from, to, var: @rel_var, properties: properties, create: create,
+                                                      length: @rel_length)
         end
 
         def _chain_level

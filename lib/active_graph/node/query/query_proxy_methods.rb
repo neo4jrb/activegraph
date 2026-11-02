@@ -4,8 +4,8 @@ module ActiveGraph
       # rubocop:disable Metrics/ModuleLength
       module QueryProxyMethods
         # rubocop:enable Metrics/ModuleLength
-        FIRST = 'HEAD'
-        LAST = 'LAST'
+        FIRST = :head
+        LAST = :last
 
         def rels
           fail 'Cannot get rels without a relationship variable.' if !@rel_var
@@ -56,9 +56,8 @@ module ActiveGraph
           return 0 if unpersisted_start_object?
           fail(ActiveGraph::InvalidParameterError, ':count accepts the `:distinct` symbol or nil as a parameter') unless distinct.nil? || distinct == :distinct
           query_with_target(target) do |var|
-            q = ensure_distinct(var, !distinct.nil?)
             limited_query = self.query.clause?(:limit) ? self.query.break.with(var) : self.query.reorder
-            limited_query.pluck("count(#{q}) AS #{var}").first
+            limited_query.pluck(count_expression(var, !distinct.nil?).as(var)).first
           end
         end
 
@@ -87,13 +86,14 @@ module ActiveGraph
         # @return [Boolean]
         def include?(other, target = nil)
           query_with_target(target) do |var|
-            where_filter = if other.respond_to?(:neo_id) || association_id_key == :neo_id
-                             "elementId(#{var}) = $other_node_id"
-                           else
-                             "#{var}.#{association_id_key} = $other_node_id"
-                           end
+            identifier = if other.respond_to?(:neo_id) || association_id_key == :neo_id
+                           element_id(var)
+                         else
+                           CypherDSL::Cypher.property(var, association_id_key)
+                         end
             node_id = other.respond_to?(:neo_id) ? other.neo_id : other
-            self.where(where_filter).params(other_node_id: node_id).query.reorder.return("count(#{var}) as count")
+            where(identifier.is_equal_to(CypherDSL::Cypher.parameter(:other_node_id, node_id))).query.reorder
+                .return(CypherDSL::Cypher.count(CypherDSL::Cypher.name(var)).as(:count))
                 .first[:count].positive?
           end
         end
@@ -104,7 +104,7 @@ module ActiveGraph
           end
           query_with_target(target) do |var|
             start_q = exists_query_start(node_condition, var)
-            result = start_q.query.reorder.return("elementId(#{var}) AS proof_of_life LIMIT 1").first
+            result = start_q.query.reorder.return(element_id(var).as(:proof_of_life)).limit(1).first
             !!result
           end
         end
@@ -182,13 +182,8 @@ module ActiveGraph
         #
         #   WHERE (node_var:Teacher:Person OR node_var:Article)
         def as_models(models)
-          where_clause = models.map do |model|
-            "`#{identity}`:" + model.mapped_label_names.map do |mapped_label_name|
-              "`#{mapped_label_name}`"
-            end.join(':')
-          end.join(' OR ')
-
-          where("(#{where_clause})")
+          where(models.map { |model| CypherDSL::Cypher.has_labels_or_type(identity, *model.mapped_label_names) }
+                      .inject { |all, one| all.or(one) })
         end
 
         # Matches all nodes having at least a relation
@@ -201,8 +196,7 @@ module ActiveGraph
         #
         # @return [QueryProxy] A new QueryProxy
         def having_rel(association_name, rel_properties = {})
-          association = association_or_fail(association_name)
-          where("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+          where(rel_condition(association_or_fail(association_name), rel_properties))
         end
 
         # Matches all nodes not having a certain relation
@@ -215,14 +209,23 @@ module ActiveGraph
         #
         # @return [QueryProxy] A new QueryProxy
         def not_having_rel(association_name, rel_properties = {})
-          association = association_or_fail(association_name)
-          where_not("(#{identity})#{association.arrow_cypher(nil, rel_properties)}()")
+          where_not(rel_condition(association_or_fail(association_name), rel_properties))
         end
 
         private
 
         def association_or_fail(association_name)
           model.associations[association_name] || fail(ArgumentError, "No such association #{association_name}")
+        end
+
+        # The pattern condition `(identity)-[:TYPE {rel_properties}]->()`.
+        def rel_condition(association, rel_properties)
+          association.relationship_pattern(CypherDSL::Cypher.any_node(identity), CypherDSL::Cypher.any_node,
+                                           properties: rel_properties).as_condition
+        end
+
+        def element_id(var)
+          ActiveGraph::Core::QueryClauses::Fragments.element_id(var)
         end
 
         def find_inverse_association!(model, source, association)
@@ -257,8 +260,7 @@ module ActiveGraph
 
         def first_and_last(func, target)
           new_query, pluck_proc = if self.query.clause?(:order)
-                                    [self.query.with(identity),
-                                     proc { |var| "#{func}(COLLECT(#{var})) as #{var}" }]
+                                    [query.with(identity), proc { |var| collected_element(func, var) }]
                                   else
                                     ord_prop = (func == LAST ? { order_property => :DESC } : order_property)
                                     [self.order(ord_prop).limit(1),
@@ -268,6 +270,11 @@ module ActiveGraph
             final_pluck = pluck_proc.call(var)
             new_query.pluck(final_pluck)
           end.first
+        end
+
+        # `head(collect(var)) AS var` / `last(collect(var)) AS var`
+        def collected_element(func, var)
+          CypherDSL::Cypher.public_send(func, CypherDSL::Cypher.collect(CypherDSL::Cypher.name(var))).as(var)
         end
 
         # @return [String] The primary key of a the current QueryProxy's model or target class
@@ -290,7 +297,7 @@ module ActiveGraph
           return exists_query_start(model.primary_key => condition) if condition.is_a?(String)
 
           if condition.key?(:neo_id)
-            where("elementId(#{target}) = $neo_id").params(**condition.slice(:neo_id))
+            where(element_id(target).is_equal_to(CypherDSL::Cypher.parameter(:neo_id, condition[:neo_id])))
           else
             where(**condition)
           end

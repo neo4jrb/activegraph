@@ -84,6 +84,15 @@ module ActiveGraph
           end.join(' OR ')
         end
 
+        # The condition that `var` carries the label of one of the target classes, as a cypher-dsl
+        # condition; nil when the association has no target class (`model_class: false`).
+        def target_condition(var = name)
+          return if model_class == false
+
+          target_classes.map { |target_class| CypherDSL::Cypher.has_labels_or_type(var, target_class.mapped_label_name) }
+                        .inject { |all, one| all.or(one) }
+        end
+
         def discovered_model
           target_classes.select do |constant|
             constant.ancestors.include?(::ActiveGraph::Node)

@@ -2,16 +2,15 @@ module ActiveGraph::Shared
   class RelQueryFactory < QueryFactory
     protected
 
-    def match_string
-      "(#{graph_object.from_node_identifier})-[#{identifier}]->()"
+    def match_pattern
+      node(graph_object.from_node_identifier).relationship_to(node).named(identifier)
     end
 
     def create_query
       return match_query if graph_object.persisted?
       create_props, set_props = filtered_props
-      base_query.send(graph_object.create_method, query_string(create_props)).break
+      base_query.send(graph_object.create_method, create_pattern(create_props)).break
                 .set(identifier => set_props)
-                .params(params(create_props))
     end
 
     private
@@ -20,28 +19,19 @@ module ActiveGraph::Shared
       ActiveGraph::Shared::FilteredHash.new(graph_object.props_for_create, graph_object.creates_unique_option).filtered_base
     end
 
-    def query_string(create_props)
-      "(#{graph_object.from_node_identifier})-[#{identifier}:`#{graph_object.type}` #{pattern(create_props)}]->(#{graph_object.to_node_identifier})"
-    end
+    # `(from)-[rel:`TYPE` {key: $rel_create_props_key, …}]->(to)`; the properties named in the
+    # `unique` option are part of the pattern so that MERGE matches on them.
+    def create_pattern(create_props)
+      pattern = node(graph_object.from_node_identifier)
+                .relationship_to(node(graph_object.to_node_identifier), graph_object.type)
+                .named(identifier)
+      return pattern if create_props.empty?
 
-    def params(create_props)
-      unique? ? create_props.transform_keys { |key| scoped(key).to_sym } : { namespace.to_sym => create_props }
-    end
-
-    def unique?
-      graph_object.create_method == :create_unique
-    end
-
-    def pattern(create_props)
-      unique? ? "{#{create_props.keys.map { |key| "#{key}: $#{scoped(key)}" }.join(', ')}}" : "$#{namespace}"
+      pattern.with_properties(create_props.to_h { |key, value| [key, parameter(scoped(key), value)] })
     end
 
     def scoped(key)
-      "#{namespace}_#{key}"
-    end
-
-    def namespace
-      "#{identifier}_create_props"
+      "#{identifier}_create_props_#{key}"
     end
   end
 end

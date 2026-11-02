@@ -39,11 +39,13 @@ module ActiveGraph
           base = query.with(identity).proxy_as_optional(source_object.class, self_identifer)
                       .send(association.name, other_node, other_rel)
           base = base.where(id: ids) if ids.present?
+          orphan_rel = association.relationship_pattern(CypherDSL::Cypher.any_node, CypherDSL::Cypher.any_node(other_node),
+                                                        var: :orphan_rel)
           base.query
               .with(other_node)
-              .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")
-              .with(other_node, count: 'count(*)')
-              .where('count = $one', one: 1)
+              .match(orphan_rel)
+              .with(other_node, count: CypherDSL::Cypher.count(CypherDSL::Cypher.asterisk))
+              .where(CypherDSL::Cypher.name(:count).is_equal_to(CypherDSL::Cypher.parameter(:one, 1)))
               .break
         end
       end

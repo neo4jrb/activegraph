@@ -1,5 +1,10 @@
 module ActiveGraph
   module Core
+    # The clause classes behind ActiveGraph::Core::Query. Each class interprets the
+    # arguments of one Query method (`match`, `where`, `return`, …) into cypher-dsl
+    # objects (patterns, conditions, expressions, sort items, operations) and knows how
+    # to add them to a CypherDSL::StatementBuilder. Strings are passed through verbatim
+    # as raw fragments; cypher-dsl objects are accepted as they are.
     module QueryClauses
       class ArgError < StandardError
         attr_reader :arg_part
@@ -9,11 +14,109 @@ module ActiveGraph
         end
       end
 
+      # Shorthands for the cypher-dsl objects the clauses produce.
+      module Fragments
+        IDENTIFIER = /\A[A-Za-z_][A-Za-z0-9_]*\z/
+
+        module_function
+
+        # Verbatim Cypher text (no `$E` placeholder parsing).
+        def raw(text)
+          CypherDSL::RawExpression.new(text.to_s)
+        end
+
+        # Verbatim text interleaved with expressions, e.g. `raw_parts('WHERE ', condition)`.
+        def raw_parts(*parts)
+          CypherDSL::RawExpression.new(parts)
+        end
+
+        # `prefix item, item, …` as a raw fragment.
+        def raw_list(prefix, items)
+          raw_parts(prefix, *items.flat_map { |item| [item, ', '] }[0...-1])
+        end
+
+        def name(value)
+          CypherDSL::SymbolicName.of(value)
+        end
+
+        # Plain identifiers become names, anything else (`n.prop`, `count(n)`) is raw Cypher.
+        def name_or_raw(value)
+          value.to_s.match?(IDENTIFIER) ? name(value) : raw(value)
+        end
+
+        # A WITH/UNWIND value: strings and symbols name variables, other values are literals.
+        def expression(value)
+          case value
+          when CypherDSL::Expression then value
+          when String then name_or_raw(value)
+          when Symbol then name(value)
+          else CypherDSL::Expression.coerce(value)
+          end
+        end
+
+        def element_id(key)
+          CypherDSL::FunctionInvocation.new('elementId', [name_or_raw(key)])
+        end
+
+        def property(key, value)
+          CypherDSL::Cypher.property(name_or_raw(key), value)
+        end
+
+        # `key.value`, `elementId(key)` for `neo_id`, or raw text when `value` is not an identifier (`'name desc'`).
+        def property_or_raw(key, value)
+          return element_id(key) if value.to_s == 'neo_id'
+
+          value.to_s.match?(IDENTIFIER) ? property(key, value) : raw("#{key}.#{value}")
+        end
+
+        def dsl_object?(object)
+          object.class.name.to_s.start_with?('CypherDSL::')
+        end
+      end
+
+      # Feeds interpreted clauses into a CypherDSL::StatementBuilder, remembering what
+      # kind of clause came last so that WHERE, ORDER BY, SKIP and LIMIT can refine it.
+      class Assembler
+        attr_reader :builder
+
+        def initialize
+          @builder = CypherDSL::Statement.builder
+          @last = nil
+        end
+
+        def empty?
+          @last.nil?
+        end
+
+        # Appends a clause; `kind` is remembered for later refinement.
+        def append(kind)
+          @builder = yield(@builder)
+          @last = kind
+          self
+        end
+
+        # Refines the last clause if it is one of `kinds`; returns false otherwise.
+        def refine(*kinds)
+          return false unless kinds.include?(@last)
+
+          @builder = yield(@builder)
+          true
+        end
+
+        def raw_clause(expression)
+          append(:raw) { |builder| builder.raw_clause(expression) }
+        end
+
+        def statement
+          empty? ? nil : @builder.build
+        end
+      end
+
       class Clause
+        include Fragments
+
         UNDERSCORE = '_'
-        COMMA_SPACE = ', '
-        AND = ' AND '
-        PRETTY_NEW_LINE = "\n  "
+        ARG_CLASSES = [String, Symbol, Integer, Hash, NilClass, Array, TrueClass, FalseClass].freeze
 
         attr_accessor :params, :arg
         attr_reader :options, :param_vars_added
@@ -25,20 +128,27 @@ module ActiveGraph
           @param_vars_added = []
         end
 
+        # The interpreted argument: a cypher-dsl object or an array of them.
         def value
-          return @value if @value
+          return @value if instance_variable_defined?(:@value)
 
-          [String, Symbol, Integer, Hash, NilClass, Array].each do |arg_class|
-            from_method = "from_#{arg_class.name.downcase}"
-            return @value = send(from_method, @arg) if @arg.is_a?(arg_class) && respond_to?(from_method)
-          end
-
-          fail ArgError
+          @value = interpret
         rescue ArgError => arg_error
           message = "Invalid argument for #{self.class.keyword}.  Full arguments: #{@arg.inspect}"
           message += " | Invalid part: #{arg_error.arg_part.inspect}" if arg_error.arg_part
 
           raise ArgumentError, message
+        end
+
+        def interpret
+          return @arg if dsl_object?(@arg)
+
+          ARG_CLASSES.each do |arg_class|
+            from_method = "from_#{arg_class.name.downcase}"
+            return send(from_method, @arg) if @arg.is_a?(arg_class) && respond_to?(from_method)
+          end
+
+          fail ArgError
         end
 
         def from_hash(value)
@@ -50,13 +160,13 @@ module ActiveGraph
         end
 
         def from_string(value)
-          value
+          raw(value)
         end
 
         def node_from_key_and_value(key, value, options = {})
           prefer = options[:prefer] || :var
           var = var_from_key_and_value(key, value, prefer)
-          label = label_from_key_and_value(key, value, prefer)
+          labels = label_from_key_and_value(key, value, prefer)
 
           attributes = attributes_from_key_and_value(key, value)
 
@@ -66,8 +176,7 @@ module ActiveGraph
           end
 
           prefix_array = [key, prefix_value].tap(&:compact!).join(UNDERSCORE)
-          formatted_attributes = attributes_string(attributes, "#{prefix_array}#{UNDERSCORE}")
-          "(#{var}#{format_label(label)}#{formatted_attributes})"
+          node_pattern(var, labels, attributes_map(attributes, "#{prefix_array}#{UNDERSCORE}"))
         end
 
         def var_from_key_and_value(key, value, prefer = :var)
@@ -123,40 +232,22 @@ module ActiveGraph
             args.map { |arg| from_arg(arg, params, options) }.tap(&:compact!)
           end
 
+          # Arguments are interpreted (and their parameters registered) right away.
           def from_arg(arg, params, options = {})
-            new(arg, params, options) if !arg.respond_to?(:empty?) || !arg.empty?
+            new(arg, params, options).tap(&:value) if !arg.respond_to?(:empty?) || !arg.empty?
           end
 
-          def to_cypher(clauses, pretty = false)
-            string = clause_string(clauses, pretty)
-
-            "#{final_keyword(pretty)} #{string}" if !string.empty?
+          # Adds the clauses of one query part to the assembler.
+          def apply(_assembler, _clauses)
+            fail NotImplementedError, "#{self} cannot be applied"
           end
 
-          def final_keyword(pretty)
-            if pretty
-              "#{clause_color}#{keyword}#{ANSI::CLEAR}"
-            else
-              keyword
-            end
+          # The interpreted values of all clauses as one flat list.
+          def values(clauses)
+            clauses.flat_map { |clause| [clause.value].flatten }.compact
           end
 
-          def clause_string(clauses, pretty)
-            join_string = pretty ? clause_join + PRETTY_NEW_LINE : clause_join
-
-            strings = clause_strings(clauses)
-            stripped_string = strings.join(join_string).strip
-            pretty && strings.size > 1 ? PRETTY_NEW_LINE + stripped_string : stripped_string
-          end
-
-          def clause_join
-            ''
-          end
-
-          def clause_color
-            ANSI::CYAN
-          end
-
+          # The Cypher text of `key.value` (`elementId(key)` for `neo_id`), for use in raw fragments.
           def from_key_and_single_value(key, value)
             value.to_sym == :neo_id ? "elementId(#{key})" : "#{key}.#{value}"
           end
@@ -179,63 +270,59 @@ module ActiveGraph
 
         private
 
-        def key_value_string(key, value, previous_keys = [], is_set = false)
-          param = (previous_keys << key).join(UNDERSCORE)
+        # A registered parameter as a cypher-dsl parameter carrying its value.
+        def parameter(key, value)
+          CypherDSL::Cypher.parameter(add_param(key, value).to_s, value)
+        end
+
+        # The parameter name for a key path such as `[:q, :age]` or `['elementId(q)']`.
+        def param_name(keys)
+          param = keys.join(UNDERSCORE).dup
           self.class.paramaterize_key!(param)
+          param
+        end
 
-          if value.is_a?(Range)
-            range_key_value_string(key, value, previous_keys, param)
-          else
-            value = value.first if array_value?(value, is_set) && value.size == 1
+        def array_value?(value)
+          value.is_a?(Enumerable) && !value.is_a?(Hash)
+        end
 
-            param = add_param(param, value)
+        # A node pattern as a raw fragment with its properties map embedded: labels given as Cypher
+        # text (`':Person'`, `'Person {x: 1}'`) stay as they are, others are escaped. A raw fragment
+        # rather than a cypher-dsl node, because the latter renders as `(n)` once a node of that name
+        # has been rendered, whereas every hash pattern here spells out its own constraints.
+        def node_pattern(var, labels, properties)
+          labels = [labels].flatten.compact.map { |label| label.to_s.strip }.reject(&:empty?)
+          raw_parts("(#{var}#{labels.map { |label| format_label(label) }.join}", *([' ', properties] if properties), ')')
+        end
 
-            "#{key} #{array_value?(value, is_set) ? 'IN' : '='} $#{param}"
+        def format_label(label)
+          return label if label.start_with?(':')
+          return ":#{label}" if label.include?(' ')
+
+          ":#{CypherDSL::Renderer::Escaper.escape(label)}"
+        end
+
+        # `{key: $param, …}`; a value that already is a Cypher map literal (`'{a: 1}'`) stays as it is.
+        def attributes_map(attributes, prefix = '')
+          return nil if attributes.nil? || attributes.empty?
+
+          entries = attributes.flat_map do |key, value|
+            inline_map = value.to_s =~ /^{.+}$/
+            [key.to_s, inline_map ? raw(value) : parameter("#{prefix}#{key}".gsub(/:+/, '_'), value)]
           end
-        end
-
-        def range_key_value_string(key, value, previous_keys, param)
-          begin_param, end_param = add_params("#{param}_range_min" => value.begin, "#{param}_range_max" => value.end)
-          "#{key} >= $#{begin_param} AND #{previous_keys[-2]}.#{key} <#{'=' unless value.exclude_end?} $#{end_param}"
-        end
-
-        def array_value?(value, is_set)
-          value.is_a?(Enumerable) && !is_set
-        end
-
-        def format_label(label_arg)
-          return label_arg.map { |arg| format_label(arg) }.join if label_arg.is_a?(Array)
-
-          label_arg = label_arg.to_s.strip
-          if !label_arg.empty? && label_arg[0] != ':'
-            label_arg = "`#{label_arg}`" unless label_arg[' ']
-            label_arg = ":#{label_arg}"
-          end
-          label_arg
-        end
-
-        def attributes_string(attributes, prefix = '')
-          return '' if not attributes
-
-          attributes_string = attributes.map do |key, value|
-            if value.to_s =~ /^{.+}$/
-              "#{key}: #{value}"
-            else
-              param_key = "#{prefix}#{key}".gsub(/:+/, '_')
-              param_key = add_param(param_key, value)
-              "#{key}: $#{param_key}"
-            end
-          end.join(Clause::COMMA_SPACE)
-
-          " {#{attributes_string}}"
+          CypherDSL::Cypher.map_of(*entries)
         end
       end
 
       class StartClause < Clause
         KEYWORD = 'START'
 
+        def from_string(value)
+          value
+        end
+
         def from_symbol(value)
-          from_string(value.to_s)
+          value.to_s
         end
 
         def from_key_and_value(key, value)
@@ -247,14 +334,8 @@ module ActiveGraph
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+        def self.apply(assembler, clauses)
+          assembler.raw_clause(Fragments.raw("START #{values(clauses).join(', ')}"))
         end
       end
 
@@ -272,12 +353,8 @@ module ActiveGraph
             [from_arg(args, params, options)]
           end
 
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            ' UNION '
+          def apply(assembler, clauses)
+            assembler.raw_clause(Fragments.raw(values(clauses).join(' UNION ')))
           end
         end
       end
@@ -285,54 +362,20 @@ module ActiveGraph
       class WhereClause < Clause
         KEYWORD = 'WHERE'
 
-        PAREN_SURROUND_REGEX = /^\s*\(.+\)\s*$/
+        def from_string(value)
+          raw(value).as_condition
+        end
+
+        def from_trueclass(_value)
+          CypherDSL::Cypher.is_true
+        end
+
+        def from_falseclass(_value)
+          CypherDSL::Cypher.is_false
+        end
 
         def from_key_and_value(key, value, previous_keys = [])
-          case value
-          when Hash then hash_key_value_string(key, value, previous_keys)
-          when NilClass then "#{key} IS NULL"
-          when Regexp then regexp_key_value_string(key, value, previous_keys)
-          else
-            key_value_string(key, value, previous_keys)
-          end
-        end
-
-        class << self
-          def clause_strings(clauses)
-            clauses.flat_map do |clause|
-              Array(clause.value).map do |v|
-                (clause.options[:not] ? 'NOT' : '') + (v.to_s.match(PAREN_SURROUND_REGEX) ? v.to_s : "(#{v})")
-              end
-            end
-          end
-
-          def clause_join
-            Clause::AND
-          end
-        end
-
-        private
-
-        def hash_key_value_string(key, value, previous_keys)
-          value.map do |k, v|
-            if k.to_sym == :neo_id
-              v = Array(v).map { |item| item.respond_to?(:neo_id) ? item.neo_id : item }
-              key_value_string("elementId(#{key})", v)
-            else
-              "#{key}.#{from_key_and_value(k, v, previous_keys + [key])}"
-            end
-          end.join(AND)
-        end
-
-        def regexp_key_value_string(key, value, previous_keys)
-          pattern = (value.casefold? ? '(?i)' : '') + value.source
-
-          param = [previous_keys + [key]].join(UNDERSCORE)
-          self.class.paramaterize_key!(param)
-
-          param = add_param(param, pattern)
-
-          "#{key} =~ $#{param}"
+          condition_for(name_or_raw(key), key, value, previous_keys)
         end
 
         class << self
@@ -354,6 +397,58 @@ module ActiveGraph
               super
             end
           end
+
+          # All conditions of the part joined by AND, on the preceding MATCH or WITH.
+          def apply(assembler, clauses)
+            conditions = clauses.flat_map do |clause|
+              [clause.value].flatten.compact.map { |condition| clause.options[:not] ? condition.not : condition }
+            end
+            return if conditions.empty?
+
+            condition = conditions.inject { |all, one| all.and(one) }
+            assembler.refine(:match, :with) { |builder| builder.where(condition) } ||
+              assembler.raw_clause(Fragments.raw_parts('WHERE ', condition))
+          end
+        end
+
+        private
+
+        def condition_for(lhs, key, value, previous_keys)
+          case value
+          when Hash then hash_conditions(lhs, key, value, previous_keys)
+          when NilClass then lhs.is_null
+          when Regexp then lhs.matches(parameter(param_name(previous_keys + [key]), regexp_pattern(value)))
+          when Range then range_condition(lhs, param_name(previous_keys + [key]), value)
+          else
+            value = value.first if array_value?(value) && value.size == 1
+            param = parameter(param_name(previous_keys + [key]), value)
+            array_value?(value) ? lhs.in(param) : lhs.is_equal_to(param)
+          end
+        end
+
+        def hash_conditions(container, key, hash, previous_keys)
+          hash.map do |k, v|
+            if k.to_sym == :neo_id
+              v = Array(v).map { |item| item.respond_to?(:neo_id) ? item.neo_id : item }
+              condition_for(element_id(key), "elementId(#{key})", v, [])
+            else
+              condition_for(property_of(container, k), k, v, previous_keys + [key])
+            end
+          end.inject { |all, one| all.and(one) }
+        end
+
+        def property_of(container, key)
+          key.to_s.match?(IDENTIFIER) ? container.property(key) : raw_parts(container, ".#{key}")
+        end
+
+        def range_condition(lhs, base, range)
+          min = parameter("#{base}_range_min", range.begin)
+          max = parameter("#{base}_range_max", range.end)
+          lhs.gte(min).and(range.exclude_end? ? lhs.lt(max) : lhs.lte(max))
+        end
+
+        def regexp_pattern(value)
+          (value.casefold? ? '(?i)' : '') + value.source
         end
       end
 
@@ -364,14 +459,8 @@ module ActiveGraph
           value
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            " #{KEYWORD} "
-          end
+        def self.apply(assembler, clauses)
+          values(clauses).each { |value| assembler.raw_clause(Fragments.raw("CALL #{value}")) }
         end
       end
 
@@ -379,20 +468,16 @@ module ActiveGraph
         KEYWORD = 'CALL {'
 
         def from_nilclass(_value)
-          ' '
+          nil
         end
 
         def from_string(value)
           value
         end
 
-        class << self
-          def to_cypher(clauses, pretty = false)
-            super || final_keyword(pretty)
-          end
-
-          def clause_strings(clauses)
-            clauses.map!(&:value)
+        def self.apply(assembler, clauses)
+          clauses.each do |clause|
+            assembler.raw_clause(Fragments.raw([KEYWORD, clause.value.to_s.strip].reject(&:empty?).join(' ')))
           end
         end
       end
@@ -400,10 +485,12 @@ module ActiveGraph
       class CallSubqueryEndClause < Clause
         KEYWORD = '}'
 
-        class << self
-          def to_cypher(_clauses, pretty = false)
-            final_keyword(pretty)
-          end
+        def from_nilclass(_value)
+          nil
+        end
+
+        def self.apply(assembler, clauses)
+          clauses.each { assembler.raw_clause(Fragments.raw(KEYWORD)) }
         end
       end
 
@@ -411,77 +498,75 @@ module ActiveGraph
         KEYWORD = 'MATCH'
 
         def from_symbol(value)
-          '(' + from_string(value.to_s) + ')'
+          CypherDSL::Cypher.any_node(value)
         end
 
         def from_key_and_value(key, value)
           node_from_key_and_value(key, value)
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+        def self.apply(assembler, clauses)
+          patterns = values(clauses)
+          assembler.append(:match) { |builder| builder.match(*patterns) } unless patterns.empty?
         end
       end
 
       class OptionalMatchClause < MatchClause
         KEYWORD = 'OPTIONAL MATCH'
+
+        def self.apply(assembler, clauses)
+          patterns = values(clauses)
+          assembler.append(:match) { |builder| builder.optional_match(*patterns) } unless patterns.empty?
+        end
       end
 
       class WithClause < Clause
         KEYWORD = 'WITH'
 
         def from_symbol(value)
-          from_string(value.to_s)
+          name(value)
+        end
+
+        def from_string(value)
+          name_or_raw(value)
         end
 
         def from_key_and_value(key, value)
-          "#{value} AS #{key}"
+          expression(value).as(key)
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          assembler.append(:with) { |builder| builder.with(*items) } unless items.empty?
         end
       end
 
       class WithDistinctClause < WithClause
         KEYWORD = 'WITH DISTINCT'
+
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          assembler.append(:with) { |builder| builder.with_distinct(*items) } unless items.empty?
+        end
       end
 
       class UsingClause < Clause
         KEYWORD = 'USING'
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        def from_string(value)
+          value
+        end
 
-          def clause_join
-            " #{keyword} "
-          end
+        def self.apply(assembler, clauses)
+          values(clauses).each { |value| assembler.raw_clause(Fragments.raw("USING #{value}")) }
         end
       end
 
       class CreateClause < Clause
         KEYWORD = 'CREATE'
 
-        def from_string(value)
-          value
-        end
-
         def from_symbol(value)
-          "(:#{value})"
+          CypherDSL::Cypher.node(value.to_s)
         end
 
         def from_hash(hash)
@@ -490,7 +575,7 @@ module ActiveGraph
               from_key_and_value(key, value)
             end
           else
-            "(#{attributes_string(hash)})"
+            CypherDSL::Cypher.any_node.with_properties(attributes_map(hash))
           end
         end
 
@@ -498,36 +583,27 @@ module ActiveGraph
           node_from_key_and_value(key, value, prefer: :label)
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            ', '
-          end
-
-          def clause_color
-            ANSI::GREEN
-          end
+        def self.apply(assembler, clauses)
+          patterns = values(clauses)
+          assembler.append(:create) { |builder| builder.create(*patterns) } unless patterns.empty?
         end
       end
 
       class CreateUniqueClause < CreateClause
         KEYWORD = 'MERGE'
+
+        def self.apply(assembler, clauses)
+          patterns = values(clauses)
+          assembler.append(:merge) { |builder| builder.merge(*patterns) } unless patterns.empty?
+        end
       end
 
       class MergeClause < CreateClause
         KEYWORD = 'MERGE'
 
-        class << self
-          def clause_color
-            ANSI::MAGENTA
-          end
-
-          def clause_join
-            ' MERGE '
-          end
+        # Every pattern gets its own MERGE clause.
+        def self.apply(assembler, clauses)
+          values(clauses).each { |pattern| assembler.append(:merge) { |builder| builder.merge(pattern) } }
         end
       end
 
@@ -535,115 +611,93 @@ module ActiveGraph
         KEYWORD = 'DELETE'
 
         def from_symbol(value)
-          from_string(value.to_s)
+          name(value)
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        def from_string(value)
+          name_or_raw(value)
+        end
 
-          def clause_join
-            Clause::COMMA_SPACE
-          end
-
-          def clause_color
-            ANSI::RED
-          end
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          assembler.append(:delete) { |builder| builder.delete(*items) } unless items.empty?
         end
       end
 
       class DetachDeleteClause < DeleteClause
         KEYWORD = 'DETACH DELETE'
+
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          assembler.append(:delete) { |builder| builder.detach_delete(*items) } unless items.empty?
+        end
       end
 
       class OrderClause < Clause
         KEYWORD = 'ORDER BY'
 
         def from_symbol(value)
-          from_string(value.to_s)
+          name(value)
+        end
+
+        def from_string(value)
+          name_or_raw(value)
         end
 
         def from_key_and_value(key, value)
           case value
           when String, Symbol
-            self.class.from_key_and_single_value(key, value)
+            property_or_raw(key, value)
           when Array
             value.map do |v|
-              v.is_a?(Hash) ? from_key_and_value(key, v) : self.class.from_key_and_single_value(key, v)
+              v.is_a?(Hash) ? from_key_and_value(key, v) : property_or_raw(key, v)
             end
           when Hash
-            value.map { |k, v| "#{self.class.from_key_and_single_value(key, k)} #{v.upcase}" }
+            value.map { |k, v| CypherDSL::Cypher.sort(property_or_raw(key, k), v.to_s.downcase.to_sym) }
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        # ORDER BY belongs to the preceding RETURN or WITH; elsewhere it is emitted as is.
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          return if items.empty? # e.g. `order(n: nil)` from QueryProxy#first on a model without id property
 
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+          assembler.refine(:return, :with) { |builder| builder.order_by(*items) } ||
+            assembler.raw_clause(Fragments.raw_list('ORDER BY ', items))
         end
       end
 
-      class LimitClause < Clause
-        KEYWORD = 'LIMIT'
-
+      # Shared by LIMIT and SKIP, which stay unrelated classes because `Query#clause?(:limit)` and
+      # `QueryProxy#limit_value` look for LimitClause instances.
+      class PagingClause < Clause
         def from_string(value)
-          param_var = "#{self.class.keyword_downcase}_#{value}"
-          param_var = add_param(param_var, value.to_i)
-          "$#{param_var}"
+          from_integer(value.to_i)
         end
 
         def from_integer(value)
-          from_string(value)
+          parameter("#{self.class.keyword_downcase}_#{value}", value)
         end
 
         def from_nilclass(_value)
-          ''
+          nil
         end
 
-        class << self
-          def clause_strings(clauses)
-            result_clause = clauses.last
+        # The last LIMIT / SKIP wins, like in the previous string-based implementation.
+        def self.apply(assembler, clauses)
+          amount = clauses.last.value
+          return if amount.nil?
 
-            clauses[0..-2].map(&:param_vars_added).flatten.grep(/^limit_\d+$/).each do |var|
-              result_clause.params.remove_param(var)
-            end
-
-            [result_clause.value]
-          end
+          assembler.refine(:return, :with) { |builder| builder.send(keyword_downcase, amount) } ||
+            assembler.raw_clause(Fragments.raw_parts("#{keyword} ", amount))
         end
       end
 
-      class SkipClause < Clause
+      class LimitClause < PagingClause
+        KEYWORD = 'LIMIT'
+      end
+
+      class SkipClause < PagingClause
         KEYWORD = 'SKIP'
-
-        def from_string(value)
-          clause_id = "#{self.class.keyword_downcase}_#{value}"
-          clause_id = add_param(clause_id, value.to_i)
-          "$#{clause_id}"
-        end
-
-        def from_integer(value)
-          clause_id = "#{self.class.keyword_downcase}_#{value}"
-          clause_id = add_param(clause_id, value)
-          "$#{clause_id}"
-        end
-
-        class << self
-          def clause_strings(clauses)
-            result_clause = clauses.last
-
-            clauses[0..-2].map(&:param_vars_added).flatten.grep(/^skip_\d+$/).each do |var|
-              result_clause.params.remove_param(var)
-            end
-
-            [result_clause.value]
-          end
-        end
       end
 
       class SetClause < Clause
@@ -651,13 +705,14 @@ module ActiveGraph
 
         def from_key_and_value(key, value)
           case value
-          when String, Symbol then "#{key}:`#{value}`"
+          when String, Symbol then CypherDSL::Cypher.set_label(name(key), value.to_s)
           when Hash
             if @options[:set_props]
-              param = add_param("#{key}_set_props", value)
-              "#{key} = $#{param}"
+              CypherDSL::Cypher.set(name(key), parameter("#{key}_set_props", value))
             else
-              value.map { |k, v| key_value_string("#{key}.`#{k}`", v, ['setter'], true) }
+              value.map do |k, v|
+                CypherDSL::Cypher.set(property(key, k), parameter(param_name(['setter', "#{key}.`#{k}`"]), v))
+              end
             end
           when Array then value.map { |v| from_key_and_value(key, v) }
           when NilClass then []
@@ -666,32 +721,36 @@ module ActiveGraph
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        def self.apply(assembler, clauses)
+          operations = values(clauses)
+          return if operations.empty?
 
-          def clause_join
-            Clause::COMMA_SPACE
-          end
-
-          def clause_color
-            ANSI::YELLOW
-          end
+          assembler.append(:set) { |builder| builder.set(*operations) }
         end
       end
 
       class OnCreateSetClause < SetClause
         KEYWORD = 'ON CREATE SET'
+        ACTION = :on_create
 
         def initialize(*args)
           super
           @options[:set_props] = false
         end
+
+        # Belongs to the preceding MERGE; elsewhere it is emitted as is.
+        def self.apply(assembler, clauses)
+          operations = values(clauses)
+          return if operations.empty?
+
+          assembler.refine(:merge) { |builder| builder.send(self::ACTION).set(*operations) } ||
+            assembler.raw_clause(Fragments.raw_list("#{keyword} ", operations))
+        end
       end
 
       class OnMatchSetClause < OnCreateSetClause
         KEYWORD = 'ON MATCH SET'
+        ACTION = :on_match
       end
 
       class RemoveClause < Clause
@@ -700,11 +759,11 @@ module ActiveGraph
         def from_key_and_value(key, value)
           case value
           when /^:/
-            "#{key}:`#{value[1..-1]}`"
+            CypherDSL::Cypher.remove_label(name(key), value[1..-1])
           when String
-            "#{key}.#{value}"
+            property(key, value)
           when Symbol
-            "#{key}:`#{value}`"
+            CypherDSL::Cypher.remove_label(name(key), value.to_s)
           when Array
             value.map do |v|
               from_key_and_value(key, v)
@@ -714,14 +773,9 @@ module ActiveGraph
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
-
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          assembler.append(:remove) { |builder| builder.remove(*items) } unless items.empty?
         end
       end
 
@@ -731,21 +785,28 @@ module ActiveGraph
         def from_key_and_value(key, value)
           case value
           when String, Symbol
-            "#{value} AS #{key}"
+            [name_or_raw(value), key]
           when Array
-            "#{value.inspect} AS #{key}"
+            [CypherDSL::Cypher.literal_of(value), key]
           else
             fail ArgError, value
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        # The pairs of a hash argument, or the raw fragment of a string argument.
+        def self.values(clauses)
+          clauses.flat_map { |clause| [clause.value].flatten(1) }.compact
+        end
 
-          def clause_join
-            ' UNWIND '
+        # `[list, variable]` pairs become UNWIND clauses, a raw string is emitted as is.
+        def self.apply(assembler, clauses)
+          values(clauses).each do |value|
+            if value.is_a?(Array)
+              list, variable = value
+              assembler.append(:unwind) { |builder| builder.unwind(list).as(variable) }
+            else
+              assembler.raw_clause(Fragments.raw_parts('UNWIND ', value))
+            end
           end
         end
       end
@@ -754,7 +815,11 @@ module ActiveGraph
         KEYWORD = 'RETURN'
 
         def from_symbol(value)
-          from_string(value.to_s)
+          name(value)
+        end
+
+        def from_string(value)
+          name_or_raw(value)
         end
 
         def from_key_and_value(key, value)
@@ -762,22 +827,21 @@ module ActiveGraph
           when Array
             value.map do |v|
               from_key_and_value(key, v)
-            end.join(Clause::COMMA_SPACE)
+            end
           when String, Symbol
-            self.class.from_key_and_single_value(key, value)
+            property_or_raw(key, value)
           else
             fail ArgError, value
           end
         end
 
-        class << self
-          def clause_strings(clauses)
-            clauses.map!(&:value)
-          end
+        # One projection; RETURN DISTINCT when any of the clauses came from `return_distinct`.
+        def self.apply(assembler, clauses)
+          items = values(clauses)
+          return if items.empty?
 
-          def clause_join
-            Clause::COMMA_SPACE
-          end
+          projection = clauses.any? { |clause| clause.options[:distinct] } ? :returning_distinct : :returning
+          assembler.append(:return) { |builder| builder.send(projection, *items) }
         end
       end
     end

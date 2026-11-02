@@ -61,6 +61,38 @@ describe ActiveGraph::Node::HasN::Association do
       it { expect { subject }.to raise_error(ArgumentError) }
     end
 
+    describe '#relationship_pattern' do
+      let(:options) { {type: :FRIENDS} }
+      let(:left) { CypherDSL::Cypher.any_node(:a) }
+      let(:right) { CypherDSL::Cypher.node('Person').named(:b) }
+      let(:pattern) { association.relationship_pattern(left, right, var: :r, properties: {since: 2001}, length: 1..3) }
+
+      subject { ActiveGraph::Core::Query::RENDERER.render_fragment(pattern) }
+
+      it { is_expected.to eq('(a)-[r:`FRIENDS`*1..3 {since: 2001}]->(b:`Person`)') }
+
+      context 'inbound' do
+        let(:direction) { :in }
+
+        it { is_expected.to eq('(a)<-[r:`FRIENDS`*1..3 {since: 2001}]-(b:`Person`)') }
+      end
+
+      context 'extending a pattern' do
+        let(:left) { CypherDSL::Cypher.any_node(:x).relationship_to(CypherDSL::Cypher.any_node(:a), 'KNOWS') }
+
+        it { is_expected.to eq('(x)-[:`KNOWS`]->(a)-[r:`FRIENDS`*1..3 {since: 2001}]->(b:`Person`)') }
+      end
+
+      context 'as a condition' do
+        let(:pattern) { association.relationship_pattern(left, CypherDSL::Cypher.any_node).as_condition }
+
+        it 'renders the pattern without introducing variables' do
+          query = ActiveGraph::Core::Query.new.match(left).where(pattern)
+          expect(query.to_cypher).to eq('MATCH (a) WHERE (a)-[:`FRIENDS`]->()')
+        end
+      end
+    end
+
     describe '#arrow_cypher' do
       let(:var) { nil }
       let(:properties) { {} }
@@ -77,18 +109,18 @@ describe ActiveGraph::Node::HasN::Association do
         end
       end
 
-      it { is_expected.to eq('-[]->') }
+      it { is_expected.to eq('-->') }
 
       context 'inbound' do
         let(:direction) { :in }
 
-        it { is_expected.to eq('<-[]-') }
+        it { is_expected.to eq('<--') }
       end
 
       context 'bidirectional' do
         let(:direction) { :both }
 
-        it { is_expected.to eq('-[]-') }
+        it { is_expected.to eq('--') }
       end
 
       context 'creation' do
@@ -99,7 +131,7 @@ describe ActiveGraph::Node::HasN::Association do
         context 'properties given' do
           let(:properties) { { foo: 1, bar: 'test' } }
 
-          it { is_expected.to eq('-[:`DEFAULT` {foo: 1, bar: "test"}]->') }
+          it { is_expected.to eq("-[:`DEFAULT` {foo: 1, bar: 'test'}]->") }
         end
       end
 
@@ -111,7 +143,7 @@ describe ActiveGraph::Node::HasN::Association do
         context 'properties given' do
           let(:properties) { { foo: 1, bar: 'test' } }
 
-          it { is_expected.to eq('-[fooy {foo: 1, bar: "test"}]->') }
+          it { is_expected.to eq("-[fooy {foo: 1, bar: 'test'}]->") }
         end
 
         context 'relationship type given' do
@@ -134,7 +166,7 @@ describe ActiveGraph::Node::HasN::Association do
           context 'properties given' do
             let(:properties) { { foo: 1, bar: 'test' } }
 
-            it { is_expected.to eq('-[fooy:`DEFAULT` {foo: 1, bar: "test"}]->') }
+            it { is_expected.to eq("-[fooy:`DEFAULT` {foo: 1, bar: 'test'}]->") }
           end
         end
       end
@@ -160,7 +192,7 @@ describe ActiveGraph::Node::HasN::Association do
           context 'positive' do
             let(:length) { 42 }
 
-            it { is_expected.to eq('-[*42]->') }
+            it { is_expected.to eq('-[*42..42]->') }
           end
 
           context 'negative' do
@@ -261,7 +293,7 @@ describe ActiveGraph::Node::HasN::Association do
             context 'with properties given' do
               let(:properties) { { foo: 1, bar: 'test' } }
 
-              it { is_expected.to eq('-[r:`TYPE`*0.. {foo: 1, bar: "test"}]->') }
+              it { is_expected.to eq("-[r:`TYPE`*0.. {foo: 1, bar: 'test'}]->") }
             end
           end
         end

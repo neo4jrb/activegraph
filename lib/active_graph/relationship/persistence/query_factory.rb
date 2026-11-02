@@ -54,10 +54,10 @@ module ActiveGraph::Relationship::Persistence
     # Each node must be either created or matched before the relationship can be created. This class does not know or care about
     #   how that happens, it just knows that it needs a usable ActiveGraph::Core::Query object to do that.
     # This method is "iterative" because it creates one factory for each node but the second builds upon the first.
+    # Persisted nodes go first: their MATCH may not follow the SET of a node created in the same query.
     def iterative_query
-      node_symbols.inject(false) do |iterative_query, sym|
-        obj = send(sym)
-        query_factory(obj, sym, iterative_query)
+      node_symbols.sort_by { |sym| send(sym).persisted? ? 0 : 1 }.inject(false) do |iterative_query, sym|
+        query_factory(send(sym), sym, iterative_query)
       end
     end
 
