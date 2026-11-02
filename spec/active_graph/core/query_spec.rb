@@ -1140,8 +1140,8 @@ describe ActiveGraph::Core::Query do
     it 'prefixes the generated parameter names and keeps the query otherwise' do
       namespaced = query.params_namespace('b1_')
       expect(namespaced.to_cypher)
-        .to eq('MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $question_mark_param))')
-      expect(namespaced.parameters).to eq(b1_n_age: 30, question_mark_param: 'Brian')
+        .to eq('MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $b1_question_mark_param))')
+      expect(namespaced.parameters).to eq(b1_n_age: 30, b1_question_mark_param: 'Brian')
       expect(query.to_cypher).to eq('MATCH (n:`Person`) WHERE (n.age = $n_age AND (n.name = $question_mark_param))')
       expect(query.parameters).to eq(n_age: 30, question_mark_param: 'Brian')
     end
@@ -1149,9 +1149,9 @@ describe ActiveGraph::Core::Query do
     it 'applies to the clauses added afterwards' do
       namespaced = query.params_namespace('b1_').where(n: {name: 'Brian'})
       expect(namespaced.to_cypher).to eq(
-        'MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $question_mark_param) AND n.name = $b1_n_name)'
+        'MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $b1_question_mark_param) AND n.name = $b1_n_name)'
       )
-      expect(namespaced.parameters).to eq(b1_n_age: 30, question_mark_param: 'Brian', b1_n_name: 'Brian')
+      expect(namespaced.parameters).to eq(b1_n_age: 30, b1_question_mark_param: 'Brian', b1_n_name: 'Brian')
     end
 
     it 'keeps the names the caller chose' do

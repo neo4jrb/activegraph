@@ -377,8 +377,16 @@ module ActiveGraph
 
       class WhereClause < Clause
         KEYWORD = 'WHERE'
+        ARG_HAS_QUESTION_MARK_REGEX = /(^|\(|\s)\?(\s|\)|$)/
 
+        # A `?` placeholder (`where('n.age > ?', 30)`) binds its value as the generated parameter
+        # `question_mark_param`, so it is namespaced like the other generated names.
         def from_string(value)
+          if @options.key?(:question_mark_value)
+            name = add_param(:question_mark_param, @options[:question_mark_value])
+            value = value.gsub(ARG_HAS_QUESTION_MARK_REGEX, "\\1$#{name}\\2")
+          end
+
           raw(value).as_condition
         end
 
@@ -395,23 +403,19 @@ module ActiveGraph
         end
 
         class << self
-          ARG_HAS_QUESTION_MARK_REGEX = /(^|\(|\s)\?(\s|\)|$)/
-
           def from_args(args, params, options = {})
             query_string, params_arg = args
+            placeholder = query_string.is_a?(String) &&
+                          (query_string.match(ARG_HAS_QUESTION_MARK_REGEX) || params_arg.is_a?(Hash))
+            return super unless placeholder
 
-            if query_string.is_a?(String) && (query_string.match(ARG_HAS_QUESTION_MARK_REGEX) || params_arg.is_a?(Hash))
-              if params_arg.is_a?(Hash)
-                params.add_named_params(params_arg)
-              else
-                param_var = params.add_param(:question_mark_param, params_arg)
-                query_string = query_string.gsub(ARG_HAS_QUESTION_MARK_REGEX, "\\1$#{param_var}\\2")
-              end
-
-              [from_arg(query_string, params, options)]
+            if params_arg.is_a?(Hash)
+              params.add_named_params(params_arg)
             else
-              super
+              options = options.merge(question_mark_value: params_arg)
             end
+
+            [from_arg(query_string, params, options)]
           end
 
           # All conditions of the part joined by AND, on the preceding MATCH or WITH.
