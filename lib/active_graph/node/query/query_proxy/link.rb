@@ -50,7 +50,8 @@ module ActiveGraph
 
             def for_union_clause(arg, model, *args)
               links = []
-              links << new(:call_subquery_start, nil, *args)
+              # The subquery imports the outer identity, which the continuation branches build on.
+              links << new(:call_subquery_start, ->(var, _) { [var] }, *args)
               arg[:subquery_parts].each_with_index do |subquery_part, loop_index|
                 links << init_union_link(arg[:proxy], model, subquery_part, loop_index, args)
               end

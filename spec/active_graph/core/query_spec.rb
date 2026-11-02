@@ -971,6 +971,13 @@ describe ActiveGraph::Core::Query do
 
       expect(result).to eq('MATCH (n:`Person`) UNION ALL MATCH (o:`Person`) WHERE o.age = $o_age')
     end
+
+    it 'keeps the parser option of the receiver' do
+      q = ActiveGraph::Core::Query.new.match(o: :Person)
+      result = ActiveGraph::Core::Query.new(parser: 2.0).match(n: :Person).union_cypher(q)
+
+      expect(result).to eq('CYPHER 2.0 MATCH (n:`Person`) UNION MATCH (o:`Person`)')
+    end
   end
 
 
@@ -1184,15 +1191,26 @@ describe ActiveGraph::Core::Query do
       subquery.call_subquery_end.with(:m)
     end
 
-    it 'brackets the clauses between call_subquery_start and call_subquery_end' do
-      outer = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start
-      query = outer.with(:n).match('(n)-->(m)').return(:m).call_subquery_end.return('count(m)')
+    it 'brackets the clauses between call_subquery_start and call_subquery_end, importing its arguments' do
+      outer = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start(:n)
+      query = outer.match('(n)-->(m)').return(:m).call_subquery_end.return('count(m)')
       expect(query.to_cypher).to eq('MATCH (n:`Person`) CALL (n) {MATCH (n)-->(m) RETURN m} RETURN count(m)')
     end
 
-    it 'keeps a string given to call_subquery_start as the first clause of the subquery' do
-      query = ActiveGraph::Core::Query.new.call_subquery_start('MATCH (m) RETURN m').call_subquery_end.return(:m)
+    it 'imports nothing into a subquery that opens the query' do
+      query = ActiveGraph::Core::Query.new.call_subquery_start(:n).match('(m)').return(:m).call_subquery_end.return(:m)
       expect(query.to_cypher).to eq('CALL () {MATCH (m) RETURN m} RETURN m')
+    end
+
+    it 'rejects an unclosed subquery' do
+      query = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start.match('(m)').detach_delete(:m)
+      expect { query.to_cypher }.to raise_error(ArgumentError, /CALL { without the closing }/)
+    end
+
+    it 'rejects clauses after a union' do
+      query = ActiveGraph::Core::Query.new.call_subquery_start.union(*branch(:n, 30)).union(*branch(:m, 40))
+      expect { query.break.limit(1).call_subquery_end.to_cypher }.to raise_error(ArgumentError, /UNION must be the last/) # rubocop:disable Layout/LineLength
+      expect { query.call_subquery_end.with(:m).limit(1).to_cypher }.not_to raise_error
     end
 
     it 'unites the branches into the subquery and merges their parameters' do
