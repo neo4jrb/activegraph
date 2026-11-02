@@ -258,14 +258,25 @@ module ActiveGraph
           key.gsub!(/^_+|_+$/, '')
         end
 
+        # The same clause built again from its argument, binding its parameters in `params`.
+        def reinterpret(params)
+          self.class.new(arg, params, options).tap(&:value)
+        end
+
+        # The names this clause bound are recorded in `param_vars_added`, so that Query#params_namespace
+        # can tell them from the names the caller chose.
         def add_param(key, value)
-          @param_vars_added << key
-          @params.add_param(key, value)
+          @params.add_param(key, value).tap { |name| @param_vars_added << name }
         end
 
         def add_params(keys_and_values)
-          @param_vars_added += keys_and_values.keys
-          @params.add_params(keys_and_values)
+          @params.add_params(keys_and_values).tap { |names| @param_vars_added.concat(names) }
+        end
+
+        # The parameters of a query built elsewhere (a union branch), under the names it already uses.
+        def add_final_params(params)
+          @params.add_final_params(params)
+          @param_vars_added.concat(params.keys)
         end
 
         private
@@ -339,17 +350,22 @@ module ActiveGraph
         end
       end
 
+      # The branches of a `CALL { … UNION … }` subquery, one clause per branch. A branch is given as
+      # `[builder, outer_identity]`: `builder.call(prefix)` returns the branch's return identity and
+      # its Query, built with `prefix` as the namespace of its parameters (Query#params_namespace),
+      # so that the branches, built independently, never bind one name to different values. The
+      # branch is rendered as text until the union itself is typed.
       class UnionClause < Clause
         KEYWORD = ''
 
-        def from_array(args)
-          "#{args[1]} RETURN #{args[0]} AS #{args.last}"
+        def from_array((builder, outer_identity))
+          branch_identity, branch = builder.call(@params.prefix)
+          add_final_params(branch.parameters)
+          "#{branch.to_cypher} RETURN #{branch_identity} AS #{outer_identity}"
         end
 
         class << self
           def from_args(args, params, options = {})
-            params.add_params(args[2])
-
             [from_arg(args, params, options)]
           end
 
@@ -386,9 +402,9 @@ module ActiveGraph
 
             if query_string.is_a?(String) && (query_string.match(ARG_HAS_QUESTION_MARK_REGEX) || params_arg.is_a?(Hash))
               if params_arg.is_a?(Hash)
-                params.add_params(params_arg)
+                params.add_named_params(params_arg)
               else
-                param_var = params.add_params(question_mark_param: params_arg)[0]
+                param_var = params.add_param(:question_mark_param, params_arg)
                 query_string = query_string.gsub(ARG_HAS_QUESTION_MARK_REGEX, "\\1$#{param_var}\\2")
               end
 

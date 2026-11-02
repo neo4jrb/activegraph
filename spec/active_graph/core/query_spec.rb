@@ -1134,6 +1134,43 @@ describe ActiveGraph::Core::Query do
     end
   end
 
+  describe '#params_namespace' do
+    let(:query) { ActiveGraph::Core::Query.new.match(n: :Person).where(n: {age: 30}).where('n.name = ?', 'Brian') }
+
+    it 'prefixes the generated parameter names and keeps the query otherwise' do
+      namespaced = query.params_namespace('b1_')
+      expect(namespaced.to_cypher)
+        .to eq('MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $question_mark_param))')
+      expect(namespaced.parameters).to eq(b1_n_age: 30, question_mark_param: 'Brian')
+      expect(query.to_cypher).to eq('MATCH (n:`Person`) WHERE (n.age = $n_age AND (n.name = $question_mark_param))')
+      expect(query.parameters).to eq(n_age: 30, question_mark_param: 'Brian')
+    end
+
+    it 'applies to the clauses added afterwards' do
+      namespaced = query.params_namespace('b1_').where(n: {name: 'Brian'})
+      expect(namespaced.to_cypher).to eq(
+        'MATCH (n:`Person`) WHERE (n.age = $b1_n_age AND (n.name = $question_mark_param) AND n.name = $b1_n_name)'
+      )
+      expect(namespaced.parameters).to eq(b1_n_age: 30, question_mark_param: 'Brian', b1_n_name: 'Brian')
+    end
+
+    it 'keeps the names the caller chose' do
+      person = CypherDSL::Cypher.node('Person').named(:p)
+      name = person.property(:name).is_equal_to(CypherDSL::Cypher.parameter(:name, 'Brian'))
+      query = ActiveGraph::Core::Query.new.match(person).where('p.age > $min', min: 18).where('p.age < $max')
+      named = query.where(name).params(max: 65).params_namespace('b1_')
+      expect(named.to_cypher).to eq('MATCH (p:`Person`) WHERE ((p.age > $min) AND (p.age < $max) AND p.name = $name)')
+      expect(named.parameters).to eq(min: 18, max: 65, name: 'Brian')
+    end
+
+    it 'namespaces the clauses merged in from another query' do
+      other = ActiveGraph::Core::Query.new.where(p: {name: 'Brian'})
+      namespaced = (ActiveGraph::Core::Query.new.match(p: :Person).where(p: {age: 30}) & other).params_namespace('b1_')
+      expect(namespaced.to_cypher).to eq('MATCH (p:`Person`) WHERE (p.age = $b1_p_age AND p.name = $b1_p_name)')
+      expect(namespaced.parameters).to eq(b1_p_age: 30, b1_p_name: 'Brian')
+    end
+  end
+
   describe 'merging queries' do
     let(:query1) { ActiveGraph::Core::Query.new.match(p: Person) }
     let(:query2) { ActiveGraph::Core::Query.new.match(c: :Car) }

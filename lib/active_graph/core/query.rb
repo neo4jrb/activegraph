@@ -16,9 +16,16 @@ module ActiveGraph
 
       attr_accessor :clauses
 
+      # The registry of the parameters a query binds. Names generated from the clause arguments
+      # (`where(n: {age: 1})` binds `n_age`) are made unique and carry the registry's prefix, so that
+      # queries built independently and joined later (the branches of a union) never clash. Names the
+      # caller chose (`params(age: 1)`, `where('n.age = $age', age: 1)`) are never prefixed.
       class Parameters
-        def initialize(hash = nil)
+        attr_reader :prefix
+
+        def initialize(hash = nil, prefix = '')
           @parameters = (hash || {})
+          @prefix = prefix
         end
 
         def to_hash
@@ -26,13 +33,19 @@ module ActiveGraph
         end
 
         def copy
-          self.class.new(@parameters.dup)
+          self.class.new(@parameters.dup, @prefix)
         end
 
+        # Binds `value` under a unique name derived from `key` and the prefix.
+        # @return [Symbol] the name used
         def add_param(key, value)
-          free_param_key(key).tap do |k|
-            @parameters[k.freeze] = value
-          end
+          bind("#{@prefix}#{key}", value)
+        end
+
+        # Binds `value` under the name the caller chose, outside the namespace.
+        # @return [Symbol] the name used, `key` made unique
+        def add_named_param(key, value)
+          bind(key, value)
         end
 
         def remove_param(key)
@@ -45,7 +58,30 @@ module ActiveGraph
           end
         end
 
+        def add_named_params(params)
+          params.map do |key, value|
+            add_named_param(key, value)
+          end
+        end
+
+        # Binds the parameters of a query built elsewhere under the names it already uses.
+        # @raise [CypherDSL::ConflictingParametersException] when a name is bound to another value
+        def add_final_params(params)
+          conflicts = params.filter_map do |key, value|
+            [key, Set[@parameters[key], value]] if @parameters.key?(key) && @parameters[key] != value
+          end.to_h
+          fail CypherDSL::ConflictingParametersException, conflicts if conflicts.any?
+
+          @parameters.merge!(params)
+        end
+
         private
+
+        def bind(key, value)
+          free_param_key(key).tap do |k|
+            @parameters[k.freeze] = value
+          end
+        end
 
         def free_param_key(key)
           k = key.to_sym
@@ -222,7 +258,28 @@ module ActiveGraph
       #   Query.new.match('(q: Person {id: $id})').params(id: 12)
       #
       def params(args)
-        copy.tap { |new_query| new_query.instance_variable_get('@params'.freeze).add_params(args) }
+        copy.tap { |new_query| new_query.instance_variable_get('@params'.freeze).add_named_params(args) }
+      end
+
+      # A copy whose generated parameter names start with `prefix` (`where(n: {age: 1})` then binds
+      # `$<prefix>n_age`): every clause is interpreted again against a registry carrying the prefix.
+      # Names the caller chose (see Parameters) and the parameters of cypher-dsl objects passed in
+      # directly keep their names. Used for the branches of a union, which are built independently
+      # of each other and of the query around them.
+      # @example
+      #   Query.new.match(n: :Person).where(n: {age: 30}).params_namespace('b1_')
+      #   # => MATCH (n:`Person`) WHERE n.age = $b1_n_age, parameters {b1_n_age: 30}
+      def params_namespace(prefix)
+        registry = Parameters.new(caller_named_params, prefix)
+        copy.tap do |query|
+          query.instance_variable_set('@params'.freeze, registry)
+          query.clauses = clauses.map { |clause| clause&.reinterpret(registry) }
+        end
+      end
+
+      # The bound parameters minus those the clauses generated.
+      def caller_named_params
+        merge_params.except(*clauses.compact.flat_map(&:param_vars_added))
       end
 
       def unwrapped
