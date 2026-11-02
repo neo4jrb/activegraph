@@ -76,20 +76,52 @@ module ActiveGraph
 
       # Feeds interpreted clauses into a CypherDSL::StatementBuilder, remembering what
       # kind of clause came last so that WHERE, ORDER BY, SKIP and LIMIT can refine it.
+      # A `CALL { … }` subquery is assembled into a builder of its own, opened by
+      # `open_subquery` and handed to the enclosing builder by `close_subquery`.
       class Assembler
         attr_reader :builder
 
         def initialize
           @builder = CypherDSL::Statement.builder
           @last = nil
+          @union = nil
+          @enclosing = []
         end
 
         def empty?
-          @last.nil?
+          @last.nil? && @union.nil?
+        end
+
+        # The clauses up to the matching `close_subquery` form the body of a subquery importing `imports`.
+        def open_subquery(imports)
+          fail_after_union
+          @enclosing.push([@builder, @last, @union, imports])
+          @builder = CypherDSL::Statement.builder
+          @last = nil
+          @union = nil
+        end
+
+        # `CALL (imports) { body }` on the enclosing builder. A subquery that opens the query has
+        # nothing to import, so its imports are dropped.
+        def close_subquery
+          body = built
+          fail ArgumentError, 'CALL { } needs at least one clause in the subquery' unless body
+
+          @builder, @last, @union, imports = @enclosing.pop
+          imports = [] if empty?
+          append(:call) { |builder| builder.call(body, *imports) }
+        end
+
+        # The statements of a union as the whole statement being assembled (the body of a subquery).
+        def union(statements)
+          fail ArgumentError, 'UNION cannot follow other clauses of the same query' unless empty?
+
+          @union = statements.size == 1 ? statements.first : CypherDSL::Cypher.union(statements)
         end
 
         # Appends a clause; `kind` is remembered for later refinement.
         def append(kind)
+          fail_after_union
           @builder = yield(@builder)
           @last = kind
           self
@@ -107,8 +139,23 @@ module ActiveGraph
           append(:raw) { |builder| builder.raw_clause(expression) }
         end
 
+        # The statement assembled so far; every subquery opened must have been closed.
         def statement
+          fail ArgumentError, 'CALL { without the closing }' unless @enclosing.empty?
+
+          built
+        end
+
+        private
+
+        def built
+          return @union if @union
+
           empty? ? nil : @builder.build
+        end
+
+        def fail_after_union
+          fail ArgumentError, 'UNION must be the last clause of its query' if @union
         end
       end
 
@@ -354,14 +401,17 @@ module ActiveGraph
       # `[builder, outer_identity]`: `builder.call(prefix)` returns the branch's return identity and
       # its Query, built with `prefix` as the namespace of its parameters (Query#params_namespace),
       # so that the branches, built independently, never bind one name to different values. The
-      # branch is rendered as text until the union itself is typed.
+      # branch becomes a statement returning its identity as the outer one; together the branches
+      # form the statement (CypherDSL::UnionQuery) that is the body of the enclosing subquery.
       class UnionClause < Clause
-        KEYWORD = ''
+        KEYWORD = 'UNION'.freeze
 
         def from_array((builder, outer_identity))
           branch_identity, branch = builder.call(@params.prefix)
           add_final_params(branch.parameters)
-          "#{branch.to_cypher} RETURN #{branch_identity} AS #{outer_identity}"
+          returned = name(branch_identity)
+          returned = returned.as(outer_identity) unless branch_identity.to_s == outer_identity.to_s
+          branch.return(returned).statement
         end
 
         class << self
@@ -370,7 +420,7 @@ module ActiveGraph
           end
 
           def apply(assembler, clauses)
-            assembler.raw_clause(Fragments.raw(values(clauses).join(' UNION ')))
+            assembler.union(values(clauses))
           end
         end
       end
@@ -484,20 +534,26 @@ module ActiveGraph
         end
       end
 
+      # Opens a `CALL { … }` subquery: the clauses up to the matching CallSubqueryEndClause are its
+      # body, the arguments (`call_subquery_start(:n)`) the variables it imports. The renderer writes
+      # `CALL (imports) { … }` (the syntax of Neo4j 5.23+); without imports, a subquery that opens the
+      # query imports nothing (`CALL () {`) and one that follows other clauses imports them all
+      # (`CALL (*) {`), as the Java DSL renders it.
       class CallSubqueryStartClause < Clause
         KEYWORD = 'CALL {'
 
-        def from_nilclass(_value)
-          nil
+        def from_array(imports)
+          imports.compact.map { |import| expression(import) }
         end
 
-        def from_string(value)
-          value
-        end
+        class << self
+          # One clause per call, carrying all the imports.
+          def from_args(args, params, options = {})
+            [new(args.flatten, params, options).tap(&:value)]
+          end
 
-        def self.apply(assembler, clauses)
-          clauses.each do |clause|
-            assembler.raw_clause(Fragments.raw([KEYWORD, clause.value.to_s.strip].reject(&:empty?).join(' ')))
+          def apply(assembler, clauses)
+            clauses.each { |clause| assembler.open_subquery(clause.value) }
           end
         end
       end
@@ -509,8 +565,14 @@ module ActiveGraph
           nil
         end
 
-        def self.apply(assembler, clauses)
-          clauses.each { assembler.raw_clause(Fragments.raw(KEYWORD)) }
+        class << self
+          def from_args(args, params, options = {})
+            args.empty? ? [new(nil, params, options)] : super
+          end
+
+          def apply(assembler, clauses)
+            clauses.each { assembler.close_subquery }
+          end
         end
       end
 

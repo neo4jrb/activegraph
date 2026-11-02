@@ -409,8 +409,7 @@ module ActiveGraph
         renderer = options[:pretty] ? PRETTY_RENDERER : RENDERER
         cypher_string = built ? renderer.render(built) : ''
         cypher_string = colorize(cypher_string) if options[:pretty]
-        cypher_string = "CYPHER #{@options[:parser]} #{cypher_string}" if @options[:parser]
-        cypher_string.strip
+        with_parser(cypher_string).strip
       end
 
       alias cypher to_cypher
@@ -453,7 +452,9 @@ module ActiveGraph
       # @param options [Hash] Specify {all: true} to use UNION ALL
       # @return [String] Resulting UNION cypher query string
       def union_cypher(other, options = {})
-        "#{to_cypher} UNION#{options[:all] ? ' ALL' : ''} #{other.to_cypher}"
+        statements = [statement, other.statement]
+        union = options[:all] ? CypherDSL::Cypher.union_all(statements) : CypherDSL::Cypher.union(statements)
+        with_parser(RENDERER.render(union))
       end
 
       def &(other)
@@ -514,6 +515,11 @@ module ActiveGraph
       def dsl_parameters
         built = statement
         built ? built.parameters.transform_keys(&:to_sym) : {}
+      end
+
+      # The `CYPHER <version>` prefix of the `parser` option, when set.
+      def with_parser(cypher_string)
+        @options[:parser] ? "CYPHER #{@options[:parser]} #{cypher_string}" : cypher_string
       end
 
       def colorize(cypher_string)

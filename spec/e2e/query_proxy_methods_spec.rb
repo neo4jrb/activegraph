@@ -298,10 +298,10 @@ describe 'query_proxy_methods' do
       it 'namespaces the generated names of each branch and leaves the outer ones alone' do
         expect(union.to_cypher).to eq(
           "MATCH (#{outer}:`Teacher`) WHERE #{outer}.age = $#{outer}_age " \
-          "CALL { WITH #{outer} WITH #{outer} WHERE #{outer}.name = $#{outer}_UNION0_#{outer}_name " \
+          "CALL (#{outer}) {WITH #{outer} WITH #{outer} WHERE #{outer}.name = $#{outer}_UNION0_#{outer}_name " \
           "RETURN #{outer} AS #{id} " \
           "UNION MATCH (#{id}:`Teacher`) WHERE #{id}.name = $#{outer}_UNION1_#{id}_name " \
-          "RETURN #{id} AS #{id} } WITH #{id}, #{outer}"
+          "RETURN #{id}} WITH #{id}, #{outer}"
         )
         expect(union.query.parameters).to eq("#{outer}_age": 34,
                                              "#{outer}_UNION0_#{outer}_name": bartemius.name,
