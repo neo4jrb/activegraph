@@ -283,10 +283,11 @@ describe 'query_proxy_methods' do
 
     # The branches are built independently, so their generated parameter names are namespaced
     # per branch when they are built (`<outer identity>_UNION<index>_` in front of the usual name).
-    # The identity (`result_teacher`, `result_teacher2`, …) depends on the examples run before, so the
-    # names are derived from it; the blocks only see locals, since they run against a proxy.
+    # The identity of the class-level proxy (`result_teacher`, `result_teacher2`, …) depends on the
+    # examples run before, so the names are derived from it; the blocks only see locals, since they
+    # run against a proxy.
     context 'parameter naming' do
-      let(:id) { Teacher.all.identity }
+      let(:id) { Teacher.query_proxy.identity }
       let(:outer) { "outer_#{id}" }
       let(:union) do
         bartemius_name = bartemius.name
