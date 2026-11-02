@@ -1171,6 +1171,58 @@ describe ActiveGraph::Core::Query do
     end
   end
 
+  describe 'subqueries' do
+    # A union branch as Query#union expects it: a builder taking the namespace of its parameters,
+    # returning the branch's identity and query, plus the identity it is returned as.
+    def branch(var, age)
+      query = ActiveGraph::Core::Query.new.match(var => :Person).where(var => {age: age})
+      [->(prefix) { [var, query.params_namespace(prefix)] }, :m]
+    end
+
+    let(:union) do
+      subquery = ActiveGraph::Core::Query.new.call_subquery_start.union(*branch(:n, 30)).union(*branch(:m, 40))
+      subquery.call_subquery_end.with(:m)
+    end
+
+    it 'brackets the clauses between call_subquery_start and call_subquery_end' do
+      outer = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start
+      query = outer.with(:n).match('(n)-->(m)').return(:m).call_subquery_end.return('count(m)')
+      expect(query.to_cypher).to eq('MATCH (n:`Person`) CALL (n) {MATCH (n)-->(m) RETURN m} RETURN count(m)')
+    end
+
+    it 'keeps a string given to call_subquery_start as the first clause of the subquery' do
+      query = ActiveGraph::Core::Query.new.call_subquery_start('MATCH (m) RETURN m').call_subquery_end.return(:m)
+      expect(query.to_cypher).to eq('CALL () {MATCH (m) RETURN m} RETURN m')
+    end
+
+    it 'unites the branches into the subquery and merges their parameters' do
+      expect(union.to_cypher).to eq(
+        'CALL () {MATCH (n:`Person`) WHERE n.age = $n_age RETURN n AS m ' \
+        'UNION MATCH (m:`Person`) WHERE m.age = $m_age RETURN m} WITH m'
+      )
+      expect(union.parameters).to eq(n_age: 30, m_age: 40)
+    end
+
+    it 'nests the subqueries when pretty printing' do
+      expect(union.to_cypher(pretty: true).gsub(/\e[^m]+m/, '')).to eq(<<~CYPHER.strip)
+        CALL () {
+          MATCH (n:`Person`)
+          WHERE n.age = $n_age
+          RETURN n AS m UNION
+          MATCH (m:`Person`)
+          WHERE m.age = $m_age
+          RETURN m
+        }
+        WITH m
+      CYPHER
+    end
+
+    it 'rejects a union after other clauses of the same query' do
+      query = ActiveGraph::Core::Query.new.match(n: :Person).union(*branch(:n, 30)).union(*branch(:m, 40))
+      expect { query.to_cypher }.to raise_error(ArgumentError, /UNION cannot follow/)
+    end
+  end
+
   describe 'merging queries' do
     let(:query1) { ActiveGraph::Core::Query.new.match(p: Person) }
     let(:query2) { ActiveGraph::Core::Query.new.match(c: :Car) }

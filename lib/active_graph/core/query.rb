@@ -453,7 +453,9 @@ module ActiveGraph
       # @param options [Hash] Specify {all: true} to use UNION ALL
       # @return [String] Resulting UNION cypher query string
       def union_cypher(other, options = {})
-        "#{to_cypher} UNION#{options[:all] ? ' ALL' : ''} #{other.to_cypher}"
+        statements = [statement, other.statement]
+        union = options[:all] ? CypherDSL::Cypher.union_all(statements) : CypherDSL::Cypher.union(statements)
+        RENDERER.render(union)
       end
 
       def &(other)
