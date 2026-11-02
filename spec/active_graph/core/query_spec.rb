@@ -177,6 +177,29 @@ describe ActiveGraph::Core::Query do
         it { should be(true) }
       end
     end
+
+    context 'checking for return_distinct' do
+      let(:clause_method) { :return_distinct }
+
+      context 'Query with a return' do
+        let(:query) { ActiveGraph::Core::Query.new.return(:n) }
+        it { should be(false) }
+      end
+
+      context 'Query with a return_distinct' do
+        let(:query) { ActiveGraph::Core::Query.new.return_distinct(:n) }
+        it { should be(true) }
+      end
+    end
+
+    context 'checking for return' do
+      let(:clause_method) { :return }
+
+      context 'Query with a return_distinct' do
+        let(:query) { ActiveGraph::Core::Query.new.return_distinct(:n) }
+        it { should be(true) }
+      end
+    end
   end
 
 

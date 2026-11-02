@@ -415,7 +415,12 @@ module ActiveGraph
         end
       end
 
+      # `clause?(:return_distinct)` is true only for a distinct projection, `clause?(:return)` for either.
       def clause?(method)
+        if method == :return_distinct
+          return clauses.any? { |clause| clause.is_a?(ReturnClause) && clause.options[:distinct] }
+        end
+
         clause_class = DEFINED_CLAUSES[method] || CLAUSIFY_CLAUSE.call(method)
         clauses.any? { |clause| clause.is_a?(clause_class) }
       end
