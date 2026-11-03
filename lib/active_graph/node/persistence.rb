@@ -114,17 +114,19 @@ module ActiveGraph::Node
         optional_attrs.default = {}
         on_create_attrs, on_match_attrs, set_attrs = optional_attrs.values_at(*options)
 
-        new_query.merge(n: {self.mapped_label_names => match_attributes})
-                 .on_create_set(on_create_clause(on_create_attrs))
+        new_query.merge(n: {self.mapped_label_names => attributes_for_db(match_attributes)})
+                 .on_create_set(on_create_clause(on_create_attrs, match_attributes))
                  .on_match_set(on_match_clause(on_match_attrs))
-                 .break.set(n: set_attrs)
+                 .break.set(n: attributes_for_db(set_attrs))
                  .pluck(:n).first
       end
 
       def find_or_create(find_attributes, set_attributes = {})
-        on_create_attributes = set_attributes.reverse_merge(find_attributes.merge(self.new(find_attributes).props_for_create))
+        db_find_attributes = attributes_for_db(find_attributes)
+        on_create_attributes = attributes_for_db(set_attributes)
+                               .reverse_merge(db_find_attributes.merge(self.new(find_attributes).props_for_create))
 
-        new_query.merge(n: {self.mapped_label_names => find_attributes})
+        new_query.merge(n: {self.mapped_label_names => db_find_attributes})
                  .on_create_set(n: on_create_attributes)
                  .pluck(:n).first
       end
@@ -155,9 +157,21 @@ module ActiveGraph::Node
 
       private
 
-      def on_create_clause(clause)
+      # Converts the values of declared properties to the form they are stored in the database (e.g. enum keys to
+      # their integer values), so that they can be used as MERGE patterns and SET values. Keys are symbolized.
+      def attributes_for_db(attributes)
+        return attributes unless attributes.is_a?(Hash)
+
+        attributes.each_with_object({}) do |(key, value), result|
+          result[key.to_sym] = declared_properties.value_for_db(key.to_sym, value)
+        end
+      end
+
+      # The match attributes are applied over the props for create so that property defaults (and the generated id
+      # property) don't overwrite them when the node is created.
+      def on_create_clause(clause, match_attributes)
         if clause.is_a?(Hash)
-          {n: clause.merge(self.new(clause).props_for_create)}
+          {n: new(clause).props_for_create.merge(attributes_for_db(match_attributes), attributes_for_db(clause))}
         else
           clause
         end
@@ -165,7 +179,8 @@ module ActiveGraph::Node
 
       def on_match_clause(clause)
         if clause.is_a?(Hash)
-          {n: clause.merge(attributes_nil_hash.key?('updated_at') ? {updated_at: Time.new.to_i} : {})}
+          timestamps = attributes_nil_hash.key?('updated_at') ? {updated_at: Time.new.to_i} : {}
+          {n: attributes_for_db(clause).merge(timestamps)}
         else
           clause
         end
