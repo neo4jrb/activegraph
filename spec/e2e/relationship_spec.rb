@@ -514,6 +514,42 @@ describe 'Relationship' do
           expect(query).to include(rel1, rel2)
         end
       end
+
+      it 'combines multiple conditions' do
+        expect(MyRelClass.where(score: 99, default: 'default_value')).to eq [rel1]
+        expect(MyRelClass.where(score: 99, default: 'other value')).to eq []
+      end
+
+      it 'matches values containing quotes' do
+        rel = MyRelClass.create(from_node: from_node, to_node: to_node, links: "it's")
+        expect(MyRelClass.where(links: "it's")).to eq [rel]
+      end
+
+      it 'does not interpolate values into the query' do
+        expect(MyRelClass.where(links: "' OR 1=1 OR r1.links = '")).to eq []
+      end
+
+      it 'converts values to the declared property types' do
+        expect(MyRelClass.where(score: '99')).to eq [rel1]
+      end
+
+      it 'finds by neo_id' do
+        expect(MyRelClass.where(neo_id: rel2.neo_id)).to eq [rel2]
+      end
+
+      it 'returns all rels without conditions' do
+        expect(MyRelClass.where).to include(rel1, rel2)
+      end
+
+      it 'finds by nil values' do
+        expect(MyRelClass.where(score: 99, should_be_nil: nil)).to eq [rel1]
+      end
+    end
+
+    describe 'find_by' do
+      it 'returns the first matching rel' do
+        expect(MyRelClass.find_by(score: 49)).to eq rel2
+      end
     end
 
     describe 'all' do
