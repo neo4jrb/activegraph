@@ -168,6 +168,38 @@ describe ActiveGraph::Node do
     end
   end
 
+  describe '.find_or_create' do
+    it 'matches existing nodes by enum key' do
+      file = StoredFile.find_or_create(type: :video)
+      expect(StoredFile.find_or_create(type: :video).id).to eq(file.id)
+      expect(StoredFile.count).to eq(1)
+      expect(StoredFile.as(:f).pluck('f.type')).to eq([2])
+    end
+
+    it 'stores enum values given as set attributes as integers' do
+      file = StoredFile.find_or_create({ type: :video }, flag: :dangerous)
+      expect(StoredFile.as(:f).pluck('f.flag')).to eq([1])
+      expect(file.reload.flag).to eq(:dangerous)
+    end
+  end
+
+  describe '.merge' do
+    it 'matches existing nodes by enum key' do
+      file = StoredFile.merge(type: :video)
+      expect(StoredFile.merge(type: :video).id).to eq(file.id)
+      expect(StoredFile.count).to eq(1)
+    end
+
+    it 'stores enum values of the on_create, on_match and set clauses as integers' do
+      StoredFile.merge({ type: :video }, on_create: { flag: :clean }, set: { size: :small })
+      expect(StoredFile.as(:f).pluck('f.flag', 'f.size')).to eq([[0, 2]])
+
+      file = StoredFile.merge({ type: :video }, on_match: { flag: :dangerous }, set: { size: :big })
+      expect(StoredFile.as(:f).pluck('f.flag', 'f.size')).to eq([[1, 100]])
+      expect(file.reload).to have_attributes(flag: :dangerous, size: :big)
+    end
+  end
+
   describe '? methods' do
     it 'returns false when accessing to a nil value' do
       file = StoredFile.new
