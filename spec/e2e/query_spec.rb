@@ -253,6 +253,18 @@ describe 'Query API' do
           end
         end
 
+        context 'when matching on a property with a default value' do
+          let(:merge_attrs) { { name: 'Dr. Dre', status: 'on leave', age: '49' } }
+          let(:set_attrs) { {} }
+
+          its(:status) { is_expected.to eq 'on leave' }
+
+          it 'matches the created node on the next merge' do
+            expect(Teacher.merge(merge_attrs).id).to eq(subject.id)
+            expect(Teacher.as(:t).pluck('t.age')).to eq([49])
+          end
+        end
+
         describe 'string clauses' do
           let_context on_match_clause: 'n.age = 30 + 1', on_create_clause: 'n.age = 30 + 2' do
             its(:age) { is_expected.to eq 32 }
@@ -292,6 +304,20 @@ describe 'Query API' do
           expect(samuels.age).to eq(34)
           expect(samuels.status).to eq('active')
           expect(samuels._persisted_obj.properties[:status]).to eq 'active'
+        end
+
+        it 'matches by the find attributes converted to the declared property types' do
+          Teacher.find_or_create(name: 'Dr. Harold Samuels', age: '34')
+          Teacher.find_or_create(name: 'Dr. Harold Samuels', age: '34')
+
+          expect(Teacher.count).to eq(1)
+          expect(Teacher.as(:t).pluck('t.age')).to eq([34])
+        end
+
+        it 'converts the set attributes to the declared property types' do
+          Teacher.find_or_create({ name: 'Dr. Harold Samuels' }, age: '34')
+
+          expect(Teacher.as(:t).pluck('t.age')).to eq([34])
         end
 
         it 'overrides default properties on create' do
