@@ -27,7 +27,7 @@ module ActiveGraph
         def arrow_cypher(var = nil, properties = {}, create = false, reverse = false, length = nil)
           options = {var: var, properties: properties, create: create, reverse: reverse, length: length}
           pattern = relationship_pattern(CypherDSL::Cypher.any_node, CypherDSL::Cypher.any_node, **options)
-          ActiveGraph::Core::Query::RENDERER.render_fragment(pattern).delete_prefix('()').delete_suffix('()')
+          ActiveGraph::Base.renderer.render_fragment(pattern).delete_prefix('()').delete_suffix('()')
         end
 
         private

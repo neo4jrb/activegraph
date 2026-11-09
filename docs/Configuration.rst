@@ -36,6 +36,13 @@ Variables
 
     .. seealso:: :ref:`activenode-wrapping`
 
+  **cypher_dialect**
+    **Default:** ``nil`` (detected from the server version)
+
+    **Available values:** ``:neo4j4``, ``:neo4j5``, ``:neo4j5_23``, ``:neo4j5_26``, ``:neo4j5_default_cypher``, ``:neo4j5_cypher_5``, ``:neo4j5_cypher_25``, ``:neo4j2025``
+
+    The cypher-dsl dialect generated queries are rendered in. By default it follows the version reported by the connected server: ``:neo4j4`` for Neo4j 4.x, ``:neo4j5`` for 5.0 to 5.22 (both render subqueries as ``CALL { WITH n … }``) and ``:neo4j5_default_cypher`` from 5.23 on (``CALL (n) { … }``). Set it to pin a dialect, for instance when a proxy hides the server version.
+
   **enums_case_sensitive**
     **Default:** ``false``
 

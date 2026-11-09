@@ -33,3 +33,7 @@ cache_class_names: true
 # class_name_property:  :_classname
 
 transform_rel_type: :upcase
+
+# The cypher-dsl dialect queries are rendered in. Detected from the server version when unset:
+# :neo4j4 for Neo4j 4.x, :neo4j5 up to 5.22 (`CALL { WITH n … }` subqueries), :neo4j5_default_cypher from 5.23 on.
+# cypher_dialect: :neo4j5
