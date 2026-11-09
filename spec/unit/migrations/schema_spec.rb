@@ -23,6 +23,19 @@ describe ActiveGraph::Migrations::Schema do
   let(:not_null_node_prop_constraint) { 'CREATE CONSTRAINT `not_null_node_prop_constraint` FOR (n:`Person`) REQUIRE (n.`name`) IS NOT NULL' }
   let(:node_key_constraint) { 'CREATE CONSTRAINT `node_key_constraint` FOR (n:`Person`) REQUIRE (n.`name`, n.`surname`) IS KEY' }
 
+  # Before 2026 the server spells node key constraints `IS NODE KEY`.
+  if ActiveGraph::Base.version?('<2026')
+    let(:node_key_constraint) { 'CREATE CONSTRAINT `node_key_constraint` FOR (n:`Person`) REQUIRE (n.`name`, n.`surname`) IS NODE KEY' }
+  end
+
+  # Before 5.26 the server writes the index provider into the create statements; the option is
+  # deprecated since 5.26.
+  if ActiveGraph::Base.version?('<5.26')
+    let(:point_index) { "CREATE POINT INDEX `point_index` FOR (n:`Person`) ON (n.`location`) OPTIONS {indexConfig: {`spatial.cartesian-3d.max`: [1000000.0, 1000000.0, 1000000.0],`spatial.cartesian-3d.min`: [-1000000.0, -1000000.0, -1000000.0],`spatial.cartesian.max`: [1000000.0, 1000000.0],`spatial.cartesian.min`: [-1000000.0, -1000000.0],`spatial.wgs-84-3d.max`: [180.0, 90.0, 1000000.0],`spatial.wgs-84-3d.min`: [-180.0, -90.0, -1000000.0],`spatial.wgs-84.max`: [180.0, 90.0],`spatial.wgs-84.min`: [-180.0, -90.0]}, indexProvider: 'point-1.0'}" }
+    let(:fulltext_index) { "CREATE FULLTEXT INDEX `fulltext_index` FOR (n:`Friend`) ON EACH [n.`name`] OPTIONS {indexConfig: {`fulltext.analyzer`: 'swedish',`fulltext.eventually_consistent`: false}, indexProvider: 'fulltext-1.0'}" }
+    let(:text_index) { "CREATE TEXT INDEX `text_index` FOR ()-[r:`KNOWS`]-() ON (r.`city`) OPTIONS {indexConfig: {}, indexProvider: 'text-2.0'}" }
+  end
+
   if ActiveGraph::Base.version?('<5')
     let(:text_index) { 'CREATE TEXT INDEX `text_index` FOR ()-[r:`KNOWS`]-() ON (r.`city`)' }
   end
