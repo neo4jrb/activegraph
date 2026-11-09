@@ -25,7 +25,7 @@ module ActiveGraph::Relationship
       # @example Match with a string
       #   MyRelClass.where('r1.grade > r1')
       def where(args = {})
-        where_query.where(where_string(args)).pluck(:r1)
+        where_query.where(where_args(args)).pluck(:r1)
       end
 
       def find_by(args)
@@ -89,15 +89,12 @@ module ActiveGraph::Relationship
         end
       end
 
-      def where_string(args)
-        case args
-        when Hash
-          args.transform_keys { |key| key == :neo_id ? 'elementId(r1)' : "r1.#{key}" }
-              .transform_values { |v| v.is_a?(Integer) ? v : "'#{v}'" }
-              .map { |k, v| "#{k} = #{v}" }.join(', ')
-        else
-          args
-        end
+      # Hash conditions are passed to the query as parameters (and converted to the declared property types)
+      # rather than interpolated into the Cypher string.
+      def where_args(args)
+        return args unless args.is_a?(Hash) && args.present?
+
+        {r1: args.to_h { |key, value| [key, declared_properties.value_for_where(key.to_sym, value)] }}
       end
     end
   end
