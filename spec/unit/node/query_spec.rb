@@ -36,17 +36,17 @@ describe ActiveGraph::Node::Query do
     end
 
     it 'can be built upon' do
-      expect(@class_a.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher).to eq('MATCH (q:`Person`), q--p WHERE (p.name = $p_name)')
+      expect(@class_a.query_as(:q).match('q--p').where(p: {name: 'Brian'}).to_cypher).to eq('MATCH (q:`Person`), q--p WHERE p.name = $p_name')
     end
   end
 
   describe '#query_as' do
     it 'generates a basic query with labels' do
-      expect(@class_a.new.query_as(:q).to_cypher).to eq('MATCH (q) WHERE (elementId(q) = $elementId_q)')
+      expect(@class_a.new.query_as(:q).to_cypher).to eq('MATCH (q) WHERE elementId(q) = $elementId_q')
     end
 
     it 'can be built upon' do
-      expect(@class_a.new.query_as(:q).match('(q)--(p)').return(p: :name).to_cypher).to eq('MATCH (q), (q)--(p) WHERE (elementId(q) = $elementId_q) RETURN p.name')
+      expect(@class_a.new.query_as(:q).match('(q)--(p)').return(p: :name).to_cypher).to eq('MATCH (q), (q)--(p) WHERE elementId(q) = $elementId_q RETURN p.name')
     end
 
     it 'does not include labels' do

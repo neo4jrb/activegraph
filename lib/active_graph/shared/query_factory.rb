@@ -45,10 +45,21 @@ module ActiveGraph::Shared
       fail 'Abstract class, not implemented'
     end
 
+    def match_pattern
+      fail 'Abstract class, not implemented'
+    end
+
     def match_query
-      base_query
-        .match(match_string).where("elementId(#{identifier}) = $#{identifier_id}")
-        .params(identifier_id.to_sym => graph_object.neo_id)
+      element_id = ActiveGraph::Core::QueryClauses::Fragments.element_id(identifier)
+      base_query.match(match_pattern).where(element_id.is_equal_to(parameter(identifier_id, graph_object.neo_id)))
+    end
+
+    def node(name = nil)
+      CypherDSL::Cypher.any_node(name)
+    end
+
+    def parameter(name, value)
+      CypherDSL::Cypher.parameter(name.to_sym, value)
     end
 
     def identifier_id

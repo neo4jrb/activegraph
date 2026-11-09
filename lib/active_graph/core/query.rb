@@ -192,6 +192,12 @@ module ActiveGraph
         build_deeper_query(WhereClause, args, not: true)
       end
 
+      # Works the same as the #return method, but the projection is RETURN DISTINCT; combined with
+      # `return` in the same query part, the whole projection becomes distinct
+      def return_distinct(*args)
+        build_deeper_query(ReturnClause, args, distinct: true)
+      end
+
       # Works the same as the #set method, but when given a nested array it will set properties rather than setting entire objects
       # @example
       #    # Creates a query representing the cypher: MATCH (n:Person) SET n.age = 19
@@ -253,9 +259,10 @@ module ActiveGraph
 
       include Enumerable
 
+      # `count(*)`, or the count of a variable, a Cypher text such as `'DISTINCT n'` or a cypher-dsl expression
       def count(var = nil)
-        v = var.nil? ? '*' : var
-        pluck("count(#{v})").first
+        counted = var.nil? ? CypherDSL::Cypher.asterisk : QueryClauses::Fragments.expression(var)
+        pluck(CypherDSL::Cypher.count(counted)).first
       end
 
       def each
@@ -286,49 +293,67 @@ module ActiveGraph
       #    Query.new.match(n: :Person).return(p: :name}.pluck('p, DISTINCT p.name') # => Array of [node, name] pairs
       #
       def pluck(*columns)
-        fail ArgumentError, 'No columns specified for Query#pluck' if columns.size.zero?
+        fail ArgumentError, 'No columns specified for Query#pluck' if columns.empty?
 
-        query = return_query(columns)
-        columns = query.response.keys
-
-        if columns.size == 1
-          column = columns[0]
-          query.map { |row| row[column] }
-        else
-          query.map { |row| columns.map { |column| row[column] } }
-        end
+        column_values(return_query(columns))
       end
 
-      def return_query(columns)
+      # Like #pluck, with RETURN DISTINCT
+      def pluck_distinct(*columns)
+        fail ArgumentError, 'No columns specified for Query#pluck_distinct' if columns.empty?
+
+        column_values(return_query(columns, distinct: true))
+      end
+
+      # The query with its RETURN clause replaced by one returning `columns`
+      def return_query(columns, distinct: false)
         query = copy
         query.remove_clause_class(ReturnClause)
 
-        query.return(*columns)
+        distinct ? query.return_distinct(*columns) : query.return(*columns)
       end
+
+      # The query as a cypher-dsl statement, or nil when no clause has been added yet.
+      # Clauses of one part are applied in a fixed order (MATCH before WHERE before RETURN, …),
+      # whatever the order they were called in.
+      # @return [CypherDSL::Statement, nil]
+      def statement
+        return @statement if defined?(@statement)
+
+        assembler = QueryClauses::Assembler.new
+        partitioned_clauses.each do |clauses|
+          clauses_by_class = clauses.group_by(&:class)
+          CLAUSES.each do |clause_class|
+            clause_class.apply(assembler, clauses_by_class[clause_class]) if clauses_by_class[clause_class]
+          end
+        end
+        @statement = assembler.statement
+      end
+
+      RENDERER = CypherDSL::Renderer.default
+      PRETTY_RENDERER = CypherDSL::Renderer.get_renderer(
+        CypherDSL::Renderer::Configuration.new_config.with_pretty_print(true).always_escape_names(true).build
+      )
+      KEYWORD_COLORS = Hash.new(ANSI::CYAN).merge(
+        'CREATE' => ANSI::GREEN, 'MERGE' => ANSI::MAGENTA,
+        'SET' => ANSI::YELLOW, 'ON CREATE SET' => ANSI::YELLOW, 'ON MATCH SET' => ANSI::YELLOW,
+        'DELETE' => ANSI::RED, 'DETACH DELETE' => ANSI::RED
+      ).freeze
+      KEYWORDS = /^(\s*)(OPTIONAL MATCH|MATCH|WHERE|WITH DISTINCT|WITH|RETURN DISTINCT|RETURN|ORDER BY|SKIP|LIMIT|CREATE|MERGE|ON CREATE SET|ON MATCH SET|SET|REMOVE|DETACH DELETE|DELETE|UNWIND|CALL|UNION ALL|UNION|USING|START|FOREACH|LOAD CSV)\b/ # rubocop:disable Layout/LineLength
 
       # Returns a CYPHER query string from the object query representation
       # @example
-      #    Query.new.match(p: :Person).where(p: {age: 30})  # => "MATCH (p:Person) WHERE p.age = 30
+      #    Query.new.match(p: :Person).where(p: {age: 30})  # => "MATCH (p:`Person`) WHERE p.age = $p_age"
       #
+      # @param [Hash] options `pretty: true` renders one clause per line with coloured keywords
       # @return [String] Resulting cypher query string
-      EMPTY = ' '
-      NEWLINE = "\n"
-
       def to_cypher(options = {})
-        join_string = options[:pretty] ? NEWLINE : EMPTY
-
-        cypher_string = partitioned_clauses.map do |clauses|
-          clauses_by_class = clauses.group_by(&:class)
-
-          cypher_parts = CLAUSES.map do |clause_class|
-            clause_class.to_cypher(clauses, options[:pretty]) if clauses = clauses_by_class[clause_class]
-          end.compact
-
-          cypher_parts.join(join_string).tap(&:strip!)
-        end.join(join_string)
-
+        built = statement
+        renderer = options[:pretty] ? PRETTY_RENDERER : RENDERER
+        cypher_string = built ? renderer.render(built) : ''
+        cypher_string = colorize(cypher_string) if options[:pretty]
         cypher_string = "CYPHER #{@options[:parser]} #{cypher_string}" if @options[:parser]
-        cypher_string.tap(&:strip!)
+        cypher_string.strip
       end
 
       alias cypher to_cypher
@@ -341,9 +366,15 @@ module ActiveGraph
         @options[:context]
       end
 
+      # The parameters registered by the clause arguments and by `params`, plus the values of
+      # cypher-dsl parameters passed in directly (`where(n[:age].gt(Cypher.parameter(:min, 18)))`).
+      # A name bound to different values by the two raises CypherDSL::ConflictingParametersException.
       def parameters
-        to_cypher
-        merge_params
+        conflicts = {}
+        dsl_parameters.merge(merge_params) do |name, dsl_value, registered_value|
+          conflicts[name] = Set[dsl_value, registered_value] if dsl_value != registered_value
+          registered_value
+        end.tap { fail CypherDSL::ConflictingParametersException, conflicts if conflicts.any? }
       end
 
       def partitioned_clauses
@@ -377,14 +408,19 @@ module ActiveGraph
 
       def copy
         dup.tap do |query|
-          to_cypher
           query.instance_variable_set('@params'.freeze, @params.copy)
           query.instance_variable_set('@partitioned_clauses'.freeze, nil)
+          query.remove_instance_variable('@statement') if query.instance_variable_defined?('@statement')
           query.instance_variable_set('@response'.freeze, nil)
         end
       end
 
+      # `clause?(:return_distinct)` is true only for a distinct projection, `clause?(:return)` for either.
       def clause?(method)
+        if method == :return_distinct
+          return clauses.any? { |clause| clause.is_a?(ReturnClause) && clause.options[:distinct] }
+        end
+
         clause_class = DEFINED_CLAUSES[method] || CLAUSIFY_CLAUSE.call(method)
         clauses.any? { |clause| clause.is_a?(clause_class) }
       end
@@ -402,6 +438,30 @@ module ActiveGraph
       end
 
       private
+
+      # The values of the returned columns: a flat array for a single column, arrays of values otherwise.
+      def column_values(query)
+        columns = query.response.keys
+
+        if columns.size == 1
+          column = columns[0]
+          query.map { |row| row[column] }
+        else
+          query.map { |row| columns.map { |column| row[column] } }
+        end
+      end
+
+      # Values of the parameters the rendered statement carries. A name bound to two different
+      # values (possible when queries built separately are merged with `&`) raises
+      # CypherDSL::ConflictingParametersException instead of running a query with one of them.
+      def dsl_parameters
+        built = statement
+        built ? built.parameters.transform_keys(&:to_sym) : {}
+      end
+
+      def colorize(cypher_string)
+        cypher_string.gsub(KEYWORDS) { "#{Regexp.last_match(1)}#{KEYWORD_COLORS[Regexp.last_match(2)]}#{Regexp.last_match(2)}#{ANSI::CLEAR}" }
+      end
 
       def build_deeper_query(clause_class, args = {}, options = {})
         copy.tap do |new_query|
@@ -473,9 +533,10 @@ module ActiveGraph
       end
 
       # SHOULD BE DEPRECATED
+      # Clauses merged in from other queries (see `&`) carry their own parameter registries.
       def merge_params
-        @merge_params_base ||= @clauses.compact.inject({}) { |params, clause| params.merge!(clause.params) }
-        @params.to_hash.merge(@merge_params_base)
+        clause_params = @clauses.compact.inject({}) { |params, clause| params.merge!(clause.params.to_hash) }
+        @params.to_hash.merge(clause_params)
       end
     end
   end

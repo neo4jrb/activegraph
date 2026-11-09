@@ -1,5 +1,6 @@
 require 'benchmark'
 require 'bigdecimal'
+require 'cypher_dsl'
 require 'bigdecimal/util'
 require 'date'
 require 'forwardable'
