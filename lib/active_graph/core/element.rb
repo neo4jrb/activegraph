@@ -18,7 +18,7 @@ module ActiveGraph
         validate_index_options!(options)
         schema_query("SHOW INDEXES YIELD * WHERE labelsOrTypes = $labels AND properties = $properties",
                      labels: [@name], properties: [property]).each do |record|
-          schema_query("DROP INDEX #{record[:name]}")
+          schema_query("DROP INDEX `#{record[:name]}`")
         end
       end
 
@@ -92,7 +92,7 @@ module ActiveGraph
 
         def drop_indexes
           indexes.each do |definition|
-            ActiveGraph::Base.query("DROP INDEX #{definition[:name]}") unless definition[:owningConstraint]
+            ActiveGraph::Base.query("DROP INDEX `#{definition[:name]}`") unless definition[:owningConstraint]
           end
         end
 
