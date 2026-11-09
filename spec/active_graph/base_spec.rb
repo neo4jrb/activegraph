@@ -62,10 +62,21 @@ describe ActiveGraph::Base do
       expect(subject.dialect).to eq(:neo4j4)
     end
 
-    it 'is the default dialect without a driver' do
+    it 'is the default dialect without a driver, until one is available' do
       allow(subject).to receive(:driver?).and_return(false)
-      expect(subject).not_to receive(:version)
       expect(subject.dialect).to eq(:neo4j5_default_cypher)
+
+      allow(subject).to receive(:driver?).and_call_original
+      allow(subject).to receive(:version).and_return(Gem::Version.new('5.22.0'))
+      expect(subject.dialect).to eq(:neo4j5)
+    end
+
+    it 'is the default dialect while the server cannot be reached, without remembering it' do
+      allow(subject).to receive(:version).and_raise(Neo4j::Driver::Exceptions::ServiceUnavailableException, 'down')
+      expect(subject.dialect).to eq(:neo4j5_default_cypher)
+
+      allow(subject).to receive(:version).and_return(Gem::Version.new('5.22.0'))
+      expect(subject.dialect).to eq(:neo4j5)
     end
 
     it 'renders subqueries the connected server accepts' do

@@ -20,9 +20,16 @@ module ActiveGraph
       # The cypher-dsl dialect queries are rendered in: the `cypher_dialect` setting when present,
       # otherwise the dialect matching the connected server. For the Cypher activegraph generates only the
       # subquery syntax differs: `CALL { WITH n … }` before Neo4j 5.23, `CALL (n) { … }` from 5.23 on.
-      # Without a driver there is nothing to detect and the default dialect is used.
+      # Without a driver, or while the server cannot be reached, the default dialect is used and nothing
+      # is remembered, so the detection happens once a connection is possible.
       def dialect
-        ActiveGraph::Config[:cypher_dialect]&.to_sym || (@dialect ||= detected_dialect)
+        configured = ActiveGraph::Config[:cypher_dialect]
+        return configured.to_sym if configured
+        return CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER unless driver?
+
+        @dialect ||= dialect_of(version)
+      rescue Neo4j::Driver::Exceptions::ServiceUnavailableException
+        CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER
       end
 
       def indexes
@@ -67,12 +74,10 @@ module ActiveGraph
         @major ||= version.segments.first
       end
 
-      def detected_dialect
-        return CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER unless driver?
-
-        if major < 5
+      def dialect_of(server_version)
+        if server_version.segments.first < 5
           CypherDSL::Renderer::Dialect::NEO4J_4
-        elsif version?('< 5.23')
+        elsif server_version < Gem::Version.new('5.23')
           CypherDSL::Renderer::Dialect::NEO4J_5
         else
           CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER

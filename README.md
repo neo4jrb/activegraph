@@ -60,7 +60,8 @@ Neo4j.rb v4.1.0 was released in January of 2015. Its changes are outlined [here]
 | 4.2               | No   | No    | No      | No       | No               | Yes              | No             |
 | 4.3               | No   | No    | No      | No       | No               | Yes              | No             |
 | 4.4               | No   | No    | No      | No       | No               | Yes              | No             |
-| 5.x               | No   | No    | No      | No       | No               | Yes              | Yes            |
+| 5.0 - 5.6         | No   | No    | No      | No       | No               | Yes              | No             |
+| 5.7+              | No   | No    | No      | No       | No               | Yes              | Yes            |
 | 2025.x            | No   | No    | No      | No       | No               | No               | Yes            |
 | 2026.x            | No   | No    | No      | No       | No               | No               | Yes            |
 
