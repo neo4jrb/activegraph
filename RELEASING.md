@@ -98,4 +98,13 @@ really "pull the bad release, then ship a *new* version".
 > gh run rerun <run-id> --failed
 > ```
 >
-> Both workflow jobs are idempotent, so a rerun is safe at any point.
+> GitHub allows reruns only within 30 days of the original run. For an older
+> run, delete the remote tag and push it again, which creates a new
+> tag-triggered run (the workflow has no manual trigger):
+>
+> ```bash
+> git push origin :refs/tags/v<version> && git push origin v<version>
+> ```
+>
+> Both workflow jobs are idempotent, so either recovery path is safe at any
+> point.
