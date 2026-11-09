@@ -39,9 +39,10 @@ module ActiveGraph
         forget_server
       end
 
-      # Whether a driver is set or can be established. Without one queries can be built, not run.
+      # Whether a driver is set or can be established, establishing it when a block was registered. Without
+      # one queries can be built, not run.
       def driver?
-        !@driver.nil? || !@establish_driver_block.nil?
+        !(@driver ||= establish_driver).nil?
       end
 
       # The cypher-dsl renderer for the connected server, see Core::Schema#dialect. `pretty: true`

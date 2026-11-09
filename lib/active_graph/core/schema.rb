@@ -28,7 +28,7 @@ module ActiveGraph
         return CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER unless driver?
 
         @dialect ||= dialect_of(version)
-      rescue Neo4j::Driver::Exceptions::ServiceUnavailableException
+      rescue Neo4j::Driver::Exceptions::ServiceUnavailableException, Neo4j::Driver::Exceptions::SessionExpiredException
         CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER
       end
 

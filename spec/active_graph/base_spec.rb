@@ -71,6 +71,16 @@ describe ActiveGraph::Base do
       expect(subject.dialect).to eq(:neo4j5)
     end
 
+    it 'is the default dialect when no driver can be established' do
+      driver = subject.instance_variable_get(:@driver)
+      subject.instance_variable_set(:@driver, nil)
+      subject.on_establish_driver { nil }
+      expect(subject.dialect).to eq(:neo4j5_default_cypher)
+    ensure
+      subject.instance_variable_set(:@driver, driver)
+      subject.instance_variable_set(:@establish_driver_block, nil)
+    end
+
     it 'is the default dialect while the server cannot be reached, without remembering it' do
       allow(subject).to receive(:version).and_raise(Neo4j::Driver::Exceptions::ServiceUnavailableException, 'down')
       expect(subject.dialect).to eq(:neo4j5_default_cypher)
