@@ -289,6 +289,11 @@ describe 'query_proxy_methods' do
     context 'parameter naming' do
       let(:id) { Teacher.query_proxy.identity }
       let(:outer) { "outer_#{id}" }
+      # `CALL { WITH outer …}` before Neo4j 5.23, `CALL (outer) {…}` from 5.23 on.
+      let(:call) do
+        legacy = CypherDSL::Renderer::Dialect::LEGACY_SUBQUERY_SYNTAX.include?(ActiveGraph::Base.dialect)
+        legacy ? "CALL {WITH #{outer} " : "CALL (#{outer}) {"
+      end
       let(:union) do
         bartemius_name = bartemius.name
         amycus_name = amycus.name
@@ -298,7 +303,7 @@ describe 'query_proxy_methods' do
       it 'namespaces the generated names of each branch and leaves the outer ones alone' do
         expect(union.to_cypher).to eq(
           "MATCH (#{outer}:`Teacher`) WHERE #{outer}.age = $#{outer}_age " \
-          "CALL (#{outer}) {WITH #{outer} WITH #{outer} WHERE #{outer}.name = $#{outer}_UNION0_#{outer}_name " \
+          "#{call}WITH #{outer} WITH #{outer} WHERE #{outer}.name = $#{outer}_UNION0_#{outer}_name " \
           "RETURN #{outer} AS #{id} " \
           "UNION MATCH (#{id}:`Teacher`) WHERE #{id}.name = $#{outer}_UNION1_#{id}_name " \
           "RETURN #{id}} WITH #{id}, #{outer}"

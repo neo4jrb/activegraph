@@ -35,6 +35,92 @@ describe ActiveGraph::Base do
     end
   end
 
+  describe '.dialect' do
+    after do
+      ActiveGraph::Config.delete(:cypher_dialect)
+      subject.send(:forget_server)
+    end
+
+    def dialect_of(server_version)
+      subject.send(:forget_server)
+      allow(subject).to receive(:version).and_return(Gem::Version.new(server_version))
+      subject.dialect
+    end
+
+    it 'matches the subquery syntax of the server version' do
+      expect(dialect_of('4.4.48')).to eq(:neo4j4)
+      expect(dialect_of('5.0.0')).to eq(:neo4j5)
+      expect(dialect_of('5.22.0')).to eq(:neo4j5)
+      expect(dialect_of('5.23.0')).to eq(:neo4j5_default_cypher)
+      expect(dialect_of('5.26.32')).to eq(:neo4j5_default_cypher)
+      expect(dialect_of('2025.12.1')).to eq(:neo4j5_default_cypher)
+      expect(dialect_of('2026.10.1')).to eq(:neo4j5_default_cypher)
+    end
+
+    it 'is overridden by the cypher_dialect setting' do
+      ActiveGraph::Config[:cypher_dialect] = 'neo4j4'
+      expect(subject.dialect).to eq(:neo4j4)
+    end
+
+    it 'is the default dialect without a driver, until one is available' do
+      allow(subject).to receive(:driver?).and_return(false)
+      expect(subject.dialect).to eq(:neo4j5_default_cypher)
+
+      allow(subject).to receive(:driver?).and_call_original
+      allow(subject).to receive(:version).and_return(Gem::Version.new('5.22.0'))
+      expect(subject.dialect).to eq(:neo4j5)
+    end
+
+    it 'is the default dialect when no driver can be established' do
+      driver = subject.instance_variable_get(:@driver)
+      subject.instance_variable_set(:@driver, nil)
+      subject.on_establish_driver { nil }
+      expect(subject.dialect).to eq(:neo4j5_default_cypher)
+    ensure
+      subject.instance_variable_set(:@driver, driver)
+      subject.instance_variable_set(:@establish_driver_block, nil)
+    end
+
+    it 'is the default dialect while the server cannot be reached, without remembering it' do
+      allow(subject).to receive(:version).and_raise(Neo4j::Driver::Exceptions::ServiceUnavailableException, 'down')
+      expect(subject.dialect).to eq(:neo4j5_default_cypher)
+
+      allow(subject).to receive(:version).and_return(Gem::Version.new('5.22.0'))
+      expect(subject.dialect).to eq(:neo4j5)
+    end
+
+    it 'renders subqueries the connected server accepts' do
+      subject.query('CREATE (:Foo)-[:BAR]->(:Foo)')
+      query = ActiveGraph::Core::Query.new.match(n: :Foo).call_subquery_start(:n).match('(n)-->(m)').return(:m)
+      expect(query.call_subquery_end.return('count(m) AS c').first[:c]).to eq(1)
+    end
+  end
+
+  describe '.renderer' do
+    after do
+      ActiveGraph::Config.delete(:cypher_dialect)
+      subject.send(:forget_server)
+    end
+
+    let(:statement) do
+      ActiveGraph::Core::Query.new.match(n: :Foo).call_subquery_start(:n).match('(n)-->(m)').return(:m)
+                              .call_subquery_end.return(:m).statement
+    end
+
+    it 'renders in the dialect of the server' do
+      ActiveGraph::Config[:cypher_dialect] = :neo4j5
+      expect(subject.renderer.render(statement)).to eq('MATCH (n:`Foo`) CALL {WITH n MATCH (n)-->(m) RETURN m} RETURN m') # rubocop:disable Layout/LineLength
+      ActiveGraph::Config[:cypher_dialect] = :neo4j5_default_cypher
+      expect(subject.renderer.render(statement)).to eq('MATCH (n:`Foo`) CALL (n) {MATCH (n)-->(m) RETURN m} RETURN m')
+    end
+
+    it 'is memoized per dialect and pretty printing' do
+      expect(subject.renderer).to be(subject.renderer)
+      expect(subject.renderer(pretty: true)).to be(subject.renderer(pretty: true))
+      expect(subject.renderer(pretty: true)).not_to be(subject.renderer)
+    end
+  end
+
   describe 'transactions' do
     def create_object_by_id(id, tx)
       subject.query('CREATE (t:Temporary {id: $id})', id: id)

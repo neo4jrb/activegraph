@@ -67,7 +67,7 @@ describe ActiveGraph::Node::HasN::Association do
       let(:right) { CypherDSL::Cypher.node('Person').named(:b) }
       let(:pattern) { association.relationship_pattern(left, right, var: :r, properties: {since: 2001}, length: 1..3) }
 
-      subject { ActiveGraph::Core::Query::RENDERER.render_fragment(pattern) }
+      subject { ActiveGraph::Base.renderer.render_fragment(pattern) }
 
       it { is_expected.to eq('(a)-[r:`FRIENDS`*1..3 {since: 2001}]->(b:`Person`)') }
 

@@ -24,14 +24,21 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby, ruby ]
-        neo4j: [ 2026.07.1 ]
+        neo4j: [ 2026.10.1 ]
         active_model: [ 7.1.6, 7.2.3.2, 8.0.5.1 ]
         include:
           - ruby: ruby
-            neo4j: 2026.07.1
+            neo4j: 2026.10.1
             active_model: 8.1.3.1
           - ruby: jruby
             java-version: 21
+          # Every supported server line (Neo4j 5.7+, see the README), with one active_model each.
+          - { ruby: ruby, neo4j: 5.22.0, active_model: 8.0.5.1 }
+          - { ruby: jruby, neo4j: 5.22.0, active_model: 8.0.5.1, java-version: 21 }
+          - { ruby: ruby, neo4j: 5.26.32, active_model: 8.0.5.1 }
+          - { ruby: jruby, neo4j: 5.26.32, active_model: 8.0.5.1, java-version: 21 }
+          - { ruby: ruby, neo4j: 2025.12.1, active_model: 8.0.5.1 }
+          - { ruby: jruby, neo4j: 2025.12.1, active_model: 8.0.5.1, java-version: 21 }
     env:
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
       JRUBY_OPTS: --debug -J-Xmx1280m -Xcompile.invokedynamic=false -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -Xcompile.mode=OFF

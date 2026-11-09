@@ -36,6 +36,25 @@ module ActiveGraph
       def driver=(driver)
         @driver&.close
         @driver = driver
+        forget_server
+      end
+
+      # Whether a driver is set or can be established, establishing it when a block was registered. Without
+      # one queries can be built, not run.
+      def driver?
+        !(@driver ||= establish_driver).nil?
+      end
+
+      # The cypher-dsl renderer for the connected server, see Core::Schema#dialect. `pretty: true`
+      # renders one clause per line.
+      def renderer(pretty: false)
+        dialect = self.dialect
+        renderers.compute_if_absent([dialect, pretty]) do
+          CypherDSL::Renderer.get_renderer(
+            CypherDSL::Renderer::Configuration.new_config.with_dialect(dialect).with_pretty_print(pretty)
+                                                           .always_escape_names(true).build
+          )
+        end
       end
 
       def validating_transaction(&block)
@@ -69,6 +88,15 @@ module ActiveGraph
       end
 
       private
+
+      def renderers
+        @renderers ||= Concurrent::Map.new
+      end
+
+      # What was learned about the server of the previous driver: its version and the dialect it speaks.
+      def forget_server
+        @component = @major = @dialect = @renderers = nil
+      end
 
       def validate_model_schema!
         ActiveGraph::ModelSchema.validate_model_schema! unless ActiveGraph::Migrations.currently_running_migrations

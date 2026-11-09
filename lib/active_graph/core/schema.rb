@@ -17,6 +17,21 @@ module ActiveGraph
         Gem::Requirement.create(requirement).satisfied_by?(version)
       end
 
+      # The cypher-dsl dialect queries are rendered in: the `cypher_dialect` setting when present,
+      # otherwise the dialect matching the connected server. For the Cypher activegraph generates only the
+      # subquery syntax differs: `CALL { WITH n … }` before Neo4j 5.23, `CALL (n) { … }` from 5.23 on.
+      # Without a driver, or while the server cannot be reached, the default dialect is used and nothing
+      # is remembered, so the detection happens once a connection is possible.
+      def dialect
+        configured = ActiveGraph::Config[:cypher_dialect]
+        return configured.to_sym if configured
+        return CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER unless driver?
+
+        @dialect ||= dialect_of(version)
+      rescue Neo4j::Driver::Exceptions::ServiceUnavailableException, Neo4j::Driver::Exceptions::SessionExpiredException
+        CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER
+      end
+
       def indexes
         normalize(raw_indexes, *%i[type state])
       end
@@ -57,6 +72,16 @@ module ActiveGraph
 
       def major
         @major ||= version.segments.first
+      end
+
+      def dialect_of(server_version)
+        if server_version.segments.first < 5
+          CypherDSL::Renderer::Dialect::NEO4J_4
+        elsif server_version < Gem::Version.new('5.23')
+          CypherDSL::Renderer::Dialect::NEO4J_5
+        else
+          CypherDSL::Renderer::Dialect::NEO4J_5_DEFAULT_CYPHER
+        end
       end
 
       # Neo4j 2026.07+ renamed the uniqueness constraint types

@@ -1191,6 +1191,11 @@ describe ActiveGraph::Core::Query do
       subquery.call_subquery_end.with(:m)
     end
 
+    # The subquery syntax depends on the server version (ActiveGraph::Base.dialect); these examples
+    # render for Neo4j 5.23+ whatever the server is.
+    before { ActiveGraph::Config[:cypher_dialect] = :neo4j5_default_cypher }
+    after { ActiveGraph::Config.delete(:cypher_dialect) }
+
     it 'brackets the clauses between call_subquery_start and call_subquery_end, importing its arguments' do
       outer = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start(:n)
       query = outer.match('(n)-->(m)').return(:m).call_subquery_end.return('count(m)')
@@ -1238,6 +1243,23 @@ describe ActiveGraph::Core::Query do
     it 'rejects a union after other clauses of the same query' do
       query = ActiveGraph::Core::Query.new.match(n: :Person).union(*branch(:n, 30)).union(*branch(:m, 40))
       expect { query.to_cypher }.to raise_error(ArgumentError, /UNION cannot follow/)
+    end
+
+    context 'for a server before Neo4j 5.23' do
+      before { ActiveGraph::Config[:cypher_dialect] = :neo4j5 }
+
+      it 'imports with a leading WITH' do
+        outer = ActiveGraph::Core::Query.new.match(n: :Person).call_subquery_start(:n)
+        query = outer.match('(n)-->(m)').return(:m).call_subquery_end.return('count(m)')
+        expect(query.to_cypher).to eq('MATCH (n:`Person`) CALL {WITH n MATCH (n)-->(m) RETURN m} RETURN count(m)')
+      end
+
+      it 'unites the branches into the subquery' do
+        expect(union.to_cypher).to eq(
+          'CALL {MATCH (n:`Person`) WHERE n.age = $n_age RETURN n AS m ' \
+          'UNION MATCH (m:`Person`) WHERE m.age = $m_age RETURN m} WITH m'
+        )
+      end
     end
   end
 

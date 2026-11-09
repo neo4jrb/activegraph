@@ -387,10 +387,6 @@ module ActiveGraph
         @statement = assembler.statement
       end
 
-      RENDERER = CypherDSL::Renderer.default
-      PRETTY_RENDERER = CypherDSL::Renderer.get_renderer(
-        CypherDSL::Renderer::Configuration.new_config.with_pretty_print(true).always_escape_names(true).build
-      )
       KEYWORD_COLORS = Hash.new(ANSI::CYAN).merge(
         'CREATE' => ANSI::GREEN, 'MERGE' => ANSI::MAGENTA,
         'SET' => ANSI::YELLOW, 'ON CREATE SET' => ANSI::YELLOW, 'ON MATCH SET' => ANSI::YELLOW,
@@ -406,8 +402,7 @@ module ActiveGraph
       # @return [String] Resulting cypher query string
       def to_cypher(options = {})
         built = statement
-        renderer = options[:pretty] ? PRETTY_RENDERER : RENDERER
-        cypher_string = built ? renderer.render(built) : ''
+        cypher_string = built ? ActiveGraph::Base.renderer(pretty: options[:pretty]).render(built) : ''
         cypher_string = colorize(cypher_string) if options[:pretty]
         with_parser(cypher_string).strip
       end
@@ -454,7 +449,7 @@ module ActiveGraph
       def union_cypher(other, options = {})
         statements = [statement, other.statement]
         union = options[:all] ? CypherDSL::Cypher.union_all(statements) : CypherDSL::Cypher.union(statements)
-        with_parser(RENDERER.render(union))
+        with_parser(ActiveGraph::Base.renderer.render(union))
       end
 
       def &(other)

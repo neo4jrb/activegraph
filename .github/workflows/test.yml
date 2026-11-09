@@ -24,11 +24,19 @@ jobs:
       fail-fast: false
       matrix:
         ruby: [ jruby, ruby ]
-        neo4j: [ 2026.07.1 ]
+        neo4j: [ 2026.10.1 ]
         active_model: [ 7.1.6, 7.2.3.2, 8.0.5.1, 8.1.3.1 ]
         include:
           - ruby: jruby
             java-version: 21
+          # Every supported server line (Neo4j 5.7+, see the README), with the newest active_model only.
+          # 5.22 is the last release before the `CALL (n) { … }` subquery syntax (see Core::Schema#dialect).
+          - { ruby: ruby, neo4j: 5.22.0, active_model: 8.1.3.1 }
+          - { ruby: jruby, neo4j: 5.22.0, active_model: 8.1.3.1, java-version: 21 }
+          - { ruby: ruby, neo4j: 5.26.32, active_model: 8.1.3.1 }
+          - { ruby: jruby, neo4j: 5.26.32, active_model: 8.1.3.1, java-version: 21 }
+          - { ruby: ruby, neo4j: 2025.12.1, active_model: 8.1.3.1 }
+          - { ruby: jruby, neo4j: 2025.12.1, active_model: 8.1.3.1, java-version: 21 }
     env:
       NEO4J_VERSION: ${{ matrix.neo4j }}
       ACTIVE_MODEL_VERSION: ${{ matrix.active_model }}
