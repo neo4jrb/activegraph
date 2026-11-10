@@ -192,6 +192,37 @@ describe 'association dependent delete/destroy' do
       end
     end
 
+    context 'dependent delete with several model classes' do
+      before do
+        stub_node_class('Book') do
+          id_property :isbn
+        end
+
+        stub_node_class('Magazine') do
+          id_property :issue_id
+        end
+
+        stub_node_class('Publisher') do
+          has_many :out, :published_things, type: :published, model_class: %w[Book Magazine], dependent: :delete
+        end
+      end
+
+      let(:publisher) { Publisher.create }
+      let(:magazine) { Magazine.create(issue_id: '1234') }
+      let(:book) { Book.create(isbn: '0985') }
+      let(:replacement) { Magazine.create(issue_id: book.isbn) }
+
+      before { publisher.published_things = [magazine, book] }
+
+      it 'deletes only the replaced nodes, even when another model class uses the same id' do
+        publisher.published_things = [replacement, magazine]
+        expect { Book.find(book.id) }.to raise_error(ActiveGraph::Node::Labels::RecordNotFound)
+        expect(Magazine.find(replacement.id)).to eq(replacement)
+        expect(Magazine.find(magazine.id)).to eq(magazine)
+        expect(Publisher.find(publisher.id).published_things.to_a).to match_array([replacement, magazine])
+      end
+    end
+
     context 'destroy Relationship relationship' do
       context 'dependent destroy' do
         let(:bad_model) { BadModel.create }

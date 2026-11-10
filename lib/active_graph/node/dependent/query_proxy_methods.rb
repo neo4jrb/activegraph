@@ -26,19 +26,19 @@ module ActiveGraph
         # @param [String, Symbol] other_node The identifier to use for the other end of the chain.
         # @param [String, Symbol] other_rel The identifier to use for the relationship in the optional match.
         # @return [ActiveGraph::Node::Query::QueryProxy]
-        def unique_nodes(association, self_identifer, other_node, other_rel, ids = [])
+        def unique_nodes(association, self_identifer, other_node, other_rel, neo_ids = [])
           fail 'Only supported by in QueryProxy chains started by an instance' unless source_object
           return false if send(association.name).empty?
-          unique_nodes_query(association, self_identifer, other_node, other_rel, ids)
+          unique_nodes_query(association, self_identifer, other_node, other_rel, neo_ids)
             .proxy_as(association.target_class, other_node)
         end
 
         private
 
-        def unique_nodes_query(association, self_identifer, other_node, other_rel, ids)
+        def unique_nodes_query(association, self_identifer, other_node, other_rel, neo_ids)
           base = query.with(identity).proxy_as_optional(source_object.class, self_identifer)
                       .send(association.name, other_node, other_rel)
-          base = base.where(id: ids) if ids.present?
+          base = base.where(neo_id: neo_ids) if neo_ids.present?
           base.query
               .with(other_node)
               .match("()#{association.arrow_cypher(:orphan_rel)}(#{other_node})")

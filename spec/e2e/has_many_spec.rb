@@ -163,6 +163,50 @@ describe 'has_many' do
     end
   end
 
+  describe 'replacing an association with several model classes' do
+    before(:each) do
+      stub_node_class('Book') do
+        id_property :isbn
+        has_one :in, :publisher, origin: :published_things, model_class: 'Publisher'
+      end
+
+      stub_node_class('Magazine') do
+        id_property :issue_id
+        has_one :in, :publisher, origin: :published_things, model_class: 'Publisher'
+      end
+
+      stub_node_class('Publisher') do
+        has_many :out, :published_things, type: :published, model_class: %w[Book Magazine]
+      end
+    end
+
+    let(:publisher) { Publisher.create }
+    let(:magazine) { Magazine.create(issue_id: '1234') }
+    let(:book) { Book.create(isbn: '0985') }
+
+    before { publisher.published_things = [magazine, book] }
+
+    it 'removes the relationships to nodes which are not in the new list' do
+      other_magazine = Magazine.create(issue_id: '0982')
+      publisher.published_things = [other_magazine]
+      expect(Publisher.find(publisher.id).published_things.to_a).to eq([other_magazine])
+    end
+
+    it 'keeps the relationships to nodes which are still in the new list' do
+      publisher.published_things = [book]
+      expect(Publisher.find(publisher.id).published_things.to_a).to eq([book])
+      expect(Book.find(book.id).publisher).to eq(publisher)
+    end
+
+    it 'distinguishes nodes of different model classes with the same id' do
+      replacement = Magazine.create(issue_id: book.isbn)
+      publisher.published_things = [replacement]
+      expect(Publisher.find(publisher.id).published_things.to_a).to eq([replacement])
+      expect(Magazine.find(replacement.id).publisher).to eq(publisher)
+      expect(Book.find(book.id).publisher).to be_nil
+    end
+  end
+
   describe 'me.friends#create(other, since: 1994)' do
     describe 'creating relationships to existing nodes' do
       it 'creates a new relationship when given existing nodes and given properties' do
