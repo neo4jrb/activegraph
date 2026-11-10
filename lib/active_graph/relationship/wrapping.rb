@@ -14,6 +14,7 @@ module ActiveGraph
             return rel
           end.tap do |wrapped_rel|
             wrapped_rel.init_on_load(rel, rel.start_node_element_id, rel.end_node_element_id, rel.type)
+            wrapped_rel.run_callbacks(:find)
           end
         end
 
