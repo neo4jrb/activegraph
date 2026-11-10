@@ -320,6 +320,28 @@ describe 'ActiveGraph::Node' do
         expect(Company.find(c.id).after_find_called).to eq true
       end
 
+      it 'handles found callbacks for records loaded by queries' do
+        c
+        expect(Company.find_by(id: c.id).after_find_called).to eq true
+        expect(Company.where(id: c.id).first.after_find_called).to eq true
+        expect(Company.all.to_a.map(&:after_find_called)).to eq [true]
+      end
+
+      it 'runs found callbacks once per record' do
+        other = Company.create
+        found_ids = []
+        Company.after_find { found_ids << id }
+        Company.find(c.id)
+        Company.find([c.id, other.id])
+        expect(found_ids).to match_array([c.id, c.id, other.id])
+      end
+
+      it 'does not run found callbacks on records which are created, updated or reloaded' do
+        c.update(name: 'foo')
+        c.reload
+        expect(c.after_find_called).not_to eq true
+      end
+
       it 'handles update callbacks' do
         expect { c.update(name: 'foo') }.to change { true_results?(c, :update) }
       end

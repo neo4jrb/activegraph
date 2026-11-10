@@ -569,6 +569,35 @@ describe 'Relationship' do
       end
     end
 
+    describe 'after_find callback' do
+      let(:found_scores) { [] }
+
+      before do
+        scores = found_scores
+        MyRelClass.after_find { scores << score }
+      end
+
+      it 'runs for relationships loaded by find' do
+        MyRelClass.find(rel1.id)
+        expect(found_scores).to eq [99]
+      end
+
+      it 'runs for relationships loaded by queries' do
+        MyRelClass.where(score: 49).to_a
+        expect(found_scores).to eq [49]
+      end
+
+      it 'runs for relationships loaded through an association' do
+        from_node.others.each_rel.to_a
+        expect(found_scores).to match_array([99, 49])
+      end
+
+      it 'does not run when creating a relationship' do
+        MyRelClass.create(from_node: from_node, to_node: to_node, score: 1)
+        expect(found_scores).to eq []
+      end
+    end
+
     describe 'first, last' do
       it 'returns the first-ish result' do
         expect(MyRelClass.first).to eq(rel1).or eq(rel2)

@@ -11,6 +11,7 @@ module ActiveGraph
 
           found_class.new.tap do |wrapped_node|
             wrapped_node.init_on_load(node, node.properties)
+            wrapped_node.run_callbacks(:find)
           end
         end
 

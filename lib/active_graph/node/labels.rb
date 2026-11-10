@@ -92,7 +92,7 @@ module ActiveGraph
           fail RecordNotFound.new(
             "Couldn't find #{name} with '#{id_property_name}'=#{id.inspect}",
             name, id_property_name, id) if result.blank?
-          result.tap { |r| find_callbacks!(r) }
+          result
         end
 
         # Finds the first record matching the specified conditions. There is no implied ordering so if order matters, you should specify it yourself.
@@ -174,17 +174,6 @@ module ActiveGraph
             find_by_ids(id.map(&map_id))
           else
             find_by_id(map_id.call(id))
-          end
-        end
-
-        def find_callbacks!(result)
-          case result
-          when ActiveGraph::Node
-            result.run_callbacks(:find)
-          when Array
-            result.each { |r| find_callbacks!(r) }
-          else
-            result
           end
         end
 

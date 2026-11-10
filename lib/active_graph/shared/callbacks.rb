@@ -9,7 +9,7 @@ module ActiveGraph
 
       included do
         include ActiveModel::Validations::Callbacks
-        # after_find is triggered by the `find` method defined in lib/active_graph/node/id_property.rb
+        # after_find is triggered whenever a record is loaded from the database (see Node::Wrapping and Relationship::Wrapping)
         define_model_callbacks :initialize, :find, only: :after
         define_model_callbacks :create_commit, :update_commit, :destroy_commit, only: :after
         define_model_callbacks :save, :create, :update, :destroy, :touch
