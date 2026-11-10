@@ -44,27 +44,29 @@ module ActiveGraph
 
         # Deletes the relationships between all nodes for the last step in the QueryProxy chain and replaces them with relationships to the given nodes.
         # Executed in the database, callbacks will not be run.
+        # Nodes are compared by their neo_id, so associations with several model classes (each with its own id property,
+        # possibly with overlapping values) are replaced correctly.
         def replace_with(node_or_nodes)
           node_or_nodes = Array(node_or_nodes).map { |arg| arg.is_a?(ActiveGraph::Node) ? arg : @model.find(arg) }
-          original_ids = self.pluck(:id)
+          original_neo_ids = self.pluck(:neo_id)
           ActiveGraph::Base.lock_node(start_object) unless start_object.new_record?
-          delete_rels_for_nodes(original_ids, node_or_nodes.collect(&:id))
-          add_rels(node_or_nodes, original_ids)
+          delete_rels_for_nodes(original_neo_ids, node_or_nodes.collect(&:neo_id))
+          add_rels(node_or_nodes, original_neo_ids)
         end
 
-        def add_rels(node_or_nodes, original_ids)
+        def add_rels(node_or_nodes, original_neo_ids)
           node_or_nodes.map do |obj|
-            obj if original_ids.include?(obj.id) || _create_relation_or_defer(obj)
+            obj if original_neo_ids.include?(obj.neo_id) || _create_relation_or_defer(obj)
           end.compact
         end
 
-        def delete_rels_for_nodes(original_ids, new_ids)
-          ids = original_ids.select { |id| !new_ids.include?(id) }
-          return unless ids.present?
+        def delete_rels_for_nodes(original_neo_ids, new_neo_ids)
+          neo_ids = original_neo_ids - new_neo_ids
+          return unless neo_ids.present?
           if association.dependent
-            start_object.public_send("dependent_#{association.dependent}_callback", association, ids)
+            start_object.public_send("dependent_#{association.dependent}_callback", association, neo_ids)
           else
-            self.where(id: ids).delete_all_rels
+            self.where(neo_id: neo_ids).delete_all_rels
           end
         end
 
