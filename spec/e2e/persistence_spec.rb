@@ -122,6 +122,71 @@ describe ActiveGraph::Node do
     end
   end
 
+  describe '#delete' do
+    before do
+      stub_node_class('Folder') do
+        property :name
+        attr_reader :callbacks
+
+        before_destroy { log_callback(:before_destroy) }
+        after_destroy { log_callback(:after_destroy) }
+        after_destroy_commit { log_callback(:after_destroy_commit) }
+
+        has_many :out, :children, type: :CONTAINS, model_class: 'Folder', dependent: :destroy
+
+        def log_callback(name)
+          (@callbacks ||= []) << name
+        end
+      end
+    end
+
+    let(:folder) { Folder.create(name: 'parent') }
+
+    it 'removes the node from the database' do
+      folder.delete
+      expect(folder.exist?).to be false
+    end
+
+    it 'returns the node, frozen and destroyed' do
+      expect(folder.delete).to be(folder)
+      expect(folder).to be_frozen
+      expect(folder).to be_destroyed
+      expect(folder).not_to be_persisted
+    end
+
+    it 'runs no callbacks, unlike #destroy' do
+      other_folder = Folder.create(name: 'other')
+      other_folder.destroy
+      expect(other_folder.callbacks).to eq(%i[before_destroy after_destroy after_destroy_commit])
+
+      folder.delete
+      expect(folder.callbacks).to be_nil
+    end
+
+    it 'removes the relationships of the node but not the dependent nodes, unlike #destroy' do
+      other_folder = Folder.create(name: 'other')
+      other_child = Folder.create(name: 'other child')
+      other_folder.children << other_child
+      other_folder.destroy
+      expect(other_child.exist?).to be false
+
+      child = Folder.create(name: 'child')
+      folder.children << child
+
+      folder.delete
+
+      expect(child.exist?).to be true
+      expect(node_rels(child)).to be_empty
+    end
+
+    it 'does not query the database for a new node' do
+      new_folder = Folder.new(name: 'new')
+      expect_queries(0) { new_folder.delete }
+      expect(new_folder).to be_frozen
+      expect(new_folder).to be_destroyed
+    end
+  end
+
   describe 'update_attribute' do
     let(:person) do
       WithValidations.create(name: 'Jim')
@@ -348,5 +413,43 @@ describe ActiveGraph::Relationship do
     expect(rel.level).to eq 1
     rel.level = 0
     expect { rel.reload }.to change { rel.level }.from(0).to(1)
+  end
+
+  describe '#delete' do
+    before do
+      FriendsWith.class_eval do
+        attr_reader :callbacks
+
+        before_destroy { log_callback(:before_destroy) }
+        after_destroy { log_callback(:after_destroy) }
+        after_destroy_commit { log_callback(:after_destroy_commit) }
+
+        def log_callback(name)
+          (@callbacks ||= []) << name
+        end
+      end
+    end
+
+    it 'removes the relationship but not its nodes' do
+      from_node = rel.from_node
+      to_node = rel.to_node
+
+      expect(rel.delete).to be(rel)
+
+      expect(rel.exist?).to be false
+      expect(from_node.exist?).to be true
+      expect(to_node.exist?).to be true
+    end
+
+    it 'freezes the relationship and runs no callbacks, unlike #destroy' do
+      other_rel = FriendsWith.create(Person.new(name: 'Ann'), Person.new(name: 'Bob'), level: 2)
+      other_rel.destroy
+      expect(other_rel.callbacks).to eq(%i[before_destroy after_destroy after_destroy_commit])
+
+      rel.delete
+      expect(rel).to be_frozen
+      expect(rel).to be_destroyed
+      expect(rel.callbacks).to be_nil
+    end
   end
 end
