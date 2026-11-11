@@ -10,7 +10,7 @@ module ActiveGraph
 
     class_methods do
       def session(**session_config)
-        ActiveGraph::Base.driver.session(**session_config) do |session|
+        ActiveGraph::Base.driver.session(**default_session_config, **session_config) do |session|
           self.explicit_session = session
           yield session
         ensure
@@ -37,9 +37,15 @@ module ActiveGraph
       def send_transaction(method, **config, &block)
         return yield tx if tx
         return run_transaction_work(explicit_session, method, **config, &block) if explicit_session&.open?
-        driver.session do |session|
+        driver.session(**default_session_config) do |session|
           run_transaction_work(session, method, **config, &block)
         end
+      end
+
+      # Sessions target the database set in the `database` configuration option, the server's default database
+      # when it is not set.
+      def default_session_config
+        { database: ActiveGraph::Config[:database] }.compact
       end
 
       def run_transaction_work(session, method, implicit: false, **config, &block)
