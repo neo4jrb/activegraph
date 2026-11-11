@@ -54,15 +54,15 @@ module ActiveGraph::Node
       def_delegator :@query_proxy, :count
 
       def length
-        @deferred_objects.length + @enumerable.length
+        @deferred_objects.length + countable.length
       end
 
       def size
-        @deferred_objects.size + @enumerable.size
+        @deferred_objects.size + countable.size
       end
 
       def empty?(*args)
-        @deferred_objects.empty? && @enumerable.empty?(*args)
+        @deferred_objects.empty? && countable.empty?(*args)
       end
 
       def ==(other)
@@ -178,6 +178,12 @@ module ActiveGraph::Node
       end
 
       private
+
+      # The cached result once there is one, including results cached by eager loading,
+      # so that counting doesn't query the database for nodes that are already loaded.
+      def countable
+        @cached_result || @query_proxy
+      end
 
       def map_results_as_nodes(result)
         result.map do |object|

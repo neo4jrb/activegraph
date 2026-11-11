@@ -220,6 +220,21 @@ describe 'Association Proxy' do
       end
     end
 
+    it 'answers size, length and empty? from eagerly loaded associations without querying' do
+      Student.create(name: 'Lazy')
+      expect_queries(1) do
+        students = Student.all.with_associations(lessons: :exams_given).to_a.index_by(&:name)
+
+        expect(students['Billy'].lessons.size).to eq(2)
+        expect(students['Billy'].lessons.length).to eq(2)
+        expect(students['Billy'].lessons).not_to be_empty
+        expect(students['Billy'].lessons.map { |lesson| lesson.exams_given.size }).to match_array([1, 2])
+        expect(students['Lazy'].lessons.size).to eq(0)
+        expect(students['Lazy'].lessons.length).to eq(0)
+        expect(students['Lazy'].lessons).to be_empty
+      end
+    end
+
     it 'Queries only one time when there are some empty associations' do
       Student.create.lessons << science
       Student.create.lessons += [science, Lesson.create]
