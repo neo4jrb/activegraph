@@ -36,6 +36,8 @@ module ActiveGraph::Node
     extend ActiveSupport::Concern
     include Accessor
 
+    class ReadonlyIdPropertyError < ActiveGraph::Error; end
+
     module TypeMethods
       def define_id_methods(clazz, name, conf)
         return if name == :neo_id
@@ -93,6 +95,7 @@ module ActiveGraph::Node
              default_property_value
           end
 
+          alias_method :#{name}=, :default_property_value=
           alias_method :id, :#{name}
                 ), __FILE__, __LINE__)
       end
@@ -110,12 +113,14 @@ module ActiveGraph::Node
             default_property_value
           end
 
+          alias_method :#{name}=, :default_property_value=
           alias_method :id, :#{name}
         }, __FILE__, __LINE__)
       end
 
       def clear_methods(clazz, name)
         clazz.module_eval(%(undef_method :#{name}), __FILE__, __LINE__) if clazz.method_defined?(name)
+        clazz.module_eval(%(undef_method :#{name}=), __FILE__, __LINE__) if clazz.method_defined?("#{name}=")
         clazz.module_eval(%(undef_property :#{name}), __FILE__, __LINE__) if clazz.attribute_names.include?(name.to_s)
       end
 

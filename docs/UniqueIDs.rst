@@ -28,6 +28,24 @@ The ``on`` parameter tells which method is used to generate the unique id.
       end
     end
 
+Assigning IDs
+-------------
+
+A generated ID (the default ``uuid`` as well as ``auto: :uuid`` and ``on:`` ID properties) can be assigned before a node or relationship is saved, for example when importing data that already has IDs. The assigned value is stored instead of a generated one:
+
+.. code-block:: ruby
+
+    person = Person.create(uuid: 'dc1be2f2-1d08-475d-8f55-8aec8c50dce6', name: 'Jane')
+    person.id # => "dc1be2f2-1d08-475d-8f55-8aec8c50dce6"
+
+    person = Person.new(name: 'John')
+    person.uuid = '3a0b9e9c-8a1b-4c56-9a0e-2c9f1f6d3b7e'
+    person.save
+
+    Person.find_or_create(uuid: '3a0b9e9c-8a1b-4c56-9a0e-2c9f1f6d3b7e')
+
+If no value (or ``nil``) is assigned, the ID is generated as usual. The ID can't be changed once the record has been saved: assigning a different value raises ``ActiveGraph::Node::IdProperty::ReadonlyIdPropertyError``. Assigning the same value is ignored.
+
 Using internal Neo4j IDs as id_property
 ---------------------------------------
 
