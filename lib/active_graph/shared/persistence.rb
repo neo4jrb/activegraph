@@ -131,6 +131,18 @@ module ActiveGraph::Shared
       self
     end
 
+    # Deletes the record in the database and freezes this instance, like ActiveRecord's +delete+.
+    # Unlike #destroy it runs no callbacks and skips the +dependent+ handling of associations.
+    # A node is deleted together with its relationships.
+    # @return self
+    def delete
+      destroy_query.exec if _persisted_obj
+
+      @_deleted = true
+
+      freeze
+    end
+
     def exist?
       return if !_persisted_obj
 

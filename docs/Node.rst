@@ -326,6 +326,20 @@ Implements like Active Records the following callback hooks:
 * update
 * destroy
 
+Deleting
+--------
+
+As in ActiveRecord there are two ways to remove a node from the database:
+
+.. code-block:: ruby
+
+    person.destroy # runs the destroy callbacks and the dependent handling of associations
+    person.delete  # only deletes the node
+
+``destroy`` deletes the node in a transaction and runs the ``before_destroy``, ``after_destroy`` and ``after_destroy_commit`` callbacks as well as the ``dependent`` option of the node's associations (see :ref:`node-dependent-associations`).
+
+``delete`` runs a single query and skips all of that, so it is faster but leaves any dependent nodes in place. Both remove the relationships of the node, mark it as destroyed and freeze it. Relationship models have the same two methods; deleting a relationship never touches its nodes.
+
 created_at, updated_at
 ----------------------
 
@@ -477,6 +491,8 @@ is a ``Post`` object, after all. To allow for association chains in this circums
     #query_as http://www.rubydoc.info/gems/activegraph/ActiveGraph/Node/Query/QueryProxy#query_as-instance_method
     and
     #proxy_as http://www.rubydoc.info/gems/activegraph/ActiveGraph/Core/Query#proxy_as-instance_method
+
+.. _node-dependent-associations:
 
 Dependent Associations
 ~~~~~~~~~~~~~~~~~~~~~~
