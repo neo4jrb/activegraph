@@ -184,6 +184,17 @@ writes and atomic operations with the following methods:
 In the absense of those method calls ``activegraph`` automatically creates a session and write transaction and
 associates them with the thread.
 
+Sessions use the server's default database unless the ``database`` :doc:`configuration option </Configuration>` names
+another one. A single session can also target a database explicitly:
+
+.. code-block:: ruby
+
+  ActiveGraph::Config[:database] = 'movies' # config.neo4j.database = 'movies' in Rails
+
+  ActiveGraph::Base.session(database: 'archive') do
+    Movie.count # counted in the archive database
+  end
+
 What if I'm integrating with a pre-existing Neo4j database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

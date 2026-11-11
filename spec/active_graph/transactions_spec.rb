@@ -123,6 +123,63 @@ describe ActiveGraph::Transactions do
     end
   end
 
+  describe 'database configuration' do
+    let(:database_query) { 'CALL db.info() YIELD name RETURN name' }
+
+    def current_database
+      ActiveGraph::Base.transaction { |tx| tx.run(database_query).single.first }
+    end
+
+    # Set inside the examples rather than with let_config: the cleanup that runs before each example needs the default
+    # database
+    def with_database_config(database)
+      old_value = ActiveGraph::Config[:database]
+      ActiveGraph::Config[:database] = database
+      yield
+    ensure
+      ActiveGraph::Config[:database] = old_value
+    end
+
+    it 'uses the default database when none is configured' do
+      expect(current_database).to eq 'neo4j'
+    end
+
+    it 'runs implicit transactions on the configured database' do
+      with_database_config('system') do
+        expect(current_database).to eq 'system'
+      end
+    end
+
+    it 'runs queries on the configured database' do
+      with_database_config('system') do
+        expect(ActiveGraph::Base.query(database_query).first[:name]).to eq 'system'
+      end
+    end
+
+    it 'opens explicit sessions on the configured database' do
+      with_database_config('system') do
+        ActiveGraph::Base.session do |session|
+          expect(session.run(database_query).single.first).to eq 'system'
+          expect(current_database).to eq 'system'
+        end
+      end
+    end
+
+    it 'lets a database passed to session take precedence over the configured one' do
+      with_database_config('system') do
+        ActiveGraph::Base.session(database: 'neo4j') do
+          expect(current_database).to eq 'neo4j'
+        end
+      end
+    end
+
+    it 'fails when the configured database does not exist' do
+      with_database_config('nonexistentdatabase') do
+        expect { current_database }.to raise_error(Neo4j::Driver::Exceptions::ClientException, /nonexistentdatabase/)
+      end
+    end
+  end
+
   describe 'rollback in nested transaction' do
     it 'returns the result from the inner transaction when rollback is called' do
       inner_result = nil

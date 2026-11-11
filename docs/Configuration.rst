@@ -36,6 +36,11 @@ Variables
 
     .. seealso:: :ref:`activenode-wrapping`
 
+  **database**
+    **Default:** ``nil`` (the server's default database)
+
+    The name of the database that sessions opened by the gem run their queries against, for servers that host more than one database (Neo4j 4.0+ Enterprise Edition). For example, ``config.neo4j.database = 'test'`` in ``config/environments/test.rb`` lets the development and test environments share one Neo4j server. A ``database:`` passed to ``ActiveGraph::Base.session`` takes precedence over this option.
+
   **enums_case_sensitive**
     **Default:** ``false``
 
