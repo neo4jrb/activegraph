@@ -50,6 +50,19 @@ describe ActiveGraph::Node::IdProperty do
       expect(Clazz.find_by_id(node.id)).to eq(node)
     end
 
+    it 'saves an assigned uuid instead of generating one' do
+      node = Clazz.create!(uuid: 'given uuid', name: 'kalle')
+      expect(node.id).to eq('given uuid')
+      expect(Clazz.find('given uuid')).to eq(node)
+    end
+
+    it 'can find_or_create by uuid' do
+      node = Clazz.find_or_create(uuid: 'given uuid')
+      expect(node.uuid).to eq('given uuid')
+      expect(Clazz.find_or_create(uuid: 'given uuid')).to eq(node)
+      expect(Clazz.count).to eq(1)
+    end
+
     it 'returns :id as primary_key' do
       expect(Clazz.primary_key).to eq :uuid
     end
@@ -229,6 +242,13 @@ describe ActiveGraph::Node::IdProperty do
         node.save
         expect(node.id).to eq(node.my_id)
       end
+
+      it 'saves an assigned value instead of calling foobar' do
+        node = Clazz.new(my_id: 'assigned id')
+        expect(node.id).to eq('assigned id')
+        node.save!
+        expect(Clazz.find_by_id('assigned id')).to eq(node)
+      end
     end
 
     describe 'find_by_id' do
@@ -387,6 +407,48 @@ describe ActiveGraph::Node::IdProperty do
         expect(node.id).to be_nil
         node.save
         expect(node.id).to eq(node.my_uuid)
+      end
+
+      context 'when assigned' do
+        it 'saves the assigned value instead of generating one' do
+          node = Clazz.new
+          node.my_uuid = 'given uuid'
+          expect(node.id).to eq('given uuid')
+          node.save!
+          expect(node.my_uuid).to eq('given uuid')
+          expect(Clazz.find_by_id('given uuid')).to eq(node)
+        end
+
+        it 'can be passed to create' do
+          node = Clazz.create!(my_uuid: 'given uuid')
+          expect(Clazz.find_by_id('given uuid')).to eq(node)
+        end
+
+        it 'generates a value when assigned nil' do
+          node = Clazz.create!(my_uuid: nil)
+          expect(node.my_uuid).not_to be_nil
+        end
+
+        it 'throws exception if the value is already taken' do
+          Clazz.create!(my_uuid: 'given uuid')
+          expect { Clazz.create!(my_uuid: 'given uuid') }.to raise_constraint_error
+        end
+      end
+
+      context 'when the node has been saved' do
+        let!(:node) { Clazz.create! }
+
+        it "can't be changed" do
+          uuid = node.my_uuid
+          expect { node.my_uuid = 'other uuid' }
+            .to raise_error(ActiveGraph::Node::IdProperty::ReadonlyIdPropertyError, /Clazz#my_uuid/)
+          expect(node.my_uuid).to eq(uuid)
+          expect(Clazz.find_by_id(uuid)).to eq(node)
+        end
+
+        it 'accepts its current value' do
+          expect { node.update!(my_uuid: node.my_uuid) }.not_to raise_error
+        end
       end
     end
 

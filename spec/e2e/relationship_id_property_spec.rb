@@ -58,6 +58,12 @@ describe ActiveGraph::Node::IdProperty do
       expect(Clazz.find_by_id(rel.id)).to eq(rel)
     end
 
+    it 'saves an assigned uuid instead of generating one' do
+      rel = Clazz.create!(nnode, nnode, uuid: 'given uuid')
+      expect(rel.id).to eq('given uuid')
+      expect(Clazz.find('given uuid')).to eq(rel)
+    end
+
     it 'returns :id as primary_key' do
       expect(Clazz.primary_key).to eq :uuid
     end
