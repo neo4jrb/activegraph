@@ -155,7 +155,7 @@ module ActiveGraph
           @model.current_scope = previous
         end
 
-        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit union)
+        METHODS = %w(where where_not rel_where rel_where_not rel_order order skip limit union with)
 
         METHODS.each do |method|
           define_method(method) { |*args| build_deeper_query_proxy(method.to_sym, args) }
@@ -165,6 +165,30 @@ module ActiveGraph
           hash_args = {proxy: self, subquery_parts: args, first_clause: @chain.blank?}
           build_deeper_query_proxy(:union, hash_args)
         end
+
+        # Adds a WITH clause at this point of the chain. The rest of the chain is built on a new part of the query,
+        # which lets the database finish (and, with order/limit, cut down) the work done so far before going on.
+        #
+        # The node variable of the chain is always passed through the WITH clause, as is the relationship variable when
+        # the chain is on an association, so that methods like `rel_where` and `each_rel` keep working. Pass any other
+        # variables of the query which should be available after the WITH clause as arguments.
+        #
+        # .. code-block:: ruby
+        #
+        #   # The lessons of the ten oldest students
+        #   Student.order(age: :desc).limit(10).with.lessons
+        #
+        #   # Keep the `l` variable available after the WITH clause
+        #   student.lessons(:l).teachers.with(:l).where('l.level > 101')
+        #
+        # @param [Array<String, Symbol>] vars Additional variables to pass through the WITH clause
+        # @return [QueryProxy]
+        def with(*vars)
+          with_rel = !@association.nil?
+          with_vars = ->(var, rel_var) { [var, (rel_var if with_rel), *vars].compact.uniq(&:to_s) }
+          build_deeper_query_proxy(:with, [with_vars])
+        end
+
         # Since there are rel_where and rel_order methods, it seems only natural for there to be node_where and node_order
         alias node_where where
         alias node_order order

@@ -957,6 +957,63 @@ describe 'query_proxy_methods' do
     end
   end
 
+  describe 'with' do
+    let(:history) { Lesson.create(name: 'history') }
+    let(:art) { Lesson.create(name: 'art') }
+    let(:jim) { Teacher.create(name: 'Jim', age: 40) }
+    let(:ann) { Teacher.create(name: 'Ann', age: 55) }
+
+    before(:each) do
+      jim.lessons << [math, history]
+      ann.lessons << art
+      jimmy.lessons.create(math, absence_count: 2)
+      jimmy.lessons.create(history, absence_count: 0)
+    end
+
+    it 'returns a QueryProxy object' do
+      expect(Teacher.all.with).to be_a(ActiveGraph::Node::Query::QueryProxy)
+      expect(jimmy.lessons.with).to be_a(ActiveGraph::Node::Query::QueryProxy)
+    end
+
+    it 'adds a WITH clause for the node variable' do
+      expect(Teacher.as(:t).with.to_cypher).to eq('MATCH (t:`Teacher`) WITH t')
+    end
+
+    it 'is available on the model class' do
+      expect(Teacher.with.where(name: 'Jim').to_a).to eq([jim])
+    end
+
+    it 'keeps the node variable for the rest of the chain' do
+      expect(Teacher.where(age: 40).with.where(name: 'Jim').to_a).to eq([jim])
+      expect(Teacher.where(age: 40).with.where(name: 'Ann').to_a).to be_empty
+    end
+
+    it 'applies order and limit before chaining further associations' do
+      expect(Teacher.where(age: 40..55).order(age: :desc).limit(1).with.lessons.to_a).to eq([art])
+      expect(Teacher.where(age: 40..55).order(:age).limit(1).with.lessons.to_a).to contain_exactly(math, history)
+    end
+
+    it 'keeps the relationship variable of an association' do
+      expect(jimmy.lessons.with.rel_where(absence_count: 2).to_a).to eq([math])
+      expect(jimmy.lessons.with.each_rel.map(&:absence_count)).to contain_exactly(2, 0)
+    end
+
+    it 'passes the given variables through the WITH clause' do
+      proxy = jimmy.lessons(:l).teachers(:t).with(:l)
+
+      expect(proxy.where("l.name = 'history'").pluck(:l, :t)).to eq([[history, jim]])
+    end
+
+    it 'does not repeat a variable given as an argument' do
+      expect(Teacher.as(:t).with(:t, 't.age AS age').to_cypher).to eq('MATCH (t:`Teacher`) WITH t, t.age AS age')
+    end
+
+    it 'counts the results' do
+      expect(jimmy.lessons.with.teachers.count).to eq(2)
+      expect(jimmy.lessons.with.teachers.distinct.count).to eq(1)
+    end
+  end
+
   describe 'optional' do
     before(:each) do
       @lauren = Student.create(name: 'Lauren')
