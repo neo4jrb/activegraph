@@ -115,6 +115,27 @@ When making association chains with ``Node`` you can use the ``branch`` method t
   # MATCH (s:Student)-[:HAS_LESSON]->(lesson:Lesson)<-[:TEACHES]-(:Teacher), (lesson)<-[:FOR_LESSON]-(exam:Exam)
   # RETURN exam
 
+Separating parts of the query with ``WITH``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``with`` method adds a Cypher ``WITH`` clause at that point of the chain.  Everything after it is built on a new part of the query, so the work described so far is finished before the rest of the query runs.  This is useful to apply ``order`` and ``limit`` before following an association, or to improve the performance of a long chain:
+
+.. code-block:: ruby
+
+  # The lessons of the ten oldest students
+  Student.order(age: :desc).limit(10).with.lessons
+
+  # Similar to the Cypher:
+  # MATCH (student:Student) WITH student ORDER BY student.age DESC LIMIT 10
+  # MATCH (student)-[:HAS_LESSON]->(lesson:Lesson)
+  # RETURN lesson
+
+The node variable of the chain is always passed through the ``WITH`` clause, and so is the relationship variable when the chain is on an association, so methods like ``rel_where`` and ``each_rel`` still work after ``with``.  Other variables are not available after the ``WITH`` clause unless you pass them as arguments:
+
+.. code-block:: ruby
+
+  student.lessons(:l).teachers(:t).with(:l).where('l.level > 101').pluck(:l, :t)
+
 Associations and Unpersisted Nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -149,7 +149,7 @@ module ActiveGraph::Node
 
       alias to_ary to_a
 
-      QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit]
+      QUERY_PROXY_METHODS = [:<<, :delete, :create, :pluck, :where, :where_not, :rel_where, :rel_order, :order, :skip, :limit, :with]
 
       QUERY_PROXY_METHODS.each do |method|
         define_method(method) do |*args, &block|
