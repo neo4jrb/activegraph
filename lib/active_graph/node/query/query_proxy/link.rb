@@ -79,42 +79,47 @@ module ActiveGraph
               new(:union, union_proc, *args)
             end
 
+            # Each union link yields `[builder, outer_identity]` for Core::Query#union: `builder.call(prefix)`
+            # builds the branch with its parameters namespaced by `prefix` plus the branch's own
+            # `<identity>_UNION<index>_`, so the names are unique by construction, also across nested unions.
+
+            # A branch given as a complete proxy, `-> { Teacher.where(name: 'x') }`.
             def independent_union_subquery_proc(proxy, loop_index)
-              proxy_params = proxy.query.parameters
-              proxy_cypher = proxy.to_cypher
-              subquery_identity = proxy.identity
-              uniq_param_generator = uniq_param_generator_lambda
-
               lambda do |identity, _|
-                proxy_params = uniq_param_generator.call(proxy_params, proxy_cypher, identity, loop_index) if proxy_params.present?
-                [subquery_identity, proxy_cypher, proxy_params, identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
-              end
-            end
-
-            def continuation_union_subquery_proc(outer_proxy, model, subquery_part, loop_index) # rubocop:disable Metrics/AbcSize
-              lambda do |identity, _|
-                proxy = outer_proxy.as(identity)
-                proxy_with_clause = proxy.query.with(proxy.identity).with(proxy.identity).proxy_as(model, proxy.identity)
-                complete_query = proxy_with_clause.instance_exec(&subquery_part) || proxy_with_clause
-                subquery_cypher = complete_query.to_cypher
-                subquery_cypher = subquery_cypher.delete_prefix(proxy.to_cypher) if proxy.send(:chain).present? || proxy.starting_query
-                subquery_parameters = (complete_query.query.parameters.to_a - proxy.query.parameters.to_a).to_h
-
-                subquery_parameters = uniq_param_generator_lambda.call(subquery_parameters, subquery_cypher, identity, loop_index) if subquery_parameters.present?
-                [complete_query.identity, subquery_cypher, subquery_parameters] + [identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
-              end
-            end
-
-            def uniq_param_generator_lambda
-              lambda do |proxy_params, proxy_cypher, identity, counter|
-                prefix = "#{identity}_UNION#{counter}_"
-                proxy_params.each_with_object({}) do |(param_name, param_val), new_params|
-                  new_params_key = "#{prefix}#{param_name}".to_sym
-                  new_params[new_params_key] = param_val
-                  proxy_cypher.gsub!(/\$#{param_name}(?=([^`'"]|'(\\.|[^'])*'|"(\\.|[^"])*"|`(\\.|[^`])*`)*\z)/, "$#{new_params_key}")
-                  new_params
+                builder = lambda do |enclosing_namespace|
+                  namespace = union_namespace(enclosing_namespace, identity, loop_index)
+                  [proxy.identity, proxy.query_as(proxy.identity, params_namespace: namespace)]
                 end
+                [builder, identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
               end
+            end
+
+            # A branch continuing the outer query, `-> { where(name: 'x') }`: the block runs against a proxy
+            # that imports the outer identity (`WITH id WITH id`).
+            def continuation_union_subquery_proc(outer_proxy, model, subquery_part, loop_index)
+              lambda do |identity, _|
+                builder = lambda do |enclosing_namespace|
+                  namespace = union_namespace(enclosing_namespace, identity, loop_index)
+                  importing = union_branch_start(outer_proxy.as(identity)).with(identity).with(identity)
+                  start = importing.proxy_as(model, identity)
+                  complete = start.instance_exec(&subquery_part) || start
+                  [complete.identity, complete.query_as(complete.identity, params_namespace: namespace)]
+                end
+                [builder, identity.delete_prefix(OUTER_SUBQUERY_PREFIX)]
+              end
+            end
+
+            def union_namespace(enclosing_namespace, identity, loop_index)
+              "#{enclosing_namespace}#{identity}_UNION#{loop_index}_"
+            end
+
+            # The query a continuation branch starts from. The clauses before the union are rendered once,
+            # before `CALL {`, so the branch starts empty; with nothing before the union the outer query is
+            # empty instead and the proxy's own MATCH opens the branch.
+            def union_branch_start(proxy)
+              return proxy.query unless proxy.send(:chain).present? || proxy.starting_query
+
+              proxy.send(:_query).tap { |query| query.proxy_chain_level = proxy.send(:_chain_level) }
             end
 
             def for_where_clause(arg, model, *args)

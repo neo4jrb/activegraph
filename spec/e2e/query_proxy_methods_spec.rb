@@ -280,6 +280,86 @@ describe 'query_proxy_methods' do
         expect(all_death_eaters.distinct).to contain_exactly(snape, bartemius, amycus)
       end
     end
+
+    # The branches are built independently, so their generated parameter names are namespaced
+    # per branch when they are built (`<outer identity>_UNION<index>_` in front of the usual name).
+    # The identity of the class-level proxy (`result_teacher`, `result_teacher2`, …) depends on the
+    # examples run before, so the names are derived from it; the blocks only see locals, since they
+    # run against a proxy.
+    context 'parameter naming' do
+      let(:id) { Teacher.query_proxy.identity }
+      let(:outer) { "outer_#{id}" }
+      let(:union) do
+        bartemius_name = bartemius.name
+        amycus_name = amycus.name
+        Teacher.where(age: 34).union(-> { where(name: bartemius_name) }, -> { Teacher.where(name: amycus_name) })
+      end
+
+      it 'namespaces the generated names of each branch and leaves the outer ones alone' do
+        expect(union.to_cypher).to eq(
+          "MATCH (#{outer}:`Teacher`) WHERE #{outer}.age = $#{outer}_age " \
+          "CALL { WITH #{outer} WITH #{outer} WHERE #{outer}.name = $#{outer}_UNION0_#{outer}_name " \
+          "RETURN #{outer} AS #{id} " \
+          "UNION MATCH (#{id}:`Teacher`) WHERE #{id}.name = $#{outer}_UNION1_#{id}_name " \
+          "RETURN #{id} AS #{id} } WITH #{id}, #{outer}"
+        )
+        expect(union.query.parameters).to eq("#{outer}_age": 34,
+                                             "#{outer}_UNION0_#{outer}_name": bartemius.name,
+                                             "#{outer}_UNION1_#{id}_name": amycus.name)
+      end
+
+      it 'binds the same names however often the query is built' do
+        expect(union.query.parameters).to eq(union.query.parameters)
+        expect(union.to_cypher).to eq(union.to_cypher)
+        expect(union.distinct).to contain_exactly(bartemius, amycus)
+      end
+
+      it 'keeps apart branches that generate the same names from different values' do
+        Lesson.create(name: 'Potions', students: [potter], teachers: [snape])
+        weasley = Student.create(name: 'Ron Weasley')
+        Lesson.create(name: 'Charms', students: [weasley], teachers: [amycus])
+        potter_name = potter.name
+        weasley_name = weasley.name
+
+        by_student = Teacher.union(-> { Student.where(name: potter_name).lessons.teachers },
+                                   -> { Student.where(name: weasley_name).lessons.teachers })
+        expect(by_student.query.parameters.keys.map(&:to_s))
+          .to contain_exactly(a_string_starting_with("#{outer}_UNION0_"), a_string_starting_with("#{outer}_UNION1_"))
+        expect(by_student.distinct).to contain_exactly(snape, amycus)
+      end
+
+      it 'namespaces the parameters of ? placeholders' do
+        older = "#{id}.age > ?"
+        younger = "#{id}.age < ?"
+        placeholders = Teacher.union(-> { Teacher.where(older, 35) }, -> { Teacher.where(younger, 35) })
+        expect(placeholders.query.parameters).to eq("#{outer}_UNION0_question_mark_param": 35,
+                                                    "#{outer}_UNION1_question_mark_param": 35)
+        expect(placeholders.distinct).to contain_exactly(bartemius, amycus, snape)
+      end
+
+      it 'nests the namespaces of nested unions' do
+        snape_name = snape.name
+        nested = Teacher.union(-> { Teacher.where(age: 39) },
+                               -> { Teacher.union(-> { Teacher.where(age: 34) }, -> { where(name: snape_name) }) })
+        expect(nested.query.parameters).to eq(
+          "#{outer}_UNION0_#{id}_age": 39,
+          "#{outer}_UNION1_#{outer}_UNION0_#{id}_age": 34,
+          "#{outer}_UNION1_#{outer}_UNION1_#{outer}_name": snape.name
+        )
+        expect(nested.distinct).to contain_exactly(amycus, bartemius, snape)
+      end
+
+      it 'keeps the names of parameters the caller chose and rejects conflicting values' do
+        older = "#{id}.age > $min"
+        younger = "#{id}.age < $min"
+        same = Teacher.union(-> { Teacher.where(older, min: 35) }, -> { Teacher.where(younger, min: 35) })
+        expect(same.query.parameters).to eq(min: 35)
+        expect(same.distinct).to contain_exactly(bartemius, amycus, snape)
+
+        conflicting = Teacher.union(-> { Teacher.where(older, min: 35) }, -> { Teacher.where(younger, min: 36) })
+        expect { conflicting.to_cypher }.to raise_error(CypherDSL::ConflictingParametersException, /min/)
+      end
+    end
   end
 
   describe 'include?' do
